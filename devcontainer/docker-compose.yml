@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  dev:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+      args:
+        USER_UID: ${UID:-1000}
+        USER_GID: ${GID:-1000}
+    user: "${UID:-1000}:${GID:-1000}"
+    environment:
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ..:/home/dev/dev_container
+    working_dir: /home/dev/dev_container
+    tty: true
+    stdin_open: true
+    ports:
+      - "${JUPYTER_PORT:-8888}:${JUPYTER_PORT:-8888}" # Expose JupyterLab port (host:container)
+    container_name: dev_container_debian_13

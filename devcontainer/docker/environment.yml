@@ -1,0 +1,14 @@
+name: dev
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - black
+      - isort
+      - ruff
+      - ipykernel
+      - jupyterlab
+      - python-lsp-server[all]
+      - pyright

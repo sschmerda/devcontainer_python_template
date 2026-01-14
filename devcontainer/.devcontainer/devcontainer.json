@@ -1,0 +1,20 @@
+{
+  "name": "dev_container_debian_13",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/home/dev/dev_container",
+  "workspaceMount": "source=${localWorkspaceFolder}/..,target=/home/dev/dev_container,type=bind",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.debugpy"
+      ]
+    }
+  },
+  "remoteUser": "dev"
+}
