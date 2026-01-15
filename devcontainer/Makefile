@@ -47,7 +47,7 @@ shell: terminfo
 tmux: terminfo
 	$(COMPOSE_CMD) exec -e TERM -e COLORTERM $(SERVICE) tmux
 
-# Open VS Code attached to the container
+# Open VS Code and manually connect to the container
 .PHONY: vscode
 vscode:
 	code .
