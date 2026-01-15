@@ -60,4 +60,4 @@ vscode:
 # Start JupyterLab inside container and expose port from .env
 .PHONY: jupyter
 jupyter:
-	$(COMPOSE_CMD) exec $(SERVICE) sh -lc "sh /home/dev/dev_container/devcontainer/docker/jupyter-with-token.sh"
+	$(COMPOSE_CMD) exec $(SERVICE) sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/jupyter-with-token.sh"
