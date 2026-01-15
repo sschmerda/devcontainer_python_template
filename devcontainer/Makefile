@@ -50,12 +50,7 @@ tmux: terminfo
 # Open VS Code attached to the container
 .PHONY: vscode
 vscode:
-	@cid=$$(docker ps -q -f name=^/dev_container_debian_13$$); \
-	if [ -z "$$cid" ]; then \
-		echo "Container dev_container_debian_13 is not running."; \
-		exit 1; \
-	fi; \
-	code --folder-uri "vscode-remote://dev-container+$$cid/home/dev/dev_container"
+	code .
 
 # Start JupyterLab inside container and expose port from .env
 .PHONY: jupyter
