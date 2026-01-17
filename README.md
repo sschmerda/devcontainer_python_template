@@ -13,5 +13,5 @@ Quick start:
 
 CLI usage:
 - `cd devcontainer`
-- `make up` to build and start the container.
+- `make up-env` to build and start the container.
 - `make shell` to enter the container.

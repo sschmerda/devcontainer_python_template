@@ -7,6 +7,7 @@ dependencies:
   ############################
   - python=3.13 # Python language runtime
   - pip # Install PyPI-only packages when needed
+  - conda-lock # generate reproducible conda lockfiles
 
   ############################
   # Jupyter

@@ -10,6 +10,7 @@ COPY install-additional-binaries-user.sh /tmp/install-additional-binaries-user.s
 COPY install-dotfiles.sh /tmp/install-dotfiles.sh
 COPY install-micromamba.sh /tmp/install-micromamba.sh
 COPY environment.yml /tmp/environment.yml
+COPY conda-lock.yml /tmp/conda-lock.yml
 RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-micromamba.sh
 
 # Install base software
@@ -42,6 +43,8 @@ RUN su - dev -c "/tmp/install-dotfiles.sh"
 RUN su - dev -c "/tmp/install-additional-binaries-user.sh"
 
 # install correct micromamba based on chip architecture (user-only install)
+ARG MAMBA_ENV_FILE=environment.yml
+ENV MAMBA_ENV_FILE=/tmp/${MAMBA_ENV_FILE}
 RUN su - dev -c "/tmp/install-micromamba.sh"
 
 ENV MAMBA_DEFAULT_ENV=dev

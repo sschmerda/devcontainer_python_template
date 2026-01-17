@@ -24,7 +24,12 @@ mv "$WORKDIR/bin/micromamba" "$BIN_DIR/micromamba"
 rm -rf "$WORKDIR"
 
 echo ">>> Creating micromamba environment..."
-micromamba create -y -f /tmp/environment.yml
+ENV_FILE="${MAMBA_ENV_FILE:-/tmp/environment.yml}"
+if [ ! -f "$ENV_FILE" ]; then
+  echo "Missing micromamba environment file: $ENV_FILE"
+  exit 1
+fi
+micromamba create -y -f "$ENV_FILE"
 micromamba clean --all --yes
 
 ZSHRC="$HOME/.zshrc"

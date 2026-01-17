@@ -18,15 +18,41 @@ endif
 COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose -f $(COMPOSE_FILE)
 
 # Build and start container
-.PHONY: up
-up:
-	$(COMPOSE_CMD) up -d --build
+.PHONY: up-env
+up-env:
+	MAMBA_ENV_FILE=environment.yml $(COMPOSE_CMD) up -d --build
 
 # Rebuild container from scratch and start
-.PHONY: rebuild
-rebuild:
-	$(COMPOSE_CMD) build --no-cache
-	$(COMPOSE_CMD) up -d
+.PHONY: rebuild-env
+rebuild-env:
+	MAMBA_ENV_FILE=environment.yml $(COMPOSE_CMD) build --no-cache
+	MAMBA_ENV_FILE=environment.yml $(COMPOSE_CMD) up -d
+
+# Build and start container from lockfile
+.PHONY: up-lock
+up-lock:
+	MAMBA_ENV_FILE=conda-lock.yml $(COMPOSE_CMD) up -d --build
+
+# Rebuild container from lockfile and start
+.PHONY: rebuild-lock
+rebuild-lock:
+	MAMBA_ENV_FILE=conda-lock.yml $(COMPOSE_CMD) build --no-cache
+	MAMBA_ENV_FILE=conda-lock.yml $(COMPOSE_CMD) up -d
+
+# Generate conda-lock.yml (run inside container only)
+.PHONY: env-lock
+env-lock:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	@set -e; \
+	ts=$$(date "+%Y-%m-%d %H:%M:%S %Z"); \
+	conda-lock lock -f /home/dev/dev_container/devcontainer/docker/environment.yml -p linux-64 -o /home/dev/dev_container/devcontainer/docker/conda-lock.yml; \
+	tmp=$$(mktemp); \
+	printf '# Created: %s\n' "$$ts" > "$$tmp"; \
+	cat /home/dev/dev_container/devcontainer/docker/conda-lock.yml >> "$$tmp"; \
+	mv "$$tmp" /home/dev/dev_container/devcontainer/docker/conda-lock.yml
 
 # Ensure terminal definition exists in the container
 .PHONY: terminfo
