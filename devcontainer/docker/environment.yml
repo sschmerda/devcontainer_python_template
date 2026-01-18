@@ -5,7 +5,7 @@ dependencies:
   ############################
   # Core runtime
   ############################
-  - python=3.13 # Python language runtime
+  - python=3.12 # Python language runtime
   - pip # Install PyPI-only packages when needed
   - conda-lock # generate reproducible conda lockfiles
 
@@ -29,8 +29,6 @@ dependencies:
   - nbdime # Notebook-aware diffing and merging for Git
   - jupyterlab-variableinspector # Inspect variables interactively in notebooks
   - jupyterlab-spellchecker # Spellchecking for markdown and comments
-  - jupyterlab-execute-time # Show cell execution times
-  - jupyterlab-code-formatter # Auto-format code cells (Black, Ruff, etc.)
 
   ############################
   # Numerical computing
@@ -42,17 +40,16 @@ dependencies:
   ############################
   # Numerical computing (extensions)
   ############################
-  - xarray # Labeled N-dimensional arrays (netCDF-style workflows)
-  - polars # Fast, modern DataFrame library (Arrow-based)
-  - numba # JIT compilation for NumPy-style code
-  - cython # Static typing and C extensions for performance
+  # - xarray # Labeled N-dimensional arrays (netCDF-style workflows)
+  # - polars # Fast, modern DataFrame library (Arrow-based)
+  # - numba # JIT compilation for NumPy-style code
+  # - cython # Static typing and C extensions for performance
 
   ############################
   # Parallelism & execution
   ############################
-  - joblib # simple multiprocessing & caching (used by sklearn)
-  - dask # parallel & out-of-core task scheduling
-  - ray # distributed execution framework
+  # - joblib # simple multiprocessing & caching (used by sklearn)
+  # - dask # parallel & out-of-core task scheduling
 
   ############################
   # Statistics & machine learning
@@ -60,30 +57,30 @@ dependencies:
   - scikit-learn # Classical machine learning algorithms and utilities
   - statsmodels # Statistical modeling and econometrics
   - pingouin # User-friendly statistical tests and effect sizes
-  - linearmodels # Panel data, IV, GMM, and econometrics-focused models
-  - xgboost # Gradient boosting for structured/tabular data
-  - arch # ARCH/GARCH volatility models for time series
-  - sktime # Time-series forecasting and model evaluation framework
-  - prophet # Additive models for time series forecasting
+  # - linearmodels # Panel data, IV, GMM, and econometrics-focused models
+  # - xgboost # Gradient boosting for structured/tabular data
+  # - arch-py # ARCH/GARCH volatility models for time series
+  # - sktime # Time-series forecasting and model evaluation framework
+  # - prophet # Additive models for time series forecasting
 
   ############################
   # Deep learning
   ############################
-  - pytorch # Tensor computation and deep learning framework (CPU)
-  - torchvision # Computer vision utilities and datasets for PyTorch
-  - torchaudio # Audio and signal processing utilities for PyTorch
-  - lightning # High-level training loops and experiment structure for PyTorch
+  # - pytorch # Tensor computation and deep learning framework (CPU)
+  # - torchvision # Computer vision utilities and datasets for PyTorch
+  # - torchaudio # Audio and signal processing utilities for PyTorch
+  # - lightning # High-level training loops and experiment structure for PyTorch
 
   ############################
   # Mathematics (symbolic & analytic)
   ############################
-  - sympy # Symbolic mathematics (algebra, calculus, exact solutions)
+  # - sympy # Symbolic mathematics (algebra, calculus, exact solutions)
 
   ############################
   # Natural language processing
   ############################
-  - spacy # Industrial-strength NLP (tokenization, NER, pipelines)
-  - nltk # Classic NLP utilities and linguistic resources
+  # - spacy # Industrial-strength NLP (tokenization, NER, pipelines)
+  # - nltk # Classic NLP utilities and linguistic resources
 
   ############################
   # Visualization
@@ -91,71 +88,71 @@ dependencies:
   - matplotlib # Core plotting library
   - seaborn # Statistical data visualization built on matplotlib
   - plotly # Interactive, browser-based visualizations
-  - scikit-image # Image processing and analysis
+  # - scikit-image # Image processing and analysis
 
   ############################
   # Data formats & I/O
   ############################
-  - pyarrow # Apache Arrow in-memory columnar format
-  - fastparquet # Parquet file reader/writer (alternative engine)
-  - h5py # HDF5 binary data storage
-  - netcdf4 # NetCDF scientific data format
-  - openpyxl # Read/write modern Excel (.xlsx) files
-  - xlrd # Read legacy Excel (.xls) files
-  - pillow # Image I/O and basic image processing
+  # - pyarrow # Apache Arrow in-memory columnar format
+  # - fastparquet # Parquet file reader/writer (alternative engine)
+  # - h5py # HDF5 binary data storage
+  # - netcdf4 # NetCDF scientific data format
+  # - openpyxl # Read/write modern Excel (.xlsx) files
+  # - xlrd # Read legacy Excel (.xls) files
+  # - pillow # Image I/O and basic image processing
 
   ############################
   # Web development & dashboards
   ############################
-  - streamlit # Rapid dashboards and data apps for analysis results
-  - dash # Structured dashboards (Plotly + Flask)
-  - fastapi # Modern, high-performance web APIs
-  - uvicorn # ASGI server for FastAPI applications
-  - flask # Lightweight, minimal web framework
-  - django # Full-stack web framework (project-specific, optional)
+  # - streamlit # Rapid dashboards and data apps for analysis results
+  # - dash # Structured dashboards (Plotly + Flask)
+  # - fastapi # Modern, high-performance web APIs
+  # - uvicorn # ASGI server for FastAPI applications
+  # - flask # Lightweight, minimal web framework
+  # - django # Full-stack web framework (project-specific, optional)
 
   ############################
   # Databases
   ############################
-  - sqlalchemy # Database ORM and abstraction layer
-  - duckdb # In-process analytical SQL database
-  - psycopg2 # PostgreSQL driver (synchronous)
-  - asyncpg # PostgreSQL driver (asynchronous, FastAPI-friendly)
+  # - sqlalchemy # Database ORM and abstraction layer
+  # - duckdb # In-process analytical SQL database
+  # - psycopg2 # PostgreSQL driver (synchronous)
+  # - asyncpg # PostgreSQL driver (asynchronous, FastAPI-friendly)
 
   ############################
   # Geospatial
   ############################
-  - geopandas # Geospatial dataframes and spatial analytics
-  - shapely # Geometric objects and spatial operations
+  # - geopandas # Geospatial dataframes and spatial analytics
+  # - shapely # Geometric objects and spatial operations
 
   ############################
   # Graphs
   ############################
-  - networkx # Graph algorithms and network analysis
+  # - networkx # Graph algorithms and network analysis
 
   ############################
   # Networking
   ############################
-  - requests # Simple and widely-used HTTP client
+  # - requests # Simple and widely-used HTTP client
 
   ############################
   # Web scraping & APIs
   ############################
-  - beautifulsoup4 # HTML parsing and extraction
-  - lxml # Fast HTML/XML parsing backend
-  - httpx # Modern HTTP client with async support
-  - tenacity # Retry logic for unreliable APIs and websites
-  - scrapy # Full-featured crawling and scraping framework
+  # - beautifulsoup4 # HTML parsing and extraction
+  # - lxml # Fast HTML/XML parsing backend
+  # - httpx # Modern HTTP client with async support
+  # - tenacity # Retry logic for unreliable APIs and websites
+  # - scrapy # Full-featured crawling and scraping framework
 
   ############################
   # Utilities
   ############################
-  - pyyaml # YAML configuration file parsing
-  - orjson # Fast JSON serialization/deserialization
-  - tzdata # Timezone database (important in containers)
-  - pydantic # Data validation and settings management
-  - toml # Read/write TOML configuration files
-  - psutil # System and process resource introspection
+  # - pyyaml # YAML configuration file parsing
+  # - orjson # Fast JSON serialization/deserialization
+  # - tzdata # Timezone database (important in containers)
+  # - pydantic # Data validation and settings management
+  # - toml # Read/write TOML configuration files
+  # - psutil # System and process resource introspection
 
   ############################
   # Development & productivity
@@ -164,15 +161,25 @@ dependencies:
   - ruff # Fast Python linter
   - black # Opinionated code formatter
   - mypy # Static type checking
-  - pytest # Testing framework
-  - ipython # Enhanced interactive Python shell
-  - rich # Pretty terminal output (tables, logs, progress)
-  - python-dotenv # Load environment variables from .env files
-  - isort # Import sorting
-  - pre-commit # Git hooks for automated quality checks
-
+  # - pytest # Testing framework
+  # - ipython # Enhanced interactive Python shell
+  # - rich # Pretty terminal output (tables, logs, progress)
+  # - python-dotenv # Load environment variables from .env files
+  # - isort # Import sorting
+  # - pre-commit # Git hooks for automated quality checks
 
   ############################
   # Custom
   ############################
   # Add additional libraries here
+
+  ############################
+  # Additional pip libraries
+  ############################
+  # use only if conda-forge package does not exist
+  - pip:
+      # JupyterLab extensions
+      - jupyterlab-execute-time # Show cell execution times
+      - jupyterlab-code-formatter # Auto-format code cells (Black, Ruff, etc.)
+      # Parallelism & execution
+      # - ray # distributed execution framework
