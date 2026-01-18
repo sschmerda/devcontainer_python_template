@@ -48,7 +48,8 @@ env-lock:
 	fi
 	@set -e; \
 	ts=$$(date "+%Y-%m-%d %H:%M:%S %Z"); \
-	conda-lock lock -f /home/dev/dev_container/devcontainer/docker/environment.yml -p linux-64 -o /home/dev/dev_container/devcontainer/docker/conda-lock.yml; \
+	rm -f /home/dev/dev_container/devcontainer/docker/conda-lock.yml; \
+	conda-lock lock -f /home/dev/dev_container/devcontainer/docker/environment.yml -p linux-64 --lockfile /home/dev/dev_container/devcontainer/docker/conda-lock.yml; \
 	tmp=$$(mktemp); \
 	printf '# Created: %s\n' "$$ts" > "$$tmp"; \
 	cat /home/dev/dev_container/devcontainer/docker/conda-lock.yml >> "$$tmp"; \
