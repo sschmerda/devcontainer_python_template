@@ -4,13 +4,12 @@ FROM debian:13-slim
 USER root
 
 # Copy shell scripts
-COPY install-base-binaries.sh /tmp/install-base-binaries.sh
-COPY install-additional-binaries-root.sh /tmp/install-additional-binaries-root.sh
-COPY install-additional-binaries-user.sh /tmp/install-additional-binaries-user.sh
-COPY install-dotfiles.sh /tmp/install-dotfiles.sh
-COPY install-micromamba.sh /tmp/install-micromamba.sh
-COPY environment.yml /tmp/environment.yml
-COPY conda-lock.yml /tmp/conda-lock.yml
+COPY docker/install-base-binaries.sh /tmp/install-base-binaries.sh
+COPY docker/install-additional-binaries-root.sh /tmp/install-additional-binaries-root.sh
+COPY docker/install-additional-binaries-user.sh /tmp/install-additional-binaries-user.sh
+COPY docker/install-dotfiles.sh /tmp/install-dotfiles.sh
+COPY docker/install-micromamba.sh /tmp/install-micromamba.sh
+COPY mamba_environment/ /tmp/mamba_environment/
 RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-micromamba.sh
 
 # Install base software
@@ -43,9 +42,10 @@ RUN su - dev -c "/tmp/install-dotfiles.sh"
 RUN su - dev -c "/tmp/install-additional-binaries-user.sh"
 
 # install correct micromamba based on chip architecture (user-only install)
-ARG MAMBA_ENV_FILE=environment.yml
+ARG MAMBA_ENV_FILE=mamba_environment/environment.yml
 ENV MAMBA_ENV_FILE=/tmp/${MAMBA_ENV_FILE}
-RUN su - dev -c "/tmp/install-micromamba.sh"
+RUN chown -R dev:dev /tmp/mamba_environment
+RUN su - dev -c "MAMBA_ENV_FILE=${MAMBA_ENV_FILE} /tmp/install-micromamba.sh"
 
 ENV MAMBA_DEFAULT_ENV=dev
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba

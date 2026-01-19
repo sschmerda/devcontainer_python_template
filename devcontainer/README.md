@@ -26,21 +26,29 @@ Common variables:
 Secret configuration values live in `devcontainer/.env.secrets`.
 Keep this file out of version control.
 
+## mamba_environment
+
+Mamba environment specs live in `devcontainer/mamba_environment/`:
+- `environment.yml`: Source of truth for package selection.
+- `conda-lock.yml`: Generated lockfile for reproducible builds (run `make env-lock` to create it).
+
+Note: `conda-lock` is pinned in `environment.yml`. Changing its version can break the lockfile generation/install CLI, so avoid upgrading it unless you also adjust the build workflow.
+
 ## Make commands
 
 Run these from the `devcontainer` directory:
 
 - `make up`: Build and start the container.
 - `make rebuild`: Rebuild from scratch and start.
-- `make up-env`: Build and start using `environment.yml`.
-- `make rebuild-env`: Rebuild using `environment.yml`.
-- `make up-lock`: Build and start using `conda-lock.yml`.
-- `make rebuild-lock`: Rebuild using `conda-lock.yml`.
+- `make up-env`: Build and start using `mamba_environment/environment.yml`.
+- `make rebuild-env`: Rebuild using `mamba_environment/environment.yml`.
+- `make up-lock`: Build and start using `mamba_environment/conda-lock.yml`.
+- `make rebuild-lock`: Rebuild using `mamba_environment/conda-lock.yml`.
 - `make shell`: Open a shell in the container.
 - `make tmux`: Open tmux in the container.
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
-- `make env-lock`: Generate `conda-lock.yml` (run inside the container).
+- `make env-lock`: Generate `mamba_environment/conda-lock.yml` (run inside the container).
 
 ## Template repo setup
 

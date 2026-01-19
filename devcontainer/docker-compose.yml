@@ -3,12 +3,12 @@ version: "3.9"
 services:
   dev:
     build:
-      context: ./docker
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: docker/Dockerfile
       args:
         USER_UID: ${UID:-1000}
         USER_GID: ${GID:-1000}
-        MAMBA_ENV_FILE: ${MAMBA_ENV_FILE:-environment.yml}
+        MAMBA_ENV_FILE: ${MAMBA_ENV_FILE:-mamba_environment/environment.yml}
     user: "${UID:-1000}:${GID:-1000}"
     environment:
       TZ: ${TZ:-UTC}

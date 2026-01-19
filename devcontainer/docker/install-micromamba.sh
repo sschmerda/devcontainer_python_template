@@ -29,7 +29,20 @@ if [ ! -f "$ENV_FILE" ]; then
   echo "Missing micromamba environment file: $ENV_FILE"
   exit 1
 fi
-micromamba create -y -f "$ENV_FILE"
+case "$ENV_FILE" in
+  *conda-lock.yml)
+    echo ">>> Installing conda-lock (temporary env)..."
+    micromamba create -y -n locktools -c conda-forge conda-lock
+    micromamba run -n locktools conda-lock install \
+      --prefix "$MAMBA_ROOT_PREFIX/envs/dev" \
+      --micromamba \
+      "$ENV_FILE"
+    micromamba env remove -n locktools -y
+    ;;
+  *)
+    micromamba create -y -n dev -f "$ENV_FILE"
+    ;;
+esac
 micromamba clean --all --yes
 
 ZSHRC="$HOME/.zshrc"
