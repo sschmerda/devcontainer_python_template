@@ -47,6 +47,7 @@ coverage.xml
 
 # Jupyter
 .ipynb_checkpoints/
+.virtual_documents/
 
 # Node (if used)
 node_modules/
