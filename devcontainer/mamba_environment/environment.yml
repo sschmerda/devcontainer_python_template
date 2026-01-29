@@ -28,10 +28,16 @@ dependencies:
   ############################
   - jupyterlab-lsp # Language Server Protocol integration for JupyterLab
   - python-lsp-server # Python language server (go-to-definition, hover, linting)
+  - variable_inspector # Inspect variables interactively in notebooks
   # TODO: add automatical activation
   - nbdime # Notebook-aware diffing and merging for Git
-  - jupyterlab-variableinspector # Inspect variables interactively in notebooks
-  - jupyterlab-spellchecker # Spellchecking for markdown and comments
+  - jupyterlab-quickopen # Quickly open a file in jupyterlab
+  - theme-darcula # Darcula theme for JupyterLab
+
+  ############################
+  # Language server protocol
+  ############################
+  - pyright # Lsp from vscode
 
   ############################
   # Numerical computing
@@ -181,8 +187,11 @@ dependencies:
   ############################
   # use only if conda-forge package does not exist
   - pip:
-      # JupyterLab extensions
+      # JupyterLab extensions (often lag behind on conda-forge)
       - jupyterlab-execute-time # Show cell execution times
       - jupyterlab-code-formatter # Auto-format code cells (Black, Ruff, etc.)
+      - jupyterlab-vim # Vim keybindings for JupyterLab
+      - jupyterlab-spellchecker # Spellchecking for markdown and comments
+      - stellars_jupyterlab_sublime_theme # sublime dark theme for JupyterLab
       # Parallelism & execution
       # - ray # distributed execution framework

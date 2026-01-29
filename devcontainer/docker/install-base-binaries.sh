@@ -18,6 +18,7 @@ apt-get update &&
     fd-find \
     ncurses-bin \
     ncurses-term \
+    perl \
     build-essential \
     locales \
     ca-certificates \

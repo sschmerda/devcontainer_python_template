@@ -16,6 +16,7 @@
 Non-secret configuration values live in `devcontainer/.env`.
 
 Common variables:
+
 - `JUPYTER_PORT`: Port to expose JupyterLab (default: `8888`).
 - `TZ`: Container timezone (default: `UTC`).
 - `UID`: Host user id for file ownership (default: `1000`).
@@ -29,10 +30,19 @@ Keep this file out of version control.
 ## mamba_environment
 
 Mamba environment specs live in `devcontainer/mamba_environment/`:
+
 - `environment.yml`: Source of truth for package selection.
 - `conda-lock.yml`: Generated lockfile for reproducible builds (run `make env-lock` to create it).
 
 Note: `conda-lock` is pinned in `environment.yml`. Changing its version can break the lockfile generation/install CLI, so avoid upgrading it unless you also adjust the build workflow.
+
+## JupyterLab settings
+
+If you want to persist your custom settings, export them with `make jupyter-settings-export` (inside the container). The archive is stored in `devcontainer/build_assets/jupyterlab-user-settings.tar.gz` and restored at build time by `devcontainer/shell_scripts/restore-jupyterlab-settings.sh`.
+
+## LaTeX packages
+
+Additional LaTeX packages are managed via `devcontainer/latex-environment/latex-packages.txt` and installed during the image build by `devcontainer/shell_scripts/install-latex-packages.sh`. Uncomment the packages you need and rebuild the image.
 
 ## Make commands
 
@@ -49,6 +59,8 @@ Run these from the `devcontainer` directory:
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
 - `make env-lock`: Generate `mamba_environment/conda-lock.yml` (run inside the container).
+- `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build_assets/` (run inside the container).
+- `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build_assets/` (run inside the container).
 
 ## Template repo setup
 

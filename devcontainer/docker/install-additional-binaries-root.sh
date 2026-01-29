@@ -71,4 +71,29 @@ curl -Lo /tmp/$LSD_ASSET \
 dpkg -i /tmp/$LSD_ASSET
 rm /tmp/$LSD_ASSET
 
+# -------------------------
+# R (Posit r-builds binary)
+# -------------------------
+R_VERSION="4.5.2"
+R_DEB="r-${R_VERSION}_1_$(dpkg --print-architecture).deb"
+R_DEB_URL="https://cdn.posit.co/r/debian-13/pkgs/${R_DEB}"
+R_PREFIX="/opt/R/${R_VERSION}"
+
+echo ">>> Installing R ${R_VERSION} (Posit r-builds)..."
+apt-get update
+curl -fL -o "/tmp/${R_DEB}" "$R_DEB_URL"
+apt-get install -y "/tmp/${R_DEB}"
+rm "/tmp/${R_DEB}"
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+
+cat >/etc/profile.d/r.sh <<EOF
+export PATH="${R_PREFIX}/bin:\$PATH"
+EOF
+
+# Ensure R is on PATH even if profile scripts aren't sourced.
+ln -sfn "${R_PREFIX}/bin/R" /usr/local/bin/R
+ln -sfn "${R_PREFIX}/bin/Rscript" /usr/local/bin/Rscript
+
+
 echo ">>> Additional system software installation completed."

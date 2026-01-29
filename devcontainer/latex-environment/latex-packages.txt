@@ -1,0 +1,60 @@
+# LaTeX packages to install via tlmgr.
+# One package per line; inline comments allowed. Uncomment what you need.
+#
+# Common extras (uncomment as needed):
+# collection-latexextra    # Common LaTeX packages used by many templates
+# collection-fontsrecommended  # Standard font packages
+# collection-xetex         # XeTeX-related packages
+# collection-latexrecommended  # Recommended core add-ons
+# latexmk                  # Build tool used by many workflows
+# biblatex                 # Bibliographies (requires biber)
+# biber                    # Biblatex backend
+# xcolor                   # Color support
+# hyperref                 # Hyperlinks in PDFs
+# geometry                 # Page layout
+# graphicx                 # Include images
+# booktabs                 # Better tables
+# enumitem                 # List customization
+# caption                  # Figure/table captions
+# float                    # Improved float placement
+# titlesec                 # Section formatting
+parskip                  # Paragraph spacing
+# lmodern                  # Latin Modern fonts
+# microtype                # Microtypography
+#
+# Required for Jupyter PDF export in your current setup:
+# NBConvert-related packages (enable to avoid missing .sty errors):
+adjustbox                # Adjust boxes (size/trim/align)
+caption                  # Figure/table captions
+collectbox               # Collect and manipulate boxes
+enumitem                 # List customization
+environ                  # Define environments with body capture
+eurosym                  # Euro currency symbol
+etoolbox                 # Programming tools for LaTeX
+jknapltx                 # Additional font support
+parskip                  # Paragraph spacing
+pdfcol                   # Color stack support
+pgf                      # Graphics framework (TikZ)
+rsfs                     # Script fonts
+tcolorbox                # Colored boxes
+titling                  # Title customization
+trimspaces               # Trim spaces in arguments
+ucs                      # Unicode support
+ulem                     # Underlining styles
+upquote                  # Upright quotes in verbatim
+ltxcmds                  # LaTeX command utilities
+infwarerr                # Info/warning/error macros
+iftex                    # Engine detection
+kvoptions                # Key-value option handling
+kvsetkeys                # Key-value setting helpers
+float                    # Improved float placement
+geometry                 # Page layout
+amsmath                  # Advanced math
+fontspec                 # Font selection (XeTeX/LuaTeX)
+unicode-math             # Unicode math (XeTeX/LuaTeX)
+fancyvrb                 # Fancy verbatim
+grffile                  # Extended graphics file names
+hyperref                 # Hyperlinks in PDFs
+booktabs                 # Better tables
+soul                     # Letterspacing/highlighting
+ec                       # EC fonts (T1)

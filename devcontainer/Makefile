@@ -65,6 +65,20 @@ terminfo:
 	fi
 	infocmp -x "$$TERM" | $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc 'tic -x -'
 
+# Export JupyterLab user settings to build_assets (run inside container only)
+.PHONY: jupyter-settings-export
+jupyter-settings-export:
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/export-jupyterlab-settings.sh"
+
+# Restore JupyterLab user settings from build_assets (run inside container only)
+.PHONY: jupyter-settings-restore
+jupyter-settings-restore:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/restore-jupyterlab-settings.sh"
+
 # Enter container in Zsh
 .PHONY: shell
 shell: terminfo
