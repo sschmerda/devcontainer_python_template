@@ -1,0 +1,34 @@
+# R packages to install from CRAN.
+# One package per line; inline comments allowed. Uncomment what you need.
+#
+# Core data work
+tidyverse           # Data manipulation + plotting meta-package
+data.table          # Fast data frames
+readr               # Fast CSV/TSV import
+dplyr               # Data manipulation
+tidyr               # Data tidying
+lubridate           # Dates/times
+stringr             # String handling
+forcats             # Categorical data
+
+# Reporting / docs
+# rmarkdown          # R Markdown
+# knitr              # Knitr
+# quarto             # Quarto (R package)
+
+# Modeling / stats
+# broom              # Tidy model outputs
+# lme4               # Mixed-effects models
+# mgcv               # GAMs
+
+# ML
+# caret              # ML training framework
+# randomForest       # Random forests
+# xgboost            # Gradient boosting (large)
+
+# I/O / formats
+# readxl             # Excel import
+# openxlsx           # Excel read/write
+# jsonlite           # JSON
+# arrow              # Arrow/Parquet (large)
+# sf                 # Spatial data (large)

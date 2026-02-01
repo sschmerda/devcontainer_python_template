@@ -11,10 +11,12 @@ COPY docker/install-dotfiles.sh /tmp/install-dotfiles.sh
 COPY docker/install-micromamba.sh /tmp/install-micromamba.sh
 COPY shell_scripts/restore-jupyterlab-settings.sh /tmp/restore-jupyterlab-settings.sh
 COPY shell_scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
+COPY shell_scripts/install-r-packages.sh /tmp/install-r-packages.sh
 COPY build_assets/ /tmp/build_assets/
 COPY latex-environment/ /tmp/latex-environment/
+COPY r-environment/ /tmp/r-environment/
 COPY mamba_environment/ /tmp/mamba_environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh
 
 # Install base software
 RUN /tmp/install-base-binaries.sh  
@@ -54,6 +56,8 @@ RUN su - dev -c "MAMBA_ENV_FILE=${MAMBA_ENV_FILE} /tmp/install-micromamba.sh"
 
 # Install additional LaTeX packages (tlmgr)
 RUN su - dev -c "/tmp/install-latex-packages.sh"
+# Install R libraries
+RUN su - dev -c "/tmp/install-r-packages.sh"
 
 ENV MAMBA_DEFAULT_ENV=dev
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba
