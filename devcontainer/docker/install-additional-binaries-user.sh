@@ -15,7 +15,7 @@ fi
 R_LIBS_USER="${HOME}/.local/lib/R/library"
 mkdir -p "$R_LIBS_USER"
 "$RSCRIPT" -e "install.packages('tinytex', repos = 'https://cloud.r-project.org', lib = '${R_LIBS_USER}')"
-"$RSCRIPT" -e ".libPaths('${R_LIBS_USER}'); tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', repo = 'https://mirror.ctan.org/systems/texlive/tlnet', add_path = TRUE)"
+"$RSCRIPT" -e ".libPaths('${R_LIBS_USER}'); tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', add_path = TRUE)"
 
 # Ensure TinyTeX binaries are on PATH for common shells
 if ! grep -q '/home/dev/bin' "$HOME/.profile" 2>/dev/null; then
