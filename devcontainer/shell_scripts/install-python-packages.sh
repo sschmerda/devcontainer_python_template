@@ -26,13 +26,13 @@ case "$ENV_FILE" in
     echo ">>> Installing conda-lock (temporary env)..."
     micromamba create -y -n locktools -c conda-forge conda-lock
     micromamba run -n locktools conda-lock install \
-      --prefix "$MAMBA_ROOT_PREFIX/envs/dev" \
+      --prefix "$MAMBA_ROOT_PREFIX/envs/python-env" \
       --micromamba \
       "$ENV_FILE"
     micromamba env remove -n locktools -y
     ;;
   *)
-    micromamba create -y -n dev -f "$ENV_FILE"
+    micromamba create -y -n python-env -f "$ENV_FILE"
     ;;
 esac
 micromamba clean --all --yes
@@ -45,7 +45,7 @@ if [ -f "$ZSHRC" ]; then
       echo "# Micromamba init (auto activation)"
       echo "if command -v micromamba >/dev/null 2>&1; then"
       echo "  eval \"\$(micromamba shell hook --shell zsh)\""
-      echo "  micromamba activate dev"
+      echo "  micromamba activate python-env"
       echo "fi"
     } >>"$ZSHRC"
   fi

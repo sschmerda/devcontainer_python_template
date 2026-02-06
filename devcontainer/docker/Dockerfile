@@ -83,7 +83,7 @@ RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
   su - dev -c "/tmp/install-r-packages.sh"; \
   fi
 
-ENV MAMBA_DEFAULT_ENV=dev
+ENV MAMBA_DEFAULT_ENV=python-env
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba
 ENV PATH=/home/dev/.local/bin:$PATH
 

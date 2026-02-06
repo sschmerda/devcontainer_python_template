@@ -1,4 +1,4 @@
-name: dev
+name: python-env
 channels:
   - conda-forge
 platforms:
@@ -10,7 +10,6 @@ dependencies:
   ############################
   - python=3.12 # Python language runtime
   - pip # Install PyPI-only packages when needed
-  - conda-lock=4.0.0 # generate reproducible conda lockfiles; avoid changing versions to prevent CLI drift breaking lock install
 
   ############################
   # Jupyter

@@ -14,7 +14,7 @@ if [ ! -f "$ENV_FILE" ]; then
   if [ -f "$FALLBACK_ENV" ]; then
     echo "Mamba lockfile not found: $ENV_FILE"
     echo "Falling back to latest env: $FALLBACK_ENV"
-    micromamba create -y -n dev -f "$FALLBACK_ENV"
+    micromamba create -y -n python-env -f "$FALLBACK_ENV"
     micromamba clean --all --yes
   else
     echo "Missing micromamba environment file: $ENV_FILE"
@@ -25,7 +25,7 @@ else
   echo ">>> Installing conda-lock (temporary env)..."
   micromamba create -y -n locktools -c conda-forge conda-lock
   micromamba run -n locktools conda-lock install \
-    --prefix "$MAMBA_ROOT_PREFIX/envs/dev" \
+    --prefix "$MAMBA_ROOT_PREFIX/envs/python-env" \
     --micromamba \
     "$ENV_FILE"
   micromamba env remove -n locktools -y
@@ -40,7 +40,7 @@ if [ -f "$ZSHRC" ]; then
       echo "# Micromamba init (auto activation)"
       echo "if command -v micromamba >/dev/null 2>&1; then"
       echo "  eval \"\$(micromamba shell hook --shell zsh)\""
-      echo "  micromamba activate dev"
+      echo "  micromamba activate python-env"
       echo "fi"
     } >>"$ZSHRC"
   fi

@@ -34,6 +34,8 @@ Mamba environment specs live in `devcontainer/mamba_environment/`:
 - `environment.yml`: Source of truth for package selection.
 - `conda-lock.yml`: Generated lockfile for reproducible builds (run `make lock-mamba-env` or `make lock-dev-env` to create it).
 
+Python is installed in a separate micromamba environment named `python-env`.
+
 Note: `conda-lock` is pinned in `environment.yml`. Changing its version can break the lockfile generation/install CLI, so avoid upgrading it unless you also adjust the build workflow.
 
 ## JupyterLab settings
