@@ -8,7 +8,7 @@ services:
       args:
         USER_UID: ${UID:-1000}
         USER_GID: ${GID:-1000}
-        MAMBA_ENV_FILE: ${MAMBA_ENV_FILE:-mamba_environment/environment.yml}
+        DEV_ENV_LOCKED: ${DEV_ENV_LOCKED:-0}
     user: "${UID:-1000}:${GID:-1000}"
     environment:
       TZ: ${TZ:-UTC}

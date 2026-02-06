@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
-PACKAGES_FILE="/tmp/r-environment/r-packages.txt"
+PROJECT_DIR="/tmp/r-environment"
+PACKAGES_FILE="${PROJECT_DIR}/r-packages.txt"
 
 if [ ! -f "$PACKAGES_FILE" ]; then
   echo "R packages file not found: $PACKAGES_FILE"
@@ -26,14 +27,10 @@ if [ -z "$PACKAGES" ]; then
   exit 0
 fi
 
+"$RSCRIPT" -e "install.packages('pak', repos='${CRAN_MIRROR}', lib='${R_LIBS_USER}')"
+
 echo "Installing R packages from CRAN:"
 printf '%s\n' "$PACKAGES"
 
 printf '%s\n' "$PACKAGES" | xargs "$RSCRIPT" -e \
-  "pkgs <- commandArgs(trailingOnly=TRUE); options(repos=c(PPM='${PPM_MIRROR}', CRAN='${CRAN_MIRROR}')); install.packages(pkgs, lib='${R_LIBS_USER}', Ncpus=parallel::detectCores())"
-
-# Ensure user R library is on the default .libPaths()
-RPROFILE="${HOME}/.Rprofile"
-if [ ! -f "$RPROFILE" ] || ! grep -q "${R_LIBS_USER}" "$RPROFILE"; then
-  echo "if (dir.exists('~/.local/lib/R/library')) .libPaths(c('~/.local/lib/R/library', .libPaths()))" >>"$RPROFILE"
-fi
+  "pkgs <- commandArgs(trailingOnly=TRUE); .libPaths(c('${R_LIBS_USER}', .libPaths())); options(repos=c(PPM='${PPM_MIRROR}', CRAN='${CRAN_MIRROR}'), pkgType='binary'); pak::pkg_install(pkgs, dependencies = NA, lib = '${R_LIBS_USER}', upgrade = FALSE)"

@@ -6,16 +6,7 @@ echo ">>> Installing additional user packages..."
 # -------------------------
 # TinyTeX (latest via R)
 # -------------------------
-echo ">>> Installing TinyTeX (latest) via R..."
-RSCRIPT="/opt/R/4.5.2/bin/Rscript"
-if [ ! -x "$RSCRIPT" ]; then
-  echo "Rscript not found at $RSCRIPT"
-  exit 1
-fi
-R_LIBS_USER="${HOME}/.local/lib/R/library"
-mkdir -p "$R_LIBS_USER"
-"$RSCRIPT" -e "install.packages('tinytex', repos = 'https://cloud.r-project.org', lib = '${R_LIBS_USER}')"
-"$RSCRIPT" -e ".libPaths('${R_LIBS_USER}'); tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', add_path = TRUE)"
+sh /tmp/install-tinytex.sh
 
 # Ensure TinyTeX binaries are on PATH for common shells
 if ! grep -q '/home/dev/bin' "$HOME/.profile" 2>/dev/null; then

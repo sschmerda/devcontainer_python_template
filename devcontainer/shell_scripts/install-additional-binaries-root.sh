@@ -95,5 +95,15 @@ EOF
 ln -sfn "${R_PREFIX}/bin/R" /usr/local/bin/R
 ln -sfn "${R_PREFIX}/bin/Rscript" /usr/local/bin/Rscript
 
+# Ensure user-level R libs are on default library paths (for dev user).
+R_PROFILE_SITE="${R_PREFIX}/lib/R/etc/Rprofile.site"
+cat >"$R_PROFILE_SITE" <<'EOF'
+local({
+  home <- Sys.getenv("HOME")
+  user_libs <- c(file.path(home, ".local", "lib", "R", "library"))
+  .libPaths(unique(c(user_libs, .libPaths())))
+})
+EOF
+
 
 echo ">>> Additional system software installation completed."

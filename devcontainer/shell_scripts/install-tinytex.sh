@@ -1,31 +1,31 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -e
 
-PACKAGES_FILE="/tmp/latex-environment/latex-packages.txt"
+echo ">>> Installing TinyTeX (frozen release) via R..."
 
-if [ ! -f "$PACKAGES_FILE" ]; then
-  echo "LaTeX packages file not found: $PACKAGES_FILE"
-  exit 0
-fi
-
-# Ensure TinyTeX bin is on PATH for non-interactive shells
-export PATH="/home/dev/bin:$PATH"
-
-if ! command -v tlmgr >/dev/null 2>&1; then
-  echo "tlmgr not found on PATH"
+RSCRIPT="/opt/R/4.5.2/bin/Rscript"
+if [ ! -x "$RSCRIPT" ]; then
+  echo "Rscript not found at $RSCRIPT"
   exit 1
 fi
 
-# Non-lock builds use the latest available frozen TeX Live release.
-CURRENT_YEAR="$(date -u +%Y)"
-REPO_URL=""
+R_LIBS_USER="${HOME}/.local/lib/R/library"
+mkdir -p "$R_LIBS_USER"
+"$RSCRIPT" -e "install.packages('tinytex', repos = 'https://cloud.r-project.org', lib = '${R_LIBS_USER}')"
 
+TEXLIVE_REPO_FILE="/tmp/latex-environment/texlive-repo.txt"
+LOCKED_REPO_URL=""
+if [ "${DEV_ENV_LOCKED:-0}" = "1" ] && [ -f "$TEXLIVE_REPO_FILE" ]; then
+  LOCKED_REPO_URL="$(awk -F= '/^repo=/{print $2}' "$TEXLIVE_REPO_FILE" | head -n 1)"
+fi
+
+CURRENT_YEAR="$(date -u +%Y)"
 FROZEN_BASES="
 https://ftp.math.utah.edu/pub/tex/historic/systems/texlive
 https://ftp.tug.org/historic/systems/texlive
 https://ftp.tu-chemnitz.de/pub/tug/texlive/historic/systems/texlive
 "
-
+REPO_URL=""
 YEAR_OFFSET=1
 MAX_YEARS_BACK=30
 while [ "$YEAR_OFFSET" -le "$MAX_YEARS_BACK" ]; do
@@ -45,21 +45,13 @@ while [ "$YEAR_OFFSET" -le "$MAX_YEARS_BACK" ]; do
   YEAR_OFFSET=$((YEAR_OFFSET + 1))
 done
 
+if [ -n "$LOCKED_REPO_URL" ]; then
+  REPO_URL="$LOCKED_REPO_URL"
+fi
+
 if [ -z "$REPO_URL" ]; then
   echo "No frozen TeX Live repository found in the last ${MAX_YEARS_BACK} years."
   exit 1
 fi
 
-tlmgr option repository "$REPO_URL" >/dev/null
-
-PACKAGES="$(awk '{sub(/#.*/,""); gsub(/^[ \t]+|[ \t]+$/,""); if (length) print}' "$PACKAGES_FILE")"
-
-if [ -z "$PACKAGES" ]; then
-  echo "No LaTeX packages selected; skipping."
-  exit 0
-fi
-
-echo "Installing LaTeX packages:"
-printf '%s\n' "$PACKAGES"
-
-printf '%s\n' "$PACKAGES" | xargs tlmgr install
+"$RSCRIPT" -e ".libPaths('${R_LIBS_USER}'); tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', repo = '${REPO_URL}', add_path = TRUE)"

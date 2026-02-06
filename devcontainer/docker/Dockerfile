@@ -7,17 +7,24 @@ USER root
 COPY shell_scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
 COPY shell_scripts/install-additional-binaries-root.sh /tmp/install-additional-binaries-root.sh
 COPY shell_scripts/install-additional-binaries-user.sh /tmp/install-additional-binaries-user.sh
+COPY shell_scripts/install-tinytex.sh /tmp/install-tinytex.sh
 COPY shell_scripts/install-dotfiles.sh /tmp/install-dotfiles.sh
 COPY shell_scripts/install-micromamba.sh /tmp/install-micromamba.sh
 COPY shell_scripts/restore-jupyterlab-settings.sh /tmp/restore-jupyterlab-settings.sh
 COPY shell_scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
+COPY shell_scripts/install-latex-packages-lock.sh /tmp/install-latex-packages-lock.sh
 COPY shell_scripts/install-r-packages.sh /tmp/install-r-packages.sh
+COPY shell_scripts/install-r-packages-lock.sh /tmp/install-r-packages-lock.sh
 COPY shell_scripts/install-python-packages.sh /tmp/install-python-packages.sh
+COPY shell_scripts/install-python-packages-lock.sh /tmp/install-python-packages-lock.sh
+COPY shell_scripts/lock-mamba-env.sh /tmp/lock-mamba-env.sh
+COPY shell_scripts/lock-r-env.sh /tmp/lock-r-env.sh
+COPY shell_scripts/lock-latex-env.sh /tmp/lock-latex-env.sh
 COPY build_assets/ /tmp/build_assets/
 COPY latex-environment/ /tmp/latex-environment/
 COPY r-environment/ /tmp/r-environment/
 COPY mamba_environment/ /tmp/mamba_environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-latex-packages-lock.sh /tmp/install-r-packages.sh /tmp/install-r-packages-lock.sh /tmp/install-python-packages.sh /tmp/install-python-packages-lock.sh /tmp/lock-mamba-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh
 
 # Install base software
 RUN /tmp/install-base-binaries.sh  
@@ -50,16 +57,31 @@ RUN su - dev -c "/tmp/install-additional-binaries-user.sh"
 RUN su - dev -c "/tmp/restore-jupyterlab-settings.sh"
 
 # install correct micromamba based on chip architecture (user-only install)
-ARG MAMBA_ENV_FILE=mamba_environment/environment.yml
-ENV MAMBA_ENV_FILE=/tmp/${MAMBA_ENV_FILE}
+ARG DEV_ENV_LOCKED=0
+ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 RUN su - dev -c "/tmp/install-micromamba.sh"
 RUN chown -R dev:dev /tmp/mamba_environment
-RUN su - dev -c "MAMBA_ENV_FILE=${MAMBA_ENV_FILE} /tmp/install-python-packages.sh"
+RUN chown -R dev:dev /tmp/r-environment
+
+# Install python libraries
+RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
+  su - dev -c "/tmp/install-python-packages-lock.sh"; \
+  else \
+  su - dev -c "/tmp/install-python-packages.sh"; \
+  fi
 
 # Install additional LaTeX packages (tlmgr)
-RUN su - dev -c "/tmp/install-latex-packages.sh"
+RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
+  su - dev -c "/tmp/install-latex-packages-lock.sh"; \
+  else \
+  su - dev -c "/tmp/install-latex-packages.sh"; \
+  fi
 # Install R libraries
-RUN su - dev -c "/tmp/install-r-packages.sh"
+RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
+  su - dev -c "/tmp/install-r-packages-lock.sh"; \
+  else \
+  su - dev -c "/tmp/install-r-packages.sh"; \
+  fi
 
 ENV MAMBA_DEFAULT_ENV=dev
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba

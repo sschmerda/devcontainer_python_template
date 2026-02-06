@@ -17,44 +17,103 @@ endif
 
 COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose -f $(COMPOSE_FILE)
 
-# Build and start container
-.PHONY: up-env
-up-env:
-	MAMBA_ENV_FILE=mamba_environment/environment.yml $(COMPOSE_CMD) up -d --build
+# Unified dev-env commands (latest)
+.PHONY: up-dev-env
+up-dev-env:
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d --build
 
-# Rebuild container from scratch and start
-.PHONY: rebuild-env
-rebuild-env:
-	MAMBA_ENV_FILE=mamba_environment/environment.yml $(COMPOSE_CMD) build --no-cache
-	MAMBA_ENV_FILE=mamba_environment/environment.yml $(COMPOSE_CMD) up -d
+.PHONY: rebuild-dev-env
+rebuild-dev-env:
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) build --no-cache
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d
 
-# Build and start container from lockfile
-.PHONY: up-lock
-up-lock:
-	MAMBA_ENV_FILE=mamba_environment/conda-lock.yml $(COMPOSE_CMD) up -d --build
+# Unified dev-env commands (locked)
+.PHONY: up-dev-env-lock
+up-dev-env-lock:
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d --build
 
-# Rebuild container from lockfile and start
-.PHONY: rebuild-lock
-rebuild-lock:
-	MAMBA_ENV_FILE=mamba_environment/conda-lock.yml $(COMPOSE_CMD) build --no-cache
-	MAMBA_ENV_FILE=mamba_environment/conda-lock.yml $(COMPOSE_CMD) up -d
+.PHONY: rebuild-dev-env-lock
+rebuild-dev-env-lock:
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) build --no-cache
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d
 
-# Generate lockfile (run inside container only)
-.PHONY: env-lock
-env-lock:
+# Lock all dev environments (run inside container only)
+.PHONY: lock-dev-env
+lock-dev-env:
 	@if [ ! -f /.dockerenv ]; then \
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	@set -e; \
-	ts=$$(date "+%Y-%m-%d %H:%M:%S %Z"); \
-	cd /home/dev/dev_container/devcontainer/mamba_environment; \
-	rm -f conda-lock.yml; \
-	conda-lock lock -f environment.yml --platform linux-64 --platform linux-aarch64 --lockfile conda-lock.yml; \
-	tmp=$$(mktemp); \
-	printf '# Created: %s\n' "$$ts" > "$$tmp"; \
-	cat conda-lock.yml >> "$$tmp"; \
-	mv "$$tmp" conda-lock.yml
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-mamba-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-r-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-latex-env.sh"
+
+# Generate mamba lockfile (run inside container only)
+.PHONY: lock-mamba-env
+lock-mamba-env:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-mamba-env.sh"
+
+# Generate R lockfile (run inside container only)
+.PHONY: lock-r-env
+lock-r-env:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-r-env.sh"
+
+# Generate LaTeX lockfile (run inside container only)
+.PHONY: lock-latex-env
+lock-latex-env:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-latex-env.sh"
+
+# Remove all lockfiles
+.PHONY: clean-locks
+clean-locks:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/mamba_environment/conda-lock.yml
+	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock
+	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock.created
+	rm -f /home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt
+
+# Remove Python lockfile
+.PHONY: clean-lock-mamba
+clean-lock-mamba:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/mamba_environment/conda-lock.yml
+
+# Remove R lockfile
+.PHONY: clean-lock-r
+clean-lock-r:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock
+	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock.created
+
+# Remove LaTeX lockfile
+.PHONY: clean-lock-latex
+clean-lock-latex:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt
 
 # Ensure terminal definition exists in the container
 .PHONY: terminfo

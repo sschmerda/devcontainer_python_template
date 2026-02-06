@@ -32,7 +32,7 @@ Keep this file out of version control.
 Mamba environment specs live in `devcontainer/mamba_environment/`:
 
 - `environment.yml`: Source of truth for package selection.
-- `conda-lock.yml`: Generated lockfile for reproducible builds (run `make env-lock` to create it).
+- `conda-lock.yml`: Generated lockfile for reproducible builds (run `make lock-mamba-env` or `make lock-dev-env` to create it).
 
 Note: `conda-lock` is pinned in `environment.yml`. Changing its version can break the lockfile generation/install CLI, so avoid upgrading it unless you also adjust the build workflow.
 
@@ -44,21 +44,63 @@ If you want to persist your custom settings, export them with `make jupyter-sett
 
 Additional LaTeX packages are managed via `devcontainer/latex-environment/latex-packages.txt` and installed during the image build by `devcontainer/shell_scripts/install-latex-packages.sh`. Uncomment the packages you need and rebuild the image.
 
+## R packages
+
+Additional R packages are managed via `devcontainer/r-environment/r-packages.txt` and installed from CRAN during the image build by `devcontainer/shell_scripts/install-r-packages.sh`. Uncomment the packages you need and rebuild the image. R locking is handled via pak (`devcontainer/r-environment/pak.lock`).
+
+## Locked vs latest builds
+
+Use the unified targets for reproducible builds:
+
+- `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
+- `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs locked packages if lockfiles exist and falls back to latest when they do not (`DEV_ENV_LOCKED=1`).
+- `make lock-dev-env` generates/updates lockfiles for Python (conda-lock), R (pak), and LaTeX (TeX Live snapshot URL).
+
+Fallback behavior:
+
+- If a lockfile is missing or invalid, the build falls back to the latest package list for that language.
+- If both a lockfile and the latest package list are missing, the installer skips that language instead of failing.
+- Python uses `mamba_environment/environment.yml` for latest and `mamba_environment/conda-lock.yml` for locked installs.
+- R uses `r-environment/r-packages.txt` for latest and `r-environment/pak.lock` for locked installs.
+- LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/texlive-repo.txt` for locked installs.
+
+Locking guidance:
+
+- For reproducibility, run `make lock-dev-env` immediately after installing/updating packages.
+- After locking, prefer `make up-dev-env-lock` / `make rebuild-dev-env-lock` for consistent rebuilds.
+
+Individual lock targets:
+
+- `make lock-mamba-env` updates `devcontainer/mamba_environment/conda-lock.yml`
+- `make lock-r-env` updates `devcontainer/r-environment/pak.lock`
+- `make lock-latex-env` updates `devcontainer/latex-environment/texlive-repo.txt`
+
+Locked installs are handled by:
+
+- Python: `devcontainer/shell_scripts/install-python-packages-lock.sh`
+- R: `devcontainer/shell_scripts/install-r-packages-lock.sh`
+- LaTeX: `devcontainer/shell_scripts/install-latex-packages-lock.sh`
+
+Clean lock targets (run inside container):
+
+- `make clean-locks`
+- `make clean-lock-mamba`
+- `make clean-lock-r`
+- `make clean-lock-latex`
+
 ## Make commands
 
 Run these from the `devcontainer` directory:
 
-- `make up`: Build and start the container.
-- `make rebuild`: Rebuild from scratch and start.
-- `make up-env`: Build and start using `mamba_environment/environment.yml`.
-- `make rebuild-env`: Rebuild using `mamba_environment/environment.yml`.
-- `make up-lock`: Build and start using `mamba_environment/conda-lock.yml`.
-- `make rebuild-lock`: Rebuild using `mamba_environment/conda-lock.yml`.
+- `make up-dev-env`: Build and start using latest package definitions.
+- `make rebuild-dev-env`: Rebuild using latest package definitions.
+- `make up-dev-env-lock`: Build and start using lockfiles when present.
+- `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
 - `make shell`: Open a shell in the container.
 - `make tmux`: Open tmux in the container.
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
-- `make env-lock`: Generate `mamba_environment/conda-lock.yml` (run inside the container).
+- `make lock-dev-env`: Generate lockfiles for Python, R, and LaTeX (run inside the container).
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build_assets/` (run inside the container).
 - `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build_assets/` (run inside the container).
 
