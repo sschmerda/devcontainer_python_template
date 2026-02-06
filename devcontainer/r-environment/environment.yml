@@ -1,0 +1,59 @@
+name: r-env
+channels:
+  - conda-forge
+platforms:
+  - linux-64
+  - linux-aarch64
+dependencies:
+  ############################
+  # Core runtime
+  ############################
+  - r-base=4.5 # R language runtime
+
+  ############################
+  # Core data work
+  ############################
+  - r-tidyverse # Data manipulation + plotting meta-package
+  - r-data.table # Fast data frames
+  - r-readr # Fast CSV/TSV import
+  - r-dplyr # Data manipulation
+  - r-tidyr # Data tidying
+  - r-lubridate # Dates/times
+  - r-stringr # String handling
+  - r-forcats # Categorical data
+
+
+  ############################
+  # Reporting / docs
+  ############################
+  # - r-rmarkdown # R Markdown
+  # - r-knitr # Knitr
+  # - r-quarto # Quarto (R package)
+
+  ############################
+  # Modeling / stats
+  ############################
+  # - r-broom # Tidy model outputs
+  # - r-lme4 # Mixed-effects models
+  # - r-mgcv # GAMs
+
+  ############################
+  # ML
+  ############################
+  # - r-caret # ML training framework
+  # - r-randomforest # Random forests
+  # - r-xgboost # Gradient boosting (large)
+
+  ############################
+  # I/O / formats
+  ############################
+  # - r-readxl # Excel import
+  # - r-openxlsx # Excel read/write
+  # - r-jsonlite # JSON
+  # - r-arrow # Arrow/Parquet (large)
+  # - r-sf # Spatial data (large)
+
+  ############################
+  # Custom
+  ############################
+  # Add additional R libraries here

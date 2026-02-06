@@ -1,36 +1,21 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -e
 
-PROJECT_DIR="/tmp/r-environment"
-PACKAGES_FILE="${PROJECT_DIR}/r-packages.txt"
+BIN_DIR="$HOME/.local/bin"
+ROOT_PREFIX="$HOME/.local/share/mamba"
 
-if [ ! -f "$PACKAGES_FILE" ]; then
-  echo "R packages file not found: $PACKAGES_FILE"
+export PATH="$BIN_DIR:$PATH"
+export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
+
+echo ">>> Creating R micromamba environment..."
+ENV_FILE="/tmp/r-environment/environment.yml"
+if [ ! -f "$ENV_FILE" ]; then
+  echo "Missing R environment file: $ENV_FILE"
+  echo "No environment file found; skipping R environment install."
   exit 0
 fi
 
-RSCRIPT="/opt/R/4.5.2/bin/Rscript"
-if [ ! -x "$RSCRIPT" ]; then
-  echo "Rscript not found at $RSCRIPT"
-  exit 1
-fi
+micromamba create -y -n r-env -f "$ENV_FILE"
+micromamba clean --all --yes
 
-R_LIBS_USER="${HOME}/.local/lib/R/library"
-mkdir -p "$R_LIBS_USER"
-
-PACKAGES="$(awk '{sub(/#.*/,""); gsub(/^[ \t]+|[ \t]+$/,""); if (length) print}' "$PACKAGES_FILE")"
-CRAN_MIRROR="${CRAN_MIRROR:-https://cloud.r-project.org}"
-PPM_MIRROR="${PPM_MIRROR:-https://packagemanager.posit.co/cran/latest}"
-
-if [ -z "$PACKAGES" ]; then
-  echo "No R packages selected; skipping."
-  exit 0
-fi
-
-"$RSCRIPT" -e "install.packages('pak', repos='${CRAN_MIRROR}', lib='${R_LIBS_USER}')"
-
-echo "Installing R packages from CRAN:"
-printf '%s\n' "$PACKAGES"
-
-printf '%s\n' "$PACKAGES" | xargs "$RSCRIPT" -e \
-  "pkgs <- commandArgs(trailingOnly=TRUE); .libPaths(c('${R_LIBS_USER}', .libPaths())); options(repos=c(PPM='${PPM_MIRROR}', CRAN='${CRAN_MIRROR}'), pkgType='binary'); pak::pkg_install(pkgs, dependencies = NA, lib = '${R_LIBS_USER}', upgrade = FALSE)"
+echo ">>> R micromamba environment installation completed."

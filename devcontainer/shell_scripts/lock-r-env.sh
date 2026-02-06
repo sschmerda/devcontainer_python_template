@@ -6,20 +6,26 @@ if [ ! -f /.dockerenv ]; then
   exit 1
 fi
 
-PROJECT_DIR="/home/dev/dev_container/devcontainer/r-environment"
-LOCKFILE="${PROJECT_DIR}/pak.lock"
-STAMP_FILE="${PROJECT_DIR}/pak.lock.created"
-R_LIBS_USER="/home/dev/.local/lib/R/library"
-RSCRIPT="/opt/R/4.5.2/bin/Rscript"
+ENV_DIR="/home/dev/dev_container/devcontainer/r-environment"
+BIN_DIR="$HOME/.local/bin"
+ROOT_PREFIX="$HOME/.local/share/mamba"
 
-if [ ! -x "$RSCRIPT" ]; then
-  echo "Rscript not found at $RSCRIPT"
-  exit 1
+export PATH="$BIN_DIR:$PATH"
+export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
+
+ts="$(date "+%Y-%m-%d %H:%M:%S %Z")"
+cd "$ENV_DIR"
+rm -f conda-lock.yml
+
+if ! command -v conda-lock >/dev/null 2>&1; then
+  micromamba create -y -n locktools -c conda-forge conda-lock=4.0.0
+  micromamba run -n locktools conda-lock lock -f environment.yml --platform linux-64 --platform linux-aarch64 --lockfile conda-lock.yml
+  micromamba env remove -n locktools -y
+else
+  conda-lock lock -f environment.yml --platform linux-64 --platform linux-aarch64 --lockfile conda-lock.yml
 fi
 
-mkdir -p "$R_LIBS_USER"
-
-"$RSCRIPT" -e "install.packages('pak', repos='https://cloud.r-project.org', lib='${R_LIBS_USER}')"
-"$RSCRIPT" -e ".libPaths(c('${R_LIBS_USER}', '/opt/R/4.5.2/lib/R/library')); library(pak, lib.loc='${R_LIBS_USER}'); options(repos=c(PPM='https://packagemanager.posit.co/cran/latest', CRAN='https://cloud.r-project.org'), pkgType='binary'); pkgs <- readLines('${PROJECT_DIR}/r-packages.txt', warn = FALSE); pkgs <- gsub('#.*$', '', pkgs); pkgs <- trimws(pkgs); pkgs <- pkgs[pkgs != '']; if (length(pkgs) == 0) { quit(status = 0) }; pak::lockfile_create(pkgs, lockfile = '${LOCKFILE}', lib = NULL, dependencies = NA)"
-
-printf '%s\n' "Created: $(date "+%Y-%m-%d %H:%M:%S %Z")" >"$STAMP_FILE"
+tmp="$(mktemp)"
+printf '# Created: %s\n' "$ts" >"$tmp"
+cat conda-lock.yml >>"$tmp"
+mv "$tmp" conda-lock.yml

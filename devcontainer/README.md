@@ -45,10 +45,16 @@ If you want to persist your custom settings, export them with `make jupyter-sett
 ## LaTeX packages
 
 Additional LaTeX packages are managed via `devcontainer/latex-environment/latex-packages.txt` and installed during the image build by `devcontainer/shell_scripts/install-latex-packages.sh`. Uncomment the packages you need and rebuild the image.
+TinyTeX itself is installed via `devcontainer/shell_scripts/install-tinytex.sh` using R from the `r-env` micromamba environment.
 
 ## R packages
 
-Additional R packages are managed via `devcontainer/r-environment/r-packages.txt` and installed from CRAN during the image build by `devcontainer/shell_scripts/install-r-packages.sh`. Uncomment the packages you need and rebuild the image. R locking is handled via pak (`devcontainer/r-environment/pak.lock`).
+R environment specs live in `devcontainer/r-environment/`:
+
+- `environment.yml`: Source of truth for package selection.
+- `conda-lock.yml`: Generated lockfile for reproducible builds (run `make lock-r-env` or `make lock-dev-env` to create it).
+
+R is installed in a separate micromamba environment named `r-env`.
 
 ## Locked vs latest builds
 
@@ -56,14 +62,14 @@ Use the unified targets for reproducible builds:
 
 - `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs locked packages if lockfiles exist and falls back to latest when they do not (`DEV_ENV_LOCKED=1`).
-- `make lock-dev-env` generates/updates lockfiles for Python (conda-lock), R (pak), and LaTeX (TeX Live snapshot URL).
+- `make lock-dev-env` generates/updates lockfiles for Python (conda-lock), R (conda-lock), and LaTeX (TeX Live snapshot URL).
 
 Fallback behavior:
 
 - If a lockfile is missing or invalid, the build falls back to the latest package list for that language.
 - If both a lockfile and the latest package list are missing, the installer skips that language instead of failing.
 - Python uses `mamba_environment/environment.yml` for latest and `mamba_environment/conda-lock.yml` for locked installs.
-- R uses `r-environment/r-packages.txt` for latest and `r-environment/pak.lock` for locked installs.
+- R uses `r-environment/environment.yml` for latest and `r-environment/conda-lock.yml` for locked installs.
 - LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/texlive-repo.txt` for locked installs.
 
 Locking guidance:
@@ -74,7 +80,7 @@ Locking guidance:
 Individual lock targets:
 
 - `make lock-mamba-env` updates `devcontainer/mamba_environment/conda-lock.yml`
-- `make lock-r-env` updates `devcontainer/r-environment/pak.lock`
+- `make lock-r-env` updates `devcontainer/r-environment/conda-lock.yml`
 - `make lock-latex-env` updates `devcontainer/latex-environment/texlive-repo.txt`
 
 Locked installs are handled by:

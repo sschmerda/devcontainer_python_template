@@ -83,8 +83,7 @@ clean-locks:
 		exit 1; \
 	fi
 	rm -f /home/dev/dev_container/devcontainer/mamba_environment/conda-lock.yml
-	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock
-	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock.created
+	rm -f /home/dev/dev_container/devcontainer/r-environment/conda-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt
 
 # Remove Python lockfile
@@ -103,8 +102,7 @@ clean-lock-r:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock
-	rm -f /home/dev/dev_container/devcontainer/r-environment/pak.lock.created
+	rm -f /home/dev/dev_container/devcontainer/r-environment/conda-lock.yml
 
 # Remove LaTeX lockfile
 .PHONY: clean-lock-latex

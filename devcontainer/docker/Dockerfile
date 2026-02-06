@@ -70,17 +70,21 @@ RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
   su - dev -c "/tmp/install-python-packages.sh"; \
   fi
 
-# Install additional LaTeX packages (tlmgr)
-RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
-  su - dev -c "/tmp/install-latex-packages-lock.sh"; \
-  else \
-  su - dev -c "/tmp/install-latex-packages.sh"; \
-  fi
 # Install R libraries
 RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
   su - dev -c "/tmp/install-r-packages-lock.sh"; \
   else \
   su - dev -c "/tmp/install-r-packages.sh"; \
+  fi
+
+# Install TinyTeX after r-env is available
+RUN su - dev -c "/tmp/install-tinytex.sh"
+
+# Install additional LaTeX packages (tlmgr)
+RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
+  su - dev -c "/tmp/install-latex-packages-lock.sh"; \
+  else \
+  su - dev -c "/tmp/install-latex-packages.sh"; \
   fi
 
 ENV MAMBA_DEFAULT_ENV=python-env

@@ -16,31 +16,12 @@ apt-get update &&
     wget \
     ripgrep \
     fd-find \
+    bzip2 \
+    libfontconfig1 \
+    libfreetype6 \
+    fonts-dejavu-core \
     ncurses-bin \
     ncurses-term \
-    perl \
-    build-essential \
-    pkg-config \
-    libcurl4-openssl-dev \
-    libfontconfig1-dev \
-    libfreetype6-dev \
-    libpng-dev \
-    libtiff5-dev \
-    libtiff-dev \
-    libjpeg-dev \
-    libwebp-dev \
-    libharfbuzz-dev \
-    libfribidi-dev \
-    libnode-dev \
-    libicu-dev \
-    libx11-dev \
-    libxml2-dev \
-    libssl-dev \
-    pandoc \
-    zlib1g-dev \
-    locales \
-    ca-certificates \
-    tzdata \
     fastfetch \
     lazygit \
     btop \

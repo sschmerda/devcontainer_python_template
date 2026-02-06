@@ -4,19 +4,6 @@ set -e
 echo ">>> Installing additional user packages..."
 
 # -------------------------
-# TinyTeX (latest via R)
-# -------------------------
-sh /tmp/install-tinytex.sh
-
-# Ensure TinyTeX binaries are on PATH for common shells
-if ! grep -q '/home/dev/bin' "$HOME/.profile" 2>/dev/null; then
-  echo 'export PATH="$HOME/bin:$PATH"' >>"$HOME/.profile"
-fi
-if ! grep -q '/home/dev/bin' "$HOME/.zshrc" 2>/dev/null; then
-  echo 'export PATH="$HOME/bin:$PATH"' >>"$HOME/.zshrc"
-fi
-
-# -------------------------
 # oh-my-zsh
 # -------------------------
 export KEEP_ZSHRC=yes
