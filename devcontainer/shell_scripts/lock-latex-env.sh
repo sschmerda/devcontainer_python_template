@@ -13,7 +13,7 @@ REPO_URL="${TEXLIVE_REPO_URL:-}"
 TMP_DIR="$(mktemp -d)"
 if [ -z "$REPO_URL" ]; then
   if command -v tlmgr >/dev/null 2>&1; then
-    REPO_URL="$(tlmgr option repository | sed -n 's/.*repository)[[:space:]]*:[[:space:]]*//p' | head -n 1)"
+  REPO_URL="$(tlmgr option repository | sed -n 's/.*repository)[[:space:]]*:[[:space:]]*//p' | head -n 1)"
   fi
 fi
 
