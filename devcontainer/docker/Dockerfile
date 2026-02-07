@@ -87,6 +87,9 @@ RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
   su - dev -c "/tmp/install-latex-packages.sh"; \
   fi
 
+# Final micromamba cache cleanup to keep image size down.
+RUN su - dev -c "MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba /home/dev/.local/bin/micromamba clean --all --yes || true"
+
 ENV MAMBA_DEFAULT_ENV=python-env
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba
 ENV PATH=/home/dev/.local/bin:$PATH
