@@ -21,9 +21,12 @@ if ! command -v conda-lock >/dev/null 2>&1; then
   micromamba create -y -n locktools -c conda-forge conda-lock=4.0.0
   micromamba run -n locktools conda-lock lock -f environment.yml --platform linux-64 --platform linux-aarch64 --lockfile conda-lock.yml
   micromamba env remove -n locktools -y
+  micromamba clean --all --yes >/dev/null 2>&1 || true
 else
   conda-lock lock -f environment.yml --platform linux-64 --platform linux-aarch64 --lockfile conda-lock.yml
 fi
+
+micromamba clean --all --yes >/dev/null 2>&1 || true
 
 tmp="$(mktemp)"
 printf '# Created: %s\n' "$ts" >"$tmp"
