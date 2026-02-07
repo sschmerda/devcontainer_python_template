@@ -21,6 +21,8 @@ Common variables:
 - `TZ`: Container timezone (default: `UTC`).
 - `UID`: Host user id for file ownership (default: `1000`).
 - `GID`: Host group id for file ownership (default: `1000`).
+- `RETRY_ATTEMPTS`: Number of retry attempts for micromamba/conda-lock install commands during Python/R environment creation (default: `4`).
+- `RETRY_DELAY_SECONDS`: Base delay in seconds for retries; each retry sleeps `base_delay * attempt` (default: `10`).
 
 ## .env.secrets
 
@@ -45,7 +47,7 @@ If you want to persist your custom settings, export them with `make jupyter-sett
 ## LaTeX packages
 
 Additional LaTeX packages are managed via `devcontainer/latex-environment/latex-packages.txt` and installed during the image build by `devcontainer/shell_scripts/install-latex-packages.sh`. Uncomment the packages you need and rebuild the image.
-TinyTeX itself is installed via `devcontainer/shell_scripts/install-tinytex.sh` using R from the `r-env` micromamba environment.
+TinyTeX itself is installed via `devcontainer/shell_scripts/install-tinytex.sh` using a temporary micromamba installer environment (`tinytex-installer`), so `r-env` remains focused on analysis packages.
 
 ## R packages
 

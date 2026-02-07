@@ -16,41 +16,12 @@ if ! command -v tlmgr >/dev/null 2>&1; then
   exit 1
 fi
 
-# Non-lock builds use the latest available frozen TeX Live release.
-CURRENT_YEAR="$(date -u +%Y)"
-REPO_URL=""
-
-FROZEN_BASES="
-https://ftp.math.utah.edu/pub/tex/historic/systems/texlive
-https://ftp.tug.org/historic/systems/texlive
-https://ftp.tu-chemnitz.de/pub/tug/texlive/historic/systems/texlive
-"
-
-YEAR_OFFSET=1
-MAX_YEARS_BACK=30
-while [ "$YEAR_OFFSET" -le "$MAX_YEARS_BACK" ]; do
-  FROZEN_YEAR=$((CURRENT_YEAR - YEAR_OFFSET))
-  for BASE in $FROZEN_BASES; do
-    MIRROR="${BASE}/${FROZEN_YEAR}/tlnet-final"
-    TLPDB_URL="${MIRROR}/tlpkg/texlive.tlpdb"
-    TLPDB_XZ_URL="${MIRROR}/tlpkg/texlive.tlpdb.xz"
-    if curl -fsI "$TLPDB_URL" >/dev/null 2>&1 || curl -fsI "$TLPDB_XZ_URL" >/dev/null 2>&1; then
-      REPO_URL="$MIRROR"
-      break
-    fi
-  done
-  if [ -n "$REPO_URL" ]; then
-    break
-  fi
-  YEAR_OFFSET=$((YEAR_OFFSET + 1))
-done
-
-if [ -z "$REPO_URL" ]; then
-  echo "No frozen TeX Live repository found in the last ${MAX_YEARS_BACK} years."
-  exit 1
+# Non-lock builds intentionally use the repository configured by TinyTeX
+# (typically mirror.ctan.org -> fastest mirror).
+REPO_URL="$(tlmgr option repository | sed -n 's/.*repository)[[:space:]]*:[[:space:]]*//p' | head -n 1)"
+if [ -n "$REPO_URL" ]; then
+  echo "Using current TeX Live repository: $REPO_URL"
 fi
-
-tlmgr option repository "$REPO_URL" >/dev/null
 
 PACKAGES="$(awk '{sub(/#.*/,""); gsub(/^[ \t]+|[ \t]+$/,""); if (length) print}' "$PACKAGES_FILE")"
 
