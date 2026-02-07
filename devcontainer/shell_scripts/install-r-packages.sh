@@ -7,6 +7,27 @@ ROOT_PREFIX="$HOME/.local/share/mamba"
 export PATH="$BIN_DIR:$PATH"
 export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
 
+run_with_retries() {
+  local max_attempts="${RETRY_ATTEMPTS:-4}"
+  local base_delay="${RETRY_DELAY_SECONDS:-10}"
+  local attempt=1
+
+  while true; do
+    if "$@"; then
+      return 0
+    fi
+
+    if [ "$attempt" -ge "$max_attempts" ]; then
+      echo "Command failed after ${max_attempts} attempts: $*"
+      return 1
+    fi
+
+    echo "Command failed (attempt ${attempt}/${max_attempts}): $*"
+    sleep $((base_delay * attempt))
+    attempt=$((attempt + 1))
+  done
+}
+
 echo ">>> Creating R micromamba environment..."
 ENV_FILE="/tmp/r-environment/environment.yml"
 if [ ! -f "$ENV_FILE" ]; then
@@ -15,7 +36,7 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 0
 fi
 
-micromamba create -y -n r-env -f "$ENV_FILE"
+run_with_retries micromamba create -y -n r-env -f "$ENV_FILE"
 micromamba clean --all --yes
 
 echo ">>> R micromamba environment installation completed."
