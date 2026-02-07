@@ -14,6 +14,7 @@ apt-get update &&
     stow \
     curl \
     wget \
+    make \
     ripgrep \
     fd-find \
     bzip2 \
