@@ -47,6 +47,7 @@ lock-dev-env:
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-mamba-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-r-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-latex-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-quarto-env.sh"
 
 # Generate mamba lockfile (run inside container only)
 .PHONY: lock-mamba-env
@@ -75,6 +76,15 @@ lock-latex-env:
 	fi
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-latex-env.sh"
 
+# Generate Quarto lockfile (run inside container only)
+.PHONY: lock-quarto-env
+lock-quarto-env:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-quarto-env.sh"
+
 # Remove all lockfiles
 .PHONY: clean-locks
 clean-locks:
@@ -85,6 +95,7 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/mamba_environment/conda-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/r-environment/conda-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt
+	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 
 # Remove Python lockfile
 .PHONY: clean-lock-mamba
@@ -112,6 +123,15 @@ clean-lock-latex:
 		exit 1; \
 	fi
 	rm -f /home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt
+
+# Remove Quarto lockfile
+.PHONY: clean-lock-quarto
+clean-lock-quarto:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 
 # Ensure terminal definition exists in the container
 .PHONY: terminfo

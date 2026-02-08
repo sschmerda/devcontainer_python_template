@@ -19,4 +19,5 @@ services:
     stdin_open: true
     ports:
       - "${JUPYTER_PORT:-8888}:${JUPYTER_PORT:-8888}" # Expose JupyterLab port (host:container)
+      - "${QUARTO_PORT:-4200}:${QUARTO_PORT:-4200}" # Expose Quarto preview port (host:container)
     container_name: dev_container_debian_13

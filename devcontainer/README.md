@@ -18,6 +18,7 @@ Non-secret configuration values live in `devcontainer/.env`.
 Common variables:
 
 - `JUPYTER_PORT`: Port to expose JupyterLab (default: `8888`).
+- `QUARTO_PORT`: Port to expose Quarto live preview (default: `4200`).
 - `TZ`: Container timezone (default: `UTC`).
 - `UID`: Host user id for file ownership (default: `1000`).
 - `GID`: Host group id for file ownership (default: `1000`).
@@ -58,21 +59,30 @@ R environment specs live in `devcontainer/r-environment/`:
 
 R is installed in a separate micromamba environment named `r-env`.
 
+## Quarto
+
+Quarto is installed user-local from GitHub release tarballs (not from conda):
+
+- Non-lock builds install the latest stable release (`releases/latest`).
+- Lock builds install the exact version and architecture URL stored in `devcontainer/quarto-environment/quarto-lock.env`.
+- Lock generation validates both Linux assets (`amd64` and `arm64`) so the same lockfile works across chips.
+
 ## Locked vs latest builds
 
 Use the unified targets for reproducible builds:
 
 - `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
-- `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs locked packages if lockfiles exist and falls back to latest when they do not (`DEV_ENV_LOCKED=1`).
-- `make lock-dev-env` generates/updates lockfiles for Python (conda-lock), R (conda-lock), and LaTeX (TeX Live snapshot URL).
+- `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
+- `make lock-dev-env` generates/updates lockfiles for Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 
 Fallback behavior:
 
-- If a lockfile is missing or invalid, the build falls back to the latest package list for that language.
+- If a Python/R/LaTeX lockfile is missing or invalid, the build falls back to the latest package list for that language.
 - If both a lockfile and the latest package list are missing, the installer skips that language instead of failing.
 - Python uses `mamba_environment/environment.yml` for latest and `mamba_environment/conda-lock.yml` for locked installs.
 - R uses `r-environment/environment.yml` for latest and `r-environment/conda-lock.yml` for locked installs.
 - LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/texlive-repo.txt` for locked installs.
+- Quarto uses GitHub latest for non-lock and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
 
 Locking guidance:
 
@@ -84,12 +94,14 @@ Individual lock targets:
 - `make lock-mamba-env` updates `devcontainer/mamba_environment/conda-lock.yml`
 - `make lock-r-env` updates `devcontainer/r-environment/conda-lock.yml`
 - `make lock-latex-env` updates `devcontainer/latex-environment/texlive-repo.txt`
+- `make lock-quarto-env` updates `devcontainer/quarto-environment/quarto-lock.env`
 
 Locked installs are handled by:
 
 - Python: `devcontainer/shell_scripts/install-python-packages-lock.sh`
 - R: `devcontainer/shell_scripts/install-r-packages-lock.sh`
 - LaTeX: `devcontainer/shell_scripts/install-latex-packages-lock.sh`
+- Quarto: `devcontainer/shell_scripts/install-quarto-lock.sh`
 
 Clean lock targets (run inside container):
 
@@ -97,6 +109,7 @@ Clean lock targets (run inside container):
 - `make clean-lock-mamba`
 - `make clean-lock-r`
 - `make clean-lock-latex`
+- `make clean-lock-quarto`
 
 ## Make commands
 
@@ -110,7 +123,8 @@ Run these from the `devcontainer` directory:
 - `make tmux`: Open tmux in the container.
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
-- `make lock-dev-env`: Generate lockfiles for Python, R, and LaTeX (run inside the container).
+- Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT:-4200}`.
+- `make lock-dev-env`: Generate lockfiles for Python, R, LaTeX, and Quarto (run inside the container).
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build_assets/` (run inside the container).
 - `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build_assets/` (run inside the container).
 
