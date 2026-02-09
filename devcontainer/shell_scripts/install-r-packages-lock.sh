@@ -36,7 +36,7 @@ if [ ! -f "$LOCK_FILE" ]; then
     echo "R lockfile not found: $LOCK_FILE"
     echo "Falling back to latest env: $FALLBACK_ENV"
     run_with_retries micromamba create -y -n r-env -f "$FALLBACK_ENV"
-    micromamba clean --all --yes
+    micromamba clean --all --yes --force-pkgs-dirs
   else
     echo "Missing R lockfile: $LOCK_FILE"
     echo "No environment file found; skipping R environment install."
@@ -50,7 +50,7 @@ else
     --micromamba \
     "$LOCK_FILE"
   micromamba env remove -n locktools -y
-  micromamba clean --all --yes
+  micromamba clean --all --yes --force-pkgs-dirs
 fi
 
 echo ">>> R micromamba environment installation completed."

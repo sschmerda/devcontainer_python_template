@@ -56,7 +56,7 @@ case "$ENV_FILE" in
     run_with_retries micromamba create -y -n python-env -f "$ENV_FILE"
     ;;
 esac
-micromamba clean --all --yes
+micromamba clean --all --yes --force-pkgs-dirs
 
 ZSHRC="$HOME/.zshrc"
 if [ -f "$ZSHRC" ]; then

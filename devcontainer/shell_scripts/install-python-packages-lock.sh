@@ -36,7 +36,7 @@ if [ ! -f "$ENV_FILE" ]; then
     echo "Mamba lockfile not found: $ENV_FILE"
     echo "Falling back to latest env: $FALLBACK_ENV"
     run_with_retries micromamba create -y -n python-env -f "$FALLBACK_ENV"
-    micromamba clean --all --yes
+    micromamba clean --all --yes --force-pkgs-dirs
   else
     echo "Missing micromamba environment file: $ENV_FILE"
     echo "No environment file found; skipping Python environment install."
@@ -50,7 +50,7 @@ else
     --micromamba \
     "$ENV_FILE"
   micromamba env remove -n locktools -y
-  micromamba clean --all --yes
+  micromamba clean --all --yes --force-pkgs-dirs
 fi
 
 ZSHRC="$HOME/.zshrc"
