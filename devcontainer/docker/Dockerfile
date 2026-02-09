@@ -89,7 +89,7 @@ RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
   su - dev -c "/tmp/install-quarto.sh"; \
   fi
 
-# Install TinyTeX after r-env is available
+# Install TinyTeX via temporary r-environment
 RUN su - dev -c "/tmp/install-tinytex.sh"
 
 # Install additional LaTeX packages (tlmgr)
