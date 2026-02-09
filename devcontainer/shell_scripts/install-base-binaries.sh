@@ -16,7 +16,6 @@ apt-get update &&
     wget \
     make \
     ripgrep \
-    fd-find \
     bzip2 \
     libfontconfig1 \
     libfreetype6 \
