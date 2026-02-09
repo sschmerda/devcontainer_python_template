@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  dev:
+    volumes:
+      - type: bind
+        source: ${HOST_DATA_DIR}
+        target: /home/dev/data_external
+        read_only: ${HOST_DATA_READ_ONLY:-true}
+        bind:
+          create_host_path: false

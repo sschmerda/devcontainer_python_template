@@ -19,6 +19,7 @@ COPY shell_scripts/install-r-packages.sh /tmp/install-r-packages.sh
 COPY shell_scripts/install-r-packages-lock.sh /tmp/install-r-packages-lock.sh
 COPY shell_scripts/install-python-packages.sh /tmp/install-python-packages.sh
 COPY shell_scripts/install-python-packages-lock.sh /tmp/install-python-packages-lock.sh
+COPY shell_scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY shell_scripts/lock-mamba-env.sh /tmp/lock-mamba-env.sh
 COPY shell_scripts/lock-r-env.sh /tmp/lock-r-env.sh
 COPY shell_scripts/lock-latex-env.sh /tmp/lock-latex-env.sh
@@ -28,7 +29,7 @@ COPY latex-environment/ /tmp/latex-environment/
 COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
 COPY mamba_environment/ /tmp/mamba_environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-quarto-lock.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-latex-packages-lock.sh /tmp/install-r-packages.sh /tmp/install-r-packages-lock.sh /tmp/install-python-packages.sh /tmp/install-python-packages-lock.sh /tmp/lock-mamba-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-quarto-lock.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-latex-packages-lock.sh /tmp/install-r-packages.sh /tmp/install-r-packages-lock.sh /tmp/install-python-packages.sh /tmp/install-python-packages-lock.sh /tmp/lock-mamba-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
 RUN /tmp/install-base-binaries.sh  
@@ -117,4 +118,5 @@ WORKDIR /home/dev
 USER dev
 
 # Start Zsh login shell by default
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["zsh", "-l"]

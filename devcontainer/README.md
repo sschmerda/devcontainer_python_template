@@ -24,11 +24,26 @@ Common variables:
 - `GID`: Host group id for file ownership (default: `1000`).
 - `RETRY_ATTEMPTS`: Number of retry attempts for micromamba/conda-lock install commands during Python/R environment creation (default: `4`).
 - `RETRY_DELAY_SECONDS`: Base delay in seconds for retries; each retry sleeps `base_delay * attempt` (default: `10`).
+- `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
 
 ## .env.secrets
 
 Secret configuration values live in `devcontainer/.env.secrets`.
-Keep this file out of version control.
+This file is committed as a template (keys only, empty values).
+Set values locally on each machine.
+For `HOST_DATA_DIR`, use an absolute path without spaces and without quotation marks.
+
+## Host data mount
+
+External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/.env.secrets`.
+
+- If `HOST_DATA_DIR` is set, Docker Compose adds a bind mount:
+  - host: `HOST_DATA_DIR`
+  - container: `/home/dev/data_external`
+  - mode: controlled by `HOST_DATA_READ_ONLY` in `devcontainer/.env`
+- On container startup, a symlink is created:
+  - `/home/dev/dev_container/workspace/data_external -> /home/dev/data_external`
+- If `HOST_DATA_DIR` is empty, no data mount is added and the symlink is removed/not created.
 
 ## mamba_environment
 
@@ -130,8 +145,5 @@ Run these from the `devcontainer` directory:
 
 ## Template repo setup
 
-When creating a new repo from this template, add `devcontainer/.env.secrets` with your secret values and update your new repo's `.gitignore` to include:
-
-```text
-devcontainer/.env.secrets
-```
+When creating a new repo from this template, edit `devcontainer/.env.secrets`
+and set local values for the keys you need (for example `HOST_DATA_DIR`).

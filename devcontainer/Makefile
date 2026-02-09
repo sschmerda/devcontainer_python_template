@@ -3,9 +3,14 @@ ifneq (,$(wildcard .env))
   include .env
   export
 endif
+ifneq (,$(wildcard .env.secrets))
+  include .env.secrets
+  export
+endif
 
 JUPYTER_PORT ?= 8888
 COMPOSE_FILE=docker-compose.yml
+COMPOSE_DATA_FILE=docker-compose.data.yml
 # Must match the service name under `services:` in docker-compose.yml.
 SERVICE=dev
 
@@ -15,7 +20,12 @@ ifeq ($(UNAME_S),Linux)
   GID_ARG := GID=$(shell id -g)
 endif
 
-COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose -f $(COMPOSE_FILE)
+COMPOSE_FILES = -f $(COMPOSE_FILE)
+ifneq ($(strip $(HOST_DATA_DIR)),)
+  COMPOSE_FILES += -f $(COMPOSE_DATA_FILE)
+endif
+
+COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_FILES)
 
 # Unified dev-env commands (latest)
 .PHONY: up-dev-env

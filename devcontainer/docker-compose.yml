@@ -12,6 +12,7 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     environment:
       TZ: ${TZ:-UTC}
+      HOST_DATA_DIR: ${HOST_DATA_DIR:-}
     volumes:
       - ..:/home/dev/dev_container
     working_dir: /home/dev/dev_container
