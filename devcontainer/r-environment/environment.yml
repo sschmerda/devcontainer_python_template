@@ -22,10 +22,10 @@ dependencies:
   - r-stringr # String handling
   - r-forcats # Categorical data
 
-
   ############################
   # Reporting / docs
   ############################
+  - r-reticulate # Interface to Python from R/knitr python engine
   # - r-rmarkdown # R Markdown
   # - r-knitr # Knitr
   # - r-quarto # Quarto (R package)
