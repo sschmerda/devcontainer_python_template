@@ -29,7 +29,7 @@ run_with_retries() {
 }
 
 echo ">>> Creating R micromamba environment..."
-ENV_FILE="/tmp/r-environment/environment.yml"
+ENV_FILE="/tmp/r-environment/r-environment.yml"
 if [ ! -f "$ENV_FILE" ]; then
   echo "Missing R environment file: $ENV_FILE"
   echo "No environment file found; skipping R environment install."

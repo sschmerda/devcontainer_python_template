@@ -15,20 +15,20 @@ export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
 
 ts="$(date "+%Y-%m-%d %H:%M:%S %Z")"
 cd "$ENV_DIR"
-rm -f conda-lock.yml
+rm -f r-environment-lock.yml
 
 if ! command -v conda-lock >/dev/null 2>&1; then
   micromamba create -y -n locktools -c conda-forge conda-lock=4.0.0
-  micromamba run -n locktools conda-lock lock -f environment.yml --platform linux-64 --platform linux-aarch64 --lockfile conda-lock.yml
+  micromamba run -n locktools conda-lock lock -f r-environment.yml --platform linux-64 --platform linux-aarch64 --lockfile r-environment-lock.yml
   micromamba env remove -n locktools -y
   micromamba clean --all --yes >/dev/null 2>&1 || true
 else
-  conda-lock lock -f environment.yml --platform linux-64 --platform linux-aarch64 --lockfile conda-lock.yml
+  conda-lock lock -f r-environment.yml --platform linux-64 --platform linux-aarch64 --lockfile r-environment-lock.yml
 fi
 
 micromamba clean --all --yes >/dev/null 2>&1 || true
 
 tmp="$(mktemp)"
 printf '# Created: %s\n' "$ts" >"$tmp"
-cat conda-lock.yml >>"$tmp"
-mv "$tmp" conda-lock.yml
+cat r-environment-lock.yml >>"$tmp"
+mv "$tmp" r-environment-lock.yml

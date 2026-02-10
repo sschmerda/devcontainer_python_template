@@ -45,32 +45,32 @@ External host data is optional and controlled by `HOST_DATA_DIR` in `devcontaine
   - `/home/dev/dev_container/workspace/data_external -> /home/dev/data_external`
 - If `HOST_DATA_DIR` is empty, no data mount is added and the symlink is removed/not created.
 
-## mamba_environment
+## python-environment
 
-Mamba environment specs live in `devcontainer/mamba_environment/`:
+Mamba environment specs live in `devcontainer/python-environment/`:
 
-- `environment.yml`: Source of truth for package selection.
-- `conda-lock.yml`: Generated lockfile for reproducible builds (run `make lock-mamba-env` or `make lock-dev-env` to create it).
+- `python-environment.yml`: Source of truth for package selection.
+- `python-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-mamba-env` or `make lock-dev-env` to create it).
 
 Python is installed in a separate micromamba environment named `python-env`.
 
-Note: `conda-lock` is pinned in `environment.yml`. Changing its version can break the lockfile generation/install CLI, so avoid upgrading it unless you also adjust the build workflow.
+Note: `conda-lock` handling is driven by the lock scripts. Keep the lock tooling/version behavior in sync with `devcontainer/shell-scripts/lock-mamba-env.sh` if you change the workflow.
 
 ## JupyterLab settings
 
-If you want to persist your custom settings, export them with `make jupyter-settings-export` (inside the container). The archive is stored in `devcontainer/build_assets/jupyterlab-user-settings.tar.gz` and restored at build time by `devcontainer/shell_scripts/restore-jupyterlab-settings.sh`.
+If you want to persist your custom settings, export them with `make jupyter-settings-export` (inside the container). The archive is stored in `devcontainer/build-assets/jupyterlab-user-settings.tar.gz` and restored at build time by `devcontainer/shell-scripts/restore-jupyterlab-settings.sh`.
 
 ## LaTeX packages
 
-Additional LaTeX packages are managed via `devcontainer/latex-environment/latex-packages.txt` and installed during the image build by `devcontainer/shell_scripts/install-latex-packages.sh`. Uncomment the packages you need and rebuild the image.
-TinyTeX itself is installed via `devcontainer/shell_scripts/install-tinytex.sh` using a temporary micromamba installer environment (`tinytex-installer`), so `r-env` remains focused on analysis packages.
+Additional LaTeX packages are managed via `devcontainer/latex-environment/latex-packages.txt` and installed during the image build by `devcontainer/shell-scripts/install-latex-packages.sh`. Uncomment the packages you need and rebuild the image.
+TinyTeX itself is installed via `devcontainer/shell-scripts/install-tinytex.sh` using a temporary micromamba installer environment (`tinytex-installer`), so `r-env` remains focused on analysis packages.
 
 ## R packages
 
 R environment specs live in `devcontainer/r-environment/`:
 
-- `environment.yml`: Source of truth for package selection.
-- `conda-lock.yml`: Generated lockfile for reproducible builds (run `make lock-r-env` or `make lock-dev-env` to create it).
+- `r-environment.yml`: Source of truth for package selection.
+- `r-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-r-env` or `make lock-dev-env` to create it).
 
 R is installed in a separate micromamba environment named `r-env`.
 
@@ -94,9 +94,9 @@ Fallback behavior:
 
 - If a Python/R/LaTeX lockfile is missing or invalid, the build falls back to the latest package list for that language.
 - If both a lockfile and the latest package list are missing, the installer skips that language instead of failing.
-- Python uses `mamba_environment/environment.yml` for latest and `mamba_environment/conda-lock.yml` for locked installs.
-- R uses `r-environment/environment.yml` for latest and `r-environment/conda-lock.yml` for locked installs.
-- LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/texlive-repo.txt` for locked installs.
+- Python uses `python-environment/python-environment.yml` for latest and `python-environment/python-environment-lock.yml` for locked installs.
+- R uses `r-environment/r-environment.yml` for latest and `r-environment/r-environment-lock.yml` for locked installs.
+- LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/latex-environment-lock.txt` for locked installs.
 - Quarto uses GitHub latest for non-lock and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
 
 Locking guidance:
@@ -106,17 +106,17 @@ Locking guidance:
 
 Individual lock targets:
 
-- `make lock-mamba-env` updates `devcontainer/mamba_environment/conda-lock.yml`
-- `make lock-r-env` updates `devcontainer/r-environment/conda-lock.yml`
-- `make lock-latex-env` updates `devcontainer/latex-environment/texlive-repo.txt`
+- `make lock-mamba-env` updates `devcontainer/python-environment/python-environment-lock.yml`
+- `make lock-r-env` updates `devcontainer/r-environment/r-environment-lock.yml`
+- `make lock-latex-env` updates `devcontainer/latex-environment/latex-environment-lock.txt`
 - `make lock-quarto-env` updates `devcontainer/quarto-environment/quarto-lock.env`
 
 Locked installs are handled by:
 
-- Python: `devcontainer/shell_scripts/install-python-packages-lock.sh`
-- R: `devcontainer/shell_scripts/install-r-packages-lock.sh`
-- LaTeX: `devcontainer/shell_scripts/install-latex-packages-lock.sh`
-- Quarto: `devcontainer/shell_scripts/install-quarto-lock.sh`
+- Python: `devcontainer/shell-scripts/install-python-packages-lock.sh`
+- R: `devcontainer/shell-scripts/install-r-packages-lock.sh`
+- LaTeX: `devcontainer/shell-scripts/install-latex-packages-lock.sh`
+- Quarto: `devcontainer/shell-scripts/install-quarto-lock.sh`
 
 Clean lock targets (run inside container):
 
@@ -140,8 +140,8 @@ Run these from the `devcontainer` directory:
 - `make jupyter`: Start JupyterLab inside the container.
 - Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT:-4200}`.
 - `make lock-dev-env`: Generate lockfiles for Python, R, LaTeX, and Quarto (run inside the container).
-- `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build_assets/` (run inside the container).
-- `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build_assets/` (run inside the container).
+- `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build-assets/` (run inside the container).
+- `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build-assets/` (run inside the container).
 
 ## Template repo setup
 

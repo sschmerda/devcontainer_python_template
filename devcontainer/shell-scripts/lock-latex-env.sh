@@ -6,7 +6,7 @@ if [ ! -f /.dockerenv ]; then
   exit 1
 fi
 
-OUT_FILE="/home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt"
+OUT_FILE="/home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt"
 STAMP="$(date "+%Y-%m-%d %H:%M:%S %Z")"
 
 REPO_URL="${TEXLIVE_REPO_URL:-}"

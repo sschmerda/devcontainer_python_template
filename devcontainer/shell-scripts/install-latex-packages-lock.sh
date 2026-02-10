@@ -2,7 +2,7 @@
 set -e
 
 PACKAGES_FILE="/tmp/latex-environment/latex-packages.txt"
-REPO_FILE="/tmp/latex-environment/texlive-repo.txt"
+REPO_FILE="/tmp/latex-environment/latex-environment-lock.txt"
 
 if [ ! -f "$PACKAGES_FILE" ]; then
   echo "LaTeX packages file not found: $PACKAGES_FILE"

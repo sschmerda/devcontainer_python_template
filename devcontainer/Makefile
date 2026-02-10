@@ -54,10 +54,10 @@ lock-dev-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-mamba-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-r-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-latex-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-quarto-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-mamba-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
 
 # Generate mamba lockfile (run inside container only)
 .PHONY: lock-mamba-env
@@ -66,7 +66,7 @@ lock-mamba-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-mamba-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-mamba-env.sh"
 
 # Generate R lockfile (run inside container only)
 .PHONY: lock-r-env
@@ -75,7 +75,7 @@ lock-r-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-r-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 
 # Generate LaTeX lockfile (run inside container only)
 .PHONY: lock-latex-env
@@ -84,7 +84,7 @@ lock-latex-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-latex-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 
 # Generate Quarto lockfile (run inside container only)
 .PHONY: lock-quarto-env
@@ -93,7 +93,7 @@ lock-quarto-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/lock-quarto-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
 
 # Remove all lockfiles
 .PHONY: clean-locks
@@ -102,9 +102,9 @@ clean-locks:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	rm -f /home/dev/dev_container/devcontainer/mamba_environment/conda-lock.yml
-	rm -f /home/dev/dev_container/devcontainer/r-environment/conda-lock.yml
-	rm -f /home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt
+	rm -f /home/dev/dev_container/devcontainer/python-environment/python-environment-lock.yml
+	rm -f /home/dev/dev_container/devcontainer/r-environment/r-environment-lock.yml
+	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 
 # Remove Python lockfile
@@ -114,7 +114,7 @@ clean-lock-mamba:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	rm -f /home/dev/dev_container/devcontainer/mamba_environment/conda-lock.yml
+	rm -f /home/dev/dev_container/devcontainer/python-environment/python-environment-lock.yml
 
 # Remove R lockfile
 .PHONY: clean-lock-r
@@ -123,7 +123,7 @@ clean-lock-r:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	rm -f /home/dev/dev_container/devcontainer/r-environment/conda-lock.yml
+	rm -f /home/dev/dev_container/devcontainer/r-environment/r-environment-lock.yml
 
 # Remove LaTeX lockfile
 .PHONY: clean-lock-latex
@@ -132,7 +132,7 @@ clean-lock-latex:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	rm -f /home/dev/dev_container/devcontainer/latex-environment/texlive-repo.txt
+	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
 
 # Remove Quarto lockfile
 .PHONY: clean-lock-quarto
@@ -152,19 +152,19 @@ terminfo:
 	fi
 	infocmp -x "$$TERM" | $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc 'tic -x -'
 
-# Export JupyterLab user settings to build_assets (run inside container only)
+# Export JupyterLab user settings to build-assets (run inside container only)
 .PHONY: jupyter-settings-export
 jupyter-settings-export:
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/export-jupyterlab-settings.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/export-jupyterlab-settings.sh"
 
-# Restore JupyterLab user settings from build_assets (run inside container only)
+# Restore JupyterLab user settings from build-assets (run inside container only)
 .PHONY: jupyter-settings-restore
 jupyter-settings-restore:
 	@if [ ! -f /.dockerenv ]; then \
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/restore-jupyterlab-settings.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/restore-jupyterlab-settings.sh"
 
 # Enter container in Zsh
 .PHONY: shell
@@ -184,4 +184,4 @@ vscode:
 # Start JupyterLab inside container and expose port from .env
 .PHONY: jupyter
 jupyter:
-	$(COMPOSE_CMD) exec $(SERVICE) sh -lc "sh /home/dev/dev_container/devcontainer/shell_scripts/run-jupyter-with-token.sh"
+	$(COMPOSE_CMD) exec $(SERVICE) sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/run-jupyter-with-token.sh"

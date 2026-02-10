@@ -6,7 +6,7 @@ if [ ! -f /.dockerenv ]; then
   exit 1
 fi
 
-ARCHIVE_DIR="/home/dev/dev_container/devcontainer/build_assets"
+ARCHIVE_DIR="/home/dev/dev_container/devcontainer/build-assets"
 SETTINGS_DIR="$HOME/.jupyter/lab/user-settings"
 
 mkdir -p "$ARCHIVE_DIR"

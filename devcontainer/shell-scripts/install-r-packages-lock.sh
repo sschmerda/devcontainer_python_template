@@ -28,8 +28,8 @@ run_with_retries() {
   done
 }
 
-LOCK_FILE="/tmp/r-environment/conda-lock.yml"
-FALLBACK_ENV="/tmp/r-environment/environment.yml"
+LOCK_FILE="/tmp/r-environment/r-environment-lock.yml"
+FALLBACK_ENV="/tmp/r-environment/r-environment.yml"
 
 if [ ! -f "$LOCK_FILE" ]; then
   if [ -f "$FALLBACK_ENV" ]; then

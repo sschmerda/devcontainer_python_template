@@ -6,8 +6,8 @@ TARGET_DIR="$HOME/.jupyter/lab/user-settings"
 
 # Prefer the repo archive if present (freshly exported inside the container),
 # otherwise fall back to the image build-time copy.
-REPO_ARCHIVE="/home/dev/dev_container/devcontainer/build_assets/jupyterlab-user-settings.tar.gz"
-IMAGE_ARCHIVE="/tmp/build_assets/jupyterlab-user-settings.tar.gz"
+REPO_ARCHIVE="/home/dev/dev_container/devcontainer/build-assets/jupyterlab-user-settings.tar.gz"
+IMAGE_ARCHIVE="/tmp/build-assets/jupyterlab-user-settings.tar.gz"
 
 if [ -f "$REPO_ARCHIVE" ]; then
   ARCHIVE="$REPO_ARCHIVE"

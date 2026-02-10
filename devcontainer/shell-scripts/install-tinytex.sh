@@ -24,7 +24,7 @@ trap cleanup_installer_env EXIT
 cleanup_installer_env
 micromamba create -y -n "$INSTALLER_ENV" -c conda-forge r-base=4.5 r-tinytex
 
-TEXLIVE_REPO_FILE="/tmp/latex-environment/texlive-repo.txt"
+TEXLIVE_REPO_FILE="/tmp/latex-environment/latex-environment-lock.txt"
 LOCKED_REPO_URL=""
 if [ "${DEV_ENV_LOCKED:-0}" = "1" ] && [ -f "$TEXLIVE_REPO_FILE" ]; then
   LOCKED_REPO_URL="$(awk -F= '/^repo=/{print $2}' "$TEXLIVE_REPO_FILE" | head -n 1)"
