@@ -9,8 +9,8 @@ ifneq (,$(wildcard .env.secrets))
 endif
 
 JUPYTER_PORT ?= 8888
-COMPOSE_FILE=docker-compose.yml
-COMPOSE_DATA_FILE=docker-compose.data.yml
+COMPOSE_FILE=docker/docker-compose.yml
+COMPOSE_DATA_FILE=docker/docker-compose.data.yml
 # Must match the service name under `services:` in docker-compose.yml.
 SERVICE=dev
 
