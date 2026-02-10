@@ -1,10 +1,10 @@
 # Variables
-ifneq (,$(wildcard .env))
-  include .env
+ifneq (,$(wildcard env-vars/.env))
+  include env-vars/.env
   export
 endif
-ifneq (,$(wildcard .env.secrets))
-  include .env.secrets
+ifneq (,$(wildcard env-vars/.env.secrets))
+  include env-vars/.env.secrets
   export
 endif
 
@@ -34,7 +34,7 @@ up-dev-env:
 .PHONY: up-dev-env-data-mount
 up-dev-env-data-mount:
 	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
 	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d --build
@@ -47,7 +47,7 @@ rebuild-dev-env:
 .PHONY: rebuild-dev-env-data-mount
 rebuild-dev-env-data-mount:
 	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
 	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) build --no-cache
@@ -61,7 +61,7 @@ up-dev-env-lock:
 .PHONY: up-dev-env-lock-data-mount
 up-dev-env-lock-data-mount:
 	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d --build
@@ -74,7 +74,7 @@ rebuild-dev-env-lock:
 .PHONY: rebuild-dev-env-lock-data-mount
 rebuild-dev-env-lock-data-mount:
 	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) build --no-cache

@@ -13,7 +13,7 @@
 
 ## .env configuration
 
-Non-secret configuration values live in `devcontainer/.env`.
+Non-secret configuration values live in `devcontainer/env-vars/.env`.
 
 Common variables:
 
@@ -30,20 +30,20 @@ Common variables:
 
 ## .env.secrets
 
-Secret configuration values live in `devcontainer/.env.secrets`.
+Secret configuration values live in `devcontainer/env-vars/.env.secrets`.
 This file is committed as a template (keys only, empty values).
 Set values locally on each machine.
 For `HOST_DATA_DIR`, use an absolute path without spaces and without quotation marks.
 
 ## Host data mount
 
-External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/.env.secrets`.
+External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/env-vars/.env.secrets`.
 
 - Data mounting is enabled only when using `*-data-mount` Make targets.
 - If `HOST_DATA_DIR` is set and a `*-data-mount` target is used, Docker Compose adds a bind mount:
   - host: `HOST_DATA_DIR`
   - container: `HOST_DATA_MOUNT_PATH`
-  - mode: controlled by `HOST_DATA_READ_ONLY` in `devcontainer/.env`
+  - mode: controlled by `HOST_DATA_READ_ONLY` in `devcontainer/env-vars/.env`
 - On container startup, a symlink is created:
   - `HOST_DATA_SYMLINK_PATH -> HOST_DATA_MOUNT_PATH`
 - If `HOST_DATA_DIR` is empty, `*-data-mount` targets fail early and the symlink is removed/not created.
@@ -152,5 +152,5 @@ Run these from the `devcontainer` directory:
 
 ## Template repo setup
 
-When creating a new repo from this template, edit `devcontainer/.env.secrets`
+When creating a new repo from this template, edit `devcontainer/env-vars/.env.secrets`
 and set local values for the keys you need (for example `HOST_DATA_DIR`).
