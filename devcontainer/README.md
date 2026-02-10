@@ -25,6 +25,8 @@ Common variables:
 - `RETRY_ATTEMPTS`: Number of retry attempts for micromamba/conda-lock install commands during Python/R environment creation (default: `4`).
 - `RETRY_DELAY_SECONDS`: Base delay in seconds for retries; each retry sleeps `base_delay * attempt` (default: `10`).
 - `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
+- `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when using `*-data-mount` targets.
+- `HOST_DATA_SYMLINK_PATH`: Symlink created in the container pointing to `HOST_DATA_MOUNT_PATH`.
 
 ## .env.secrets
 
@@ -37,13 +39,14 @@ For `HOST_DATA_DIR`, use an absolute path without spaces and without quotation m
 
 External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/.env.secrets`.
 
-- If `HOST_DATA_DIR` is set, Docker Compose adds a bind mount:
+- Data mounting is enabled only when using `*-data-mount` Make targets.
+- If `HOST_DATA_DIR` is set and a `*-data-mount` target is used, Docker Compose adds a bind mount:
   - host: `HOST_DATA_DIR`
-  - container: `/home/dev/data_external`
+  - container: `HOST_DATA_MOUNT_PATH`
   - mode: controlled by `HOST_DATA_READ_ONLY` in `devcontainer/.env`
 - On container startup, a symlink is created:
-  - `/home/dev/dev_container/workspace/data_external -> /home/dev/data_external`
-- If `HOST_DATA_DIR` is empty, no data mount is added and the symlink is removed/not created.
+  - `HOST_DATA_SYMLINK_PATH -> HOST_DATA_MOUNT_PATH`
+- If `HOST_DATA_DIR` is empty, `*-data-mount` targets fail early and the symlink is removed/not created.
 
 ## python-environment
 
@@ -131,9 +134,13 @@ Clean lock targets (run inside container):
 Run these from the `devcontainer` directory:
 
 - `make up-dev-env`: Build and start using latest package definitions.
+- `make up-dev-env-data-mount`: Build/start latest env with external host data mount.
 - `make rebuild-dev-env`: Rebuild using latest package definitions.
+- `make rebuild-dev-env-data-mount`: Rebuild/start latest env with external host data mount.
 - `make up-dev-env-lock`: Build and start using lockfiles when present.
+- `make up-dev-env-lock-data-mount`: Build/start locked env with external host data mount.
 - `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
+- `make rebuild-dev-env-lock-data-mount`: Rebuild/start locked env with external host data mount.
 - `make shell`: Open a shell in the container.
 - `make tmux`: Open tmux in the container.
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").

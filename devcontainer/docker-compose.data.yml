@@ -5,7 +5,7 @@ services:
     volumes:
       - type: bind
         source: ${HOST_DATA_DIR}
-        target: /home/dev/data_external
+        target: ${HOST_DATA_MOUNT_PATH:-/home/dev/data_external}
         read_only: ${HOST_DATA_READ_ONLY:-true}
         bind:
           create_host_path: false

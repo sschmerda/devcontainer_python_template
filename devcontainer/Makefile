@@ -20,32 +20,65 @@ ifeq ($(UNAME_S),Linux)
   GID_ARG := GID=$(shell id -g)
 endif
 
-COMPOSE_FILES = -f $(COMPOSE_FILE)
-ifneq ($(strip $(HOST_DATA_DIR)),)
-  COMPOSE_FILES += -f $(COMPOSE_DATA_FILE)
-endif
+COMPOSE_BASE_FILES = -f $(COMPOSE_FILE)
+COMPOSE_DATA_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_DATA_FILE)
 
-COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_FILES)
+COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_BASE_FILES)
+COMPOSE_CMD_DATA = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_DATA_FILES)
 
 # Unified dev-env commands (latest)
 .PHONY: up-dev-env
 up-dev-env:
 	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d --build
 
+.PHONY: up-dev-env-data-mount
+up-dev-env-data-mount:
+	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		exit 1; \
+	fi
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d --build
+
 .PHONY: rebuild-dev-env
 rebuild-dev-env:
 	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) build --no-cache
 	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d
+
+.PHONY: rebuild-dev-env-data-mount
+rebuild-dev-env-data-mount:
+	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		exit 1; \
+	fi
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) build --no-cache
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d
 
 # Unified dev-env commands (locked)
 .PHONY: up-dev-env-lock
 up-dev-env-lock:
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d --build
 
+.PHONY: up-dev-env-lock-data-mount
+up-dev-env-lock-data-mount:
+	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		exit 1; \
+	fi
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d --build
+
 .PHONY: rebuild-dev-env-lock
 rebuild-dev-env-lock:
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) build --no-cache
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d
+
+.PHONY: rebuild-dev-env-lock-data-mount
+rebuild-dev-env-lock-data-mount:
+	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+		echo "HOST_DATA_DIR is empty. Set it in devcontainer/.env.secrets."; \
+		exit 1; \
+	fi
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) build --no-cache
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d
 
 # Lock all dev environments (run inside container only)
 .PHONY: lock-dev-env
