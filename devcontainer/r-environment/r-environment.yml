@@ -31,6 +31,16 @@ dependencies:
   # - r-quarto # Quarto (R package)
 
   ############################
+  # Databases
+  ############################
+  # - r-dbi # Common database interface for R
+  # - r-rpostgres # PostgreSQL backend for DBI
+  # - r-rsqlite # SQLite backend for DBI
+  # - r-odbc # ODBC backend (MS SQL, Snowflake, etc.)
+  # - r-duckdb # Embedded analytical database
+  # - r-dbplyr # dplyr translations for SQL backends
+
+  ############################
   # Modeling / stats
   ############################
   # - r-broom # Tidy model outputs

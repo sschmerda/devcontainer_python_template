@@ -122,9 +122,11 @@ dependencies:
   ############################
   # Databases
   ############################
+  # SQLite support (`sqlite3`) is included in the Python standard library.
   # - sqlalchemy # Database ORM and abstraction layer
   # - duckdb # In-process analytical SQL database
   # - psycopg2 # PostgreSQL driver (synchronous)
+  # - psycopg # PostgreSQL driver (modern successor to psycopg2)
   # - asyncpg # PostgreSQL driver (asynchronous, FastAPI-friendly)
 
   ############################
