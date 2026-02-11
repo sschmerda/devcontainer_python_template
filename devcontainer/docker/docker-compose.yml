@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   dev:
+    image: dev_env
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -23,4 +24,4 @@ services:
     ports:
       - "${JUPYTER_PORT:-8888}:${JUPYTER_PORT:-8888}" # Expose JupyterLab port (host:container)
       - "${QUARTO_PORT:-4200}:${QUARTO_PORT:-4200}" # Expose Quarto preview port (host:container)
-    container_name: dev_container_debian_13
+    container_name: dev_env_container
