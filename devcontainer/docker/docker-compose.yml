@@ -17,7 +17,7 @@ services:
       HOST_DATA_MOUNT_PATH: ${HOST_DATA_MOUNT_PATH:-/home/dev/data_external}
       HOST_DATA_SYMLINK_PATH: ${HOST_DATA_SYMLINK_PATH:-/home/dev/dev_container/workspace/data_external}
     volumes:
-      - ..:/home/dev/dev_container
+      - ../..:/home/dev/dev_container
     working_dir: /home/dev/dev_container
     tty: true
     stdin_open: true
