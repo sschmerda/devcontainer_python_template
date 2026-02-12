@@ -7,6 +7,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       args:
+        DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
         USER_UID: ${UID:-1000}
         USER_GID: ${GID:-1000}
         DEV_ENV_LOCKED: ${DEV_ENV_LOCKED:-0}
