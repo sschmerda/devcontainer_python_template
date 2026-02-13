@@ -8,6 +8,8 @@ services:
       dockerfile: docker/Dockerfile
       args:
         DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        R_VERSION: ${R_VERSION}
         USER_UID: ${UID:-1000}
         USER_GID: ${GID:-1000}
         DEV_ENV_LOCKED: ${DEV_ENV_LOCKED:-0}
@@ -16,6 +18,8 @@ services:
       TZ: ${TZ:-UTC}
       HOST_DATA_DIR: ${HOST_DATA_DIR:-}
       HOST_DATA_MOUNT_PATH: ${HOST_DATA_MOUNT_PATH:-/home/dev/data_external}
+      PYTHON_VERSION: ${PYTHON_VERSION}
+      R_VERSION: ${R_VERSION}
       HOST_DATA_SYMLINK_PATH: ${HOST_DATA_SYMLINK_PATH:-/home/dev/dev_container/workspace/data_external}
     volumes:
       - ../..:/home/dev/dev_container

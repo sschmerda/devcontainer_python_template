@@ -2,6 +2,11 @@ ARG DEVCONTAINER_OS_IMAGE
 FROM ${DEVCONTAINER_OS_IMAGE}
 
 USER root
+ARG PYTHON_VERSION
+ARG R_VERSION
+ENV PYTHON_VERSION=${PYTHON_VERSION}
+ENV R_VERSION=${R_VERSION}
+
 
 # Copy shell scripts
 COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh

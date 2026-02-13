@@ -8,7 +8,7 @@ dependencies:
   ############################
   # Core runtime
   ############################
-  - r-base=4.5 # R language runtime
+  - r-base=${R_VERSION} # R language runtime (from env-vars/.env)
 
   ############################
   # Core data work
