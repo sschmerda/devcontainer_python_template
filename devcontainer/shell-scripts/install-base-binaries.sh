@@ -15,6 +15,8 @@ apt-get update &&
     curl \
     wget \
     make \
+    gcc \
+    g++ \
     ripgrep \
     bzip2 \
     libfontconfig1 \
