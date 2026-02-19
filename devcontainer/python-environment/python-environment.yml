@@ -120,6 +120,13 @@ dependencies:
   # - django # Full-stack web framework (project-specific, optional)
 
   ############################
+  # Task queue & worker orchestration
+  ############################
+  # - celery # Distributed task queue for async/background jobs
+  # - redis-py # Redis client used by Celery broker/result backend
+  # - flower # Web UI for monitoring Celery workers/tasks
+
+  ############################
   # Databases
   ############################
   # SQLite support (`sqlite3`) is included in the Python standard library.
