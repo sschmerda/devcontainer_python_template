@@ -326,6 +326,8 @@ Locking guidance:
 
 - For reproducibility, run `make lock-dev-env` immediately after installing/updating packages.
 - After locking, prefer `make up-dev-env-lock` / `make rebuild-dev-env-lock` for consistent rebuilds.
+- Run `make lock-dev-env` and language-specific `make lock-<env>` targets inside the dev container.
+- Run `make lock-services` from the host in the `devcontainer/` directory.
 
 Individual lock targets:
 
