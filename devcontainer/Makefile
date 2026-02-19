@@ -1,16 +1,10 @@
-# Variables
-ifneq (,$(wildcard env-vars/.env))
-  include env-vars/.env
-  export
-endif
-ifneq (,$(wildcard env-vars/.env.secrets))
-  include env-vars/.env.secrets
-  export
-endif
-
 JUPYTER_PORT ?= 8888
 COMPOSE_FILE=docker/docker-compose.yml
 COMPOSE_DATA_FILE=docker/docker-compose.data.yml
+COMPOSE_SERVICES_FILE=docker/docker-compose.services.yml
+COMPOSE_SERVICES_LOCK_FILE=docker/docker-compose.services-lock.yml
+COMPOSE_ENV_FILES=--env-file env-vars/.env --env-file env-vars/.env.secrets
+LOCK_ENV_FILE_ARG=$(if $(wildcard services-environment/services-lock.env),--env-file services-environment/services-lock.env,)
 # Must match the service name under `services:` in docker-compose.yml.
 SERVICE=dev
 
@@ -22,9 +16,70 @@ endif
 
 COMPOSE_BASE_FILES = -f $(COMPOSE_FILE)
 COMPOSE_DATA_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_DATA_FILE)
+COMPOSE_SERVICES_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_SERVICES_FILE)
+COMPOSE_SERVICES_LOCK_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_SERVICES_FILE) -f $(COMPOSE_SERVICES_LOCK_FILE)
 
-COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_BASE_FILES)
-COMPOSE_CMD_DATA = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_DATA_FILES)
+COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES)
+COMPOSE_CMD_DATA = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_DATA_FILES)
+COMPOSE_CMD_SERVICES = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES)
+COMPOSE_CMD_SERVICES_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(LOCK_ENV_FILE_ARG) $(COMPOSE_SERVICES_LOCK_FILES)
+
+define check_service_vars
+	@set -a; \
+	. env-vars/.env.secrets; \
+	set +a; \
+	services="$$(DEV_ENV_LOCKED=$(1) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -z "$$services" ]; then \
+		echo "No additional services are enabled in $(COMPOSE_SERVICES_FILE)."; \
+		exit 0; \
+	fi; \
+	for svc in $$services; do \
+		case "$$svc" in \
+			postgres) \
+				if [ -z "$$POSTGRES_DATA_DIR" ]; then \
+					echo "POSTGRES_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				if [ -z "$$POSTGRES_PASSWORD" ]; then \
+					echo "POSTGRES_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				;; \
+			mysql) \
+				if [ -z "$$MYSQL_DATA_DIR" ]; then \
+					echo "MYSQL_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				if [ -z "$$MYSQL_ROOT_PASSWORD" ]; then \
+					echo "MYSQL_ROOT_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				;; \
+			redis) \
+				if [ -z "$$REDIS_DATA_DIR" ]; then \
+					echo "REDIS_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				;; \
+			nginx) \
+				if [ -z "$$NGINX_CONF_DIR" ]; then \
+					echo "NGINX_CONF_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				;; \
+			celery-worker|celery-beat|flower) \
+				if [ -z "$$CELERY_CODE_DIR" ]; then \
+					echo "CELERY_CODE_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				;; \
+			*) \
+				echo "Unsupported enabled service in $(COMPOSE_SERVICES_FILE): $$svc"; \
+				exit 1; \
+				;; \
+		esac; \
+	done
+endef
 
 # Unified dev-env commands (latest)
 .PHONY: up-dev-env
@@ -33,7 +88,8 @@ up-dev-env:
 
 .PHONY: up-dev-env-data-mount
 up-dev-env-data-mount:
-	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+	@set -a; . env-vars/.env.secrets; set +a; \
+	if [ -z "$$HOST_DATA_DIR" ]; then \
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
@@ -46,7 +102,8 @@ rebuild-dev-env:
 
 .PHONY: rebuild-dev-env-data-mount
 rebuild-dev-env-data-mount:
-	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+	@set -a; . env-vars/.env.secrets; set +a; \
+	if [ -z "$$HOST_DATA_DIR" ]; then \
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
@@ -60,7 +117,8 @@ up-dev-env-lock:
 
 .PHONY: up-dev-env-lock-data-mount
 up-dev-env-lock-data-mount:
-	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+	@set -a; . env-vars/.env.secrets; set +a; \
+	if [ -z "$$HOST_DATA_DIR" ]; then \
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
@@ -73,7 +131,8 @@ rebuild-dev-env-lock:
 
 .PHONY: rebuild-dev-env-lock-data-mount
 rebuild-dev-env-lock-data-mount:
-	@if [ -z "$(strip $(HOST_DATA_DIR))" ]; then \
+	@set -a; . env-vars/.env.secrets; set +a; \
+	if [ -z "$$HOST_DATA_DIR" ]; then \
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
@@ -88,6 +147,7 @@ lock-dev-env:
 		exit 1; \
 	fi
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-mamba-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
@@ -128,6 +188,15 @@ lock-quarto-env:
 	fi
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
 
+# Generate Flower lockfile from Python lockfile (run inside container only)
+.PHONY: lock-flower-env
+lock-flower-env:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
+
 # Remove all lockfiles
 .PHONY: clean-locks
 clean-locks:
@@ -139,6 +208,8 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/r-environment/r-environment-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
+	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
+	rm -f /home/dev/dev_container/devcontainer/services-environment/services-lock.env
 
 # Remove Python lockfile
 .PHONY: clean-lock-mamba
@@ -176,6 +247,15 @@ clean-lock-quarto:
 	fi
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 
+# Remove Flower lockfile
+.PHONY: clean-lock-flower
+clean-lock-flower:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
+
 # Ensure terminal definition exists in the container
 .PHONY: terminfo
 terminfo:
@@ -183,7 +263,7 @@ terminfo:
 		echo "infocmp not found on host; install ncurses tools to enable terminfo import (may still work if container already has matching terminfo via ncurses-term)."; \
 		exit 0; \
 	fi
-	infocmp -x "$$TERM" | $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc 'tic -x -'
+	infocmp -x "$$TERM" | DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc 'tic -x -'
 
 # Export JupyterLab user settings to build-assets (run inside container only)
 .PHONY: jupyter-settings-export
@@ -202,12 +282,12 @@ jupyter-settings-restore:
 # Enter container in Zsh
 .PHONY: shell
 shell: terminfo
-	$(COMPOSE_CMD) exec -e TERM -e COLORTERM $(SERVICE) zsh
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec -e TERM -e COLORTERM $(SERVICE) zsh
 
 # Enter container in tmux
 .PHONY: tmux
 tmux: terminfo
-	$(COMPOSE_CMD) exec -e TERM -e COLORTERM $(SERVICE) tmux
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec -e TERM -e COLORTERM $(SERVICE) tmux
 
 # Open VS Code and manually connect to the container
 .PHONY: vscode
@@ -217,4 +297,63 @@ vscode:
 # Start JupyterLab inside container and expose port from .env
 .PHONY: jupyter
 jupyter:
-	$(COMPOSE_CMD) exec $(SERVICE) sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/run-jupyter-with-token.sh"
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec $(SERVICE) sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/run-jupyter-with-token.sh"
+
+# Additional services lifecycle (latest)
+.PHONY: up-services
+up-services:
+	$(call check_service_vars,0)
+	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build $$services; \
+	fi
+
+.PHONY: rebuild-services
+rebuild-services:
+	$(call check_service_vars,0)
+	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build --force-recreate $$services; \
+	fi
+
+# Additional services lifecycle (locked)
+.PHONY: up-services-lock
+up-services-lock:
+	$(call check_service_vars,1)
+	@services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
+		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) pull --ignore-buildable $$services; \
+		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build $$services; \
+	fi
+
+.PHONY: rebuild-services-lock
+rebuild-services-lock:
+	$(call check_service_vars,1)
+	@services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
+		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) pull --ignore-buildable $$services; \
+		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build --force-recreate $$services; \
+	fi
+
+.PHONY: down-services
+down-services:
+	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		$(COMPOSE_CMD_SERVICES) stop $$services; \
+		$(COMPOSE_CMD_SERVICES) rm -f $$services; \
+	fi
+
+.PHONY: lock-services
+lock-services:
+	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh"; \
+	fi
+
+.PHONY: clean-lock-services
+clean-lock-services:
+	rm -f services-environment/services-lock.env

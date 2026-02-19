@@ -1,0 +1,181 @@
+services:
+  # PostgreSQL database service for application development.
+  # Use this for persistent transactional storage and SQL features.
+  # postgres:
+  #   env_file:
+  #     - ../env-vars/.env
+  #     - ../env-vars/.env.secrets
+  #   image: ${POSTGRES_IMAGE}
+  #   container_name: ${POSTGRES_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   ports:
+  #     - "${POSTGRES_PORT}:5432"
+  #   volumes:
+  #     - type: bind
+  #       source: ${POSTGRES_DATA_DIR}
+  #       target: /var/lib/postgresql
+  #       bind:
+  #         create_host_path: true
+
+  # MySQL database service.
+  # mysql:
+  #   image: ${MYSQL_IMAGE}
+  #   container_name: ${MYSQL_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #     MYSQL_USER: ${MYSQL_USER}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #   ports:
+  #     - "${MYSQL_PORT}:3306"
+  #   volumes:
+  #     - type: bind
+  #       source: ${MYSQL_DATA_DIR}
+  #       target: /var/lib/mysql
+  #       bind:
+  #         create_host_path: true
+
+  # Redis service.
+  # Use as cache, broker, or lightweight key-value store.
+  # redis:
+  #   env_file:
+  #     - ../env-vars/.env
+  #     - ../env-vars/.env.secrets
+  #   image: ${REDIS_IMAGE}
+  #   container_name: ${REDIS_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   command: ["redis-server", "--appendonly", "yes"]
+  #   ports:
+  #     - "${REDIS_PORT}:6379"
+  #   volumes:
+  #     - type: bind
+  #       source: ${REDIS_DATA_DIR}
+  #       target: /data
+  #       bind:
+  #         create_host_path: true
+
+  # Nginx reverse proxy.
+  # Use for local routing, static file serving, and TLS/proxy simulation.
+  # nginx:
+  #   image: ${NGINX_IMAGE}
+  #   container_name: ${NGINX_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${NGINX_HTTP_PORT}:80"
+  #     - "${NGINX_HTTPS_PORT}:443"
+  #   volumes:
+  #     - type: bind
+  #       source: ${NGINX_CONF_DIR}
+  #       target: /etc/nginx/conf.d
+  #       read_only: true
+  #       bind:
+  #         create_host_path: false
+
+  # Celery worker.
+  # Use for asynchronous/background tasks in Python web applications.
+  # celery-worker:
+  #   env_file:
+  #     - ../env-vars/.env
+  #     - ../env-vars/.env.secrets
+  #   image: ${CELERY_WORKER_IMAGE}
+  #   build:
+  #     context: ../..
+  #     dockerfile: devcontainer/services-environment/celery/Dockerfile
+  #     args:
+  #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
+  #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
+  #   container_name: ${CELERY_WORKER_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   working_dir: ${CELERY_WORKDIR}
+  #   command:
+  #     [
+  #       "sh",
+  #       "-lc",
+  #       "/root/.local/bin/micromamba run -n python-env ${CELERY_WORKER_COMMAND}",
+  #     ]
+  #   environment:
+  #     CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+  #     CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+  #   volumes:
+  #     - type: bind
+  #       source: ${CELERY_CODE_DIR}
+  #       target: ${CELERY_WORKDIR}
+  #       bind:
+  #         create_host_path: false
+  #   depends_on:
+  #     - redis
+
+  # Celery beat scheduler.
+  # Use for periodic task scheduling.
+  # celery-beat:
+  #   env_file:
+  #     - ../env-vars/.env
+  #     - ../env-vars/.env.secrets
+  #   image: ${CELERY_BEAT_IMAGE}
+  #   build:
+  #     context: ../..
+  #     dockerfile: devcontainer/services-environment/celery/Dockerfile
+  #     args:
+  #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
+  #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
+  #   container_name: ${CELERY_BEAT_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   working_dir: ${CELERY_WORKDIR}
+  #   command:
+  #     [
+  #       "sh",
+  #       "-lc",
+  #       "/root/.local/bin/micromamba run -n python-env ${CELERY_BEAT_COMMAND}",
+  #     ]
+  #   environment:
+  #     CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+  #     CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+  #   volumes:
+  #     - type: bind
+  #       source: ${CELERY_CODE_DIR}
+  #       target: ${CELERY_WORKDIR}
+  #       bind:
+  #         create_host_path: false
+  #   depends_on:
+  #     - redis
+
+  # Flower monitor.
+  # Use for Celery task/worker monitoring via web UI.
+  # flower:
+  #   env_file:
+  #     - ../env-vars/.env
+  #     - ../env-vars/.env.secrets
+  #   image: ${FLOWER_IMAGE}
+  #   build:
+  #     context: ../..
+  #     dockerfile: devcontainer/services-environment/flower/Dockerfile
+  #     args:
+  #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
+  #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
+  #   container_name: ${FLOWER_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   working_dir: ${CELERY_WORKDIR}
+  #   command:
+  #     [
+  #       "sh",
+  #       "-lc",
+  #       "/root/.local/bin/micromamba run -n celery-env ${FLOWER_COMMAND}",
+  #     ]
+  #   environment:
+  #     CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+  #     CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+  #   ports:
+  #     - "${FLOWER_PORT}:5555"
+  #   volumes:
+  #     - type: bind
+  #       source: ${CELERY_CODE_DIR}
+  #       target: ${CELERY_WORKDIR}
+  #       bind:
+  #         create_host_path: false
+  #   depends_on:
+  #     - redis
