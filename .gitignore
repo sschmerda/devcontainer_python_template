@@ -51,3 +51,6 @@ coverage.xml
 
 # Node (if used)
 node_modules/
+
+# Optional host-data symlink created inside workspace by container entrypoint
+workspace/data_external
