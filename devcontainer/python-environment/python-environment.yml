@@ -132,7 +132,7 @@ dependencies:
   # SQLite support (`sqlite3`) is included in the Python standard library.
   # - sqlalchemy # Database ORM and abstraction layer
   # - duckdb # In-process analytical SQL database
-  - elasticsearch # Python client for Elasticsearch
+  # - elasticsearch # Python client for Elasticsearch
   # - psycopg2 # PostgreSQL driver (synchronous)
   # - psycopg # PostgreSQL driver (modern successor to psycopg2)
   # - asyncpg # PostgreSQL driver (asynchronous, FastAPI-friendly)
@@ -140,7 +140,7 @@ dependencies:
   ############################
   # Object storage
   ############################
-  - minio # MinIO Python client for S3-compatible object storage
+  # - minio # MinIO Python client for S3-compatible object storage
   # - boto3 # AWS SDK for Python (also works with MinIO/S3-compatible endpoints)
 
   ############################
