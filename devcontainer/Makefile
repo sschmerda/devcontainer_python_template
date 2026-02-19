@@ -55,9 +55,29 @@ define check_service_vars
 					exit 1; \
 				fi; \
 				;; \
+			elasticsearch) \
+				if [ -z "$$ELASTICSEARCH_DATA_DIR" ]; then \
+					echo "ELASTICSEARCH_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				;; \
 			redis) \
 				if [ -z "$$REDIS_DATA_DIR" ]; then \
 					echo "REDIS_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				;; \
+			minio) \
+				if [ -z "$$MINIO_DATA_DIR" ]; then \
+					echo "MINIO_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				if [ -z "$$MINIO_ROOT_USER" ]; then \
+					echo "MINIO_ROOT_USER is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					exit 1; \
+				fi; \
+				if [ -z "$$MINIO_ROOT_PASSWORD" ]; then \
+					echo "MINIO_ROOT_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 					exit 1; \
 				fi; \
 				;; \

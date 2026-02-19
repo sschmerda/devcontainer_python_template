@@ -40,6 +40,28 @@ services:
   #       bind:
   #         create_host_path: true
 
+  # Elasticsearch service.
+  # Use for full-text search and document indexing.
+  # elasticsearch:
+  #   env_file:
+  #     - ../env-vars/.env
+  #     - ../env-vars/.env.secrets
+  #   image: ${ELASTICSEARCH_IMAGE}
+  #   container_name: ${ELASTICSEARCH_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   environment:
+  #     discovery.type: single-node
+  #     xpack.security.enabled: "false"
+  #     ES_JAVA_OPTS: -Xms512m -Xmx512m
+  #   ports:
+  #     - "${ELASTICSEARCH_PORT}:9200"
+  #   volumes:
+  #     - type: bind
+  #       source: ${ELASTICSEARCH_DATA_DIR}
+  #       target: /usr/share/elasticsearch/data
+  #       bind:
+  #         create_host_path: true
+
   # Redis service.
   # Use as cache, broker, or lightweight key-value store.
   # redis:
@@ -55,6 +77,29 @@ services:
   #   volumes:
   #     - type: bind
   #       source: ${REDIS_DATA_DIR}
+  #       target: /data
+  #       bind:
+  #         create_host_path: true
+
+  # MinIO object storage service.
+  # Use for S3-compatible local object storage.
+  # minio:
+  #   env_file:
+  #     - ../env-vars/.env
+  #     - ../env-vars/.env.secrets
+  #   image: ${MINIO_IMAGE}
+  #   container_name: ${MINIO_CONTAINER_NAME}
+  #   restart: unless-stopped
+  #   command: ["server", "/data", "--console-address", ":9001"]
+  #   environment:
+  #     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+  #     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+  #   ports:
+  #     - "${MINIO_PORT}:9000"
+  #     - "${MINIO_CONSOLE_PORT}:9001"
+  #   volumes:
+  #     - type: bind
+  #       source: ${MINIO_DATA_DIR}
   #       target: /data
   #       bind:
   #         create_host_path: true

@@ -5,8 +5,14 @@ services:
   # mysql:
   #   image: ${MYSQL_IMAGE_LOCK}
 
+  # elasticsearch:
+  #   image: ${ELASTICSEARCH_IMAGE_LOCK}
+
   # redis:
   #   image: ${REDIS_IMAGE_LOCK}
+
+  # minio:
+  #   image: ${MINIO_IMAGE_LOCK}
 
   # nginx:
   #   image: ${NGINX_IMAGE_LOCK}

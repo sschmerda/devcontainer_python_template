@@ -211,7 +211,9 @@ Service overview:
 
 - `postgres`: Primary relational database service for local app development and SQL testing.
 - `mysql` (commented): Optional second relational database service for MySQL-specific compatibility checks.
+- `elasticsearch` (commented): Search-oriented document database for full-text indexing and retrieval.
 - `redis`: In-memory data store used as Celery broker/result backend and for cache-style workflows.
+- `minio` (commented): S3-compatible object storage service for binary/file data in local development.
 - `nginx`: Reverse proxy/static-file front-end for local routing and production-like ingress simulation.
 - `celery-worker`: Executes asynchronous background jobs from the queue.
 - `celery-beat`: Scheduler that enqueues periodic jobs (cron-like behavior) for Celery.
@@ -271,6 +273,8 @@ Recommended service usage:
 
 - Base app only: no extra service required.
 - App + SQL database: enable `postgres` or `mysql`.
+- App + text search: enable `elasticsearch`.
+- App + object/file storage: enable `minio`.
 - App + async background jobs: enable `redis` + `celery-worker` (+ `celery-beat` for scheduled jobs).
 - Task monitoring: enable `flower`.
 - Reverse proxy/static serving/TLS simulation: enable `nginx`.
@@ -281,6 +285,8 @@ Environment variables to set for common web workflows:
 - Postgres: `POSTGRES_*` in `.env` and `POSTGRES_PASSWORD`, `POSTGRES_DATA_DIR` in `.env.secrets`.
 - MySQL: `MYSQL_*` in `.env` and `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `MYSQL_DATA_DIR` in `.env.secrets`.
 - Redis: `REDIS_*` in `.env` and `REDIS_DATA_DIR` in `.env.secrets`.
+- Elasticsearch: `ELASTICSEARCH_*` in `.env` and `ELASTICSEARCH_DATA_DIR` in `.env.secrets`.
+- MinIO: `MINIO_*` in `.env` and `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, `MINIO_DATA_DIR` in `.env.secrets`.
 - Nginx: `NGINX_*` in `.env` and `NGINX_CONF_DIR` in `.env.secrets`.
 - Celery/Flower: `CELERY_*`, `FLOWER_*` in `.env` and `CELERY_CODE_DIR` in `.env.secrets`.
 
