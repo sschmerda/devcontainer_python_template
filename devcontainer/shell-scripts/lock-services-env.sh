@@ -125,7 +125,7 @@ fi
 mkdir -p "$(dirname "$LOCK_FILE")"
 
 {
-  echo "# locked at: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+  echo "# Created at: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
   echo "# services: $(services_for_comment)"
   for service in $(services_to_list); do
     [ -n "$service" ] || continue
