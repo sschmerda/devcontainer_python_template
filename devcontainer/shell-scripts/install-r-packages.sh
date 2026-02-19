@@ -36,7 +36,7 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 0
 fi
 
-run_with_retries micromamba create -y -n r-env -f "$ENV_FILE"
+run_with_retries micromamba env create -y -n r-env -f "$ENV_FILE"
 micromamba clean --all --yes --force-pkgs-dirs
 
 echo ">>> R micromamba environment installation completed."

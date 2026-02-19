@@ -35,7 +35,7 @@ if [ ! -f "$LOCK_FILE" ]; then
   if [ -f "$FALLBACK_ENV" ]; then
     echo "R lockfile not found: $LOCK_FILE"
     echo "Falling back to latest env: $FALLBACK_ENV"
-    run_with_retries micromamba create -y -n r-env -f "$FALLBACK_ENV"
+    run_with_retries micromamba env create -y -n r-env -f "$FALLBACK_ENV"
     micromamba clean --all --yes --force-pkgs-dirs
   else
     echo "Missing R lockfile: $LOCK_FILE"

@@ -35,7 +35,7 @@ if [ ! -f "$ENV_FILE" ]; then
   if [ -f "$FALLBACK_ENV" ]; then
     echo "Mamba lockfile not found: $ENV_FILE"
     echo "Falling back to latest env: $FALLBACK_ENV"
-    run_with_retries micromamba create -y -n python-env -f "$FALLBACK_ENV"
+    run_with_retries micromamba env create -y -n python-env -f "$FALLBACK_ENV"
     micromamba clean --all --yes --force-pkgs-dirs
   else
     echo "Missing micromamba environment file: $ENV_FILE"
