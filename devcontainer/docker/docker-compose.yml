@@ -1,24 +1,18 @@
 services:
   dev:
+    env_file:
+      - ../env-vars/.env
+      - ../env-vars/.env.secrets
     image: dev_env
     build:
       context: ..
       dockerfile: docker/Dockerfile
       args:
         DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
-        PYTHON_VERSION: ${PYTHON_VERSION}
-        R_VERSION: ${R_VERSION}
-        USER_UID: ${UID:-1000}
-        USER_GID: ${GID:-1000}
-        DEV_ENV_LOCKED: ${DEV_ENV_LOCKED:-0}
-    user: "${UID:-1000}:${GID:-1000}"
-    environment:
-      TZ: ${TZ:-UTC}
-      HOST_DATA_DIR: ${HOST_DATA_DIR:-}
-      HOST_DATA_MOUNT_PATH: ${HOST_DATA_MOUNT_PATH:-/home/dev/data_external}
-      PYTHON_VERSION: ${PYTHON_VERSION}
-      R_VERSION: ${R_VERSION}
-      HOST_DATA_SYMLINK_PATH: ${HOST_DATA_SYMLINK_PATH:-/home/dev/dev_container/workspace/data_external}
+        USER_UID: ${UID}
+        USER_GID: ${GID}
+        DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
+    user: "${UID}:${GID}"
     volumes:
       - ../..:/home/dev/dev_container
     working_dir: /home/dev/dev_container
