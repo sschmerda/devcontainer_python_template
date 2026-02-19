@@ -25,6 +25,7 @@ services:
     tty: true
     stdin_open: true
     ports:
-      - "${JUPYTER_PORT:-8888}:${JUPYTER_PORT:-8888}" # Expose JupyterLab port (host:container)
-      - "${QUARTO_PORT:-4200}:${QUARTO_PORT:-4200}" # Expose Quarto preview port (host:container)
+      - "${JUPYTER_PORT}:${JUPYTER_PORT}" # Expose JupyterLab port (host:container)
+      - "${QUARTO_PORT}:${QUARTO_PORT}" # Expose Quarto preview port (host:container)
+      - "${WEB_APP_PORT}:${WEB_APP_PORT}" # Expose web application dev server port (host:container)
     container_name: dev_env_container
