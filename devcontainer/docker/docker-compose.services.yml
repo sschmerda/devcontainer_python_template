@@ -1,6 +1,6 @@
 services:
-  # PostgreSQL database service for application development.
-  # Use this for persistent transactional storage and SQL features.
+  ## PostgreSQL database service for application development.
+  ## Use this for persistent transactional storage and SQL features.
   # postgres:
   #   env_file:
   #     - ../env-vars/.env
@@ -21,7 +21,7 @@ services:
   #       bind:
   #         create_host_path: true
 
-  # MySQL database service.
+  ## MySQL database service.
   # mysql:
   #   image: ${MYSQL_IMAGE}
   #   container_name: ${MYSQL_CONTAINER_NAME}
@@ -40,8 +40,8 @@ services:
   #       bind:
   #         create_host_path: true
 
-  # Elasticsearch service.
-  # Use for full-text search and document indexing.
+  ## Elasticsearch service.
+  ## Use for full-text search and document indexing.
   # elasticsearch:
   #   env_file:
   #     - ../env-vars/.env
@@ -62,8 +62,8 @@ services:
   #       bind:
   #         create_host_path: true
 
-  # Redis service.
-  # Use as cache, broker, or lightweight key-value store.
+  ## Redis service.
+  ## Use as cache, broker, or lightweight key-value store.
   # redis:
   #   env_file:
   #     - ../env-vars/.env
@@ -81,8 +81,8 @@ services:
   #       bind:
   #         create_host_path: true
 
-  # MinIO object storage service.
-  # Use for S3-compatible local object storage.
+  ## MinIO object storage service.
+  ## Use for S3-compatible local object storage.
   # minio:
   #   env_file:
   #     - ../env-vars/.env
@@ -104,8 +104,8 @@ services:
   #       bind:
   #         create_host_path: true
 
-  # Nginx reverse proxy.
-  # Use for local routing, static file serving, and TLS/proxy simulation.
+  ## Nginx reverse proxy.
+  ## Use for local routing, static file serving, and TLS/proxy simulation.
   # nginx:
   #   image: ${NGINX_IMAGE}
   #   container_name: ${NGINX_CONTAINER_NAME}
@@ -121,8 +121,8 @@ services:
   #       bind:
   #         create_host_path: false
 
-  # Celery worker.
-  # Use for asynchronous/background tasks in Python web applications.
+  ## Celery worker.
+  ## Use for asynchronous/background tasks in Python web applications.
   # celery-worker:
   #   env_file:
   #     - ../env-vars/.env
@@ -155,8 +155,8 @@ services:
   #   depends_on:
   #     - redis
 
-  # Celery beat scheduler.
-  # Use for periodic task scheduling.
+  ## Celery beat scheduler.
+  ## Use for periodic task scheduling.
   # celery-beat:
   #   env_file:
   #     - ../env-vars/.env
@@ -189,8 +189,8 @@ services:
   #   depends_on:
   #     - redis
 
-  # Flower monitor.
-  # Use for Celery task/worker monitoring via web UI.
+  ## Flower monitor.
+  ## Use for Celery task/worker monitoring via web UI.
   # flower:
   #   env_file:
   #     - ../env-vars/.env
