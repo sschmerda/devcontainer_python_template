@@ -1,3 +1,4 @@
+# check=skip=InvalidDefaultArgInFrom
 ARG DEVCONTAINER_OS_IMAGE
 FROM ${DEVCONTAINER_OS_IMAGE}
 
