@@ -190,20 +190,20 @@ lock-dev-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-mamba-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
 
-# Generate mamba lockfile (run inside container only)
-.PHONY: lock-mamba-env
-lock-mamba-env:
+# Generate Python lockfile (run inside container only)
+.PHONY: lock-python-env
+lock-python-env:
 	@if [ ! -f /.dockerenv ]; then \
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-mamba-env.sh"
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 
 # Generate R lockfile (run inside container only)
 .PHONY: lock-r-env
@@ -256,8 +256,8 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/services-environment/services-lock.env
 
 # Remove Python lockfile
-.PHONY: clean-lock-mamba
-clean-lock-mamba:
+.PHONY: clean-lock-python
+clean-lock-python:
 	@if [ ! -f /.dockerenv ]; then \
 		echo "This target must be run inside the container."; \
 		exit 1; \

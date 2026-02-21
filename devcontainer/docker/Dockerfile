@@ -21,7 +21,7 @@ COPY shell-scripts/install-r-packages-lock.sh /tmp/install-r-packages-lock.sh
 COPY shell-scripts/install-python-packages.sh /tmp/install-python-packages.sh
 COPY shell-scripts/install-python-packages-lock.sh /tmp/install-python-packages-lock.sh
 COPY shell-scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
-COPY shell-scripts/lock-mamba-env.sh /tmp/lock-mamba-env.sh
+COPY shell-scripts/lock-python-env.sh /tmp/lock-python-env.sh
 COPY shell-scripts/lock-r-env.sh /tmp/lock-r-env.sh
 COPY shell-scripts/lock-latex-env.sh /tmp/lock-latex-env.sh
 COPY shell-scripts/lock-quarto-env.sh /tmp/lock-quarto-env.sh
@@ -30,7 +30,7 @@ COPY latex-environment/ /tmp/latex-environment/
 COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-quarto-lock.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-latex-packages-lock.sh /tmp/install-r-packages.sh /tmp/install-r-packages-lock.sh /tmp/install-python-packages.sh /tmp/install-python-packages-lock.sh /tmp/lock-mamba-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-quarto-lock.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-latex-packages-lock.sh /tmp/install-r-packages.sh /tmp/install-r-packages-lock.sh /tmp/install-python-packages.sh /tmp/install-python-packages-lock.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
 RUN /tmp/install-base-binaries.sh  

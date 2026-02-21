@@ -174,11 +174,11 @@ Python and R runtime versions are explicitly pinned in environment files (not vi
 Mamba environment specs live in `devcontainer/python-environment/`:
 
 - `python-environment.yml`: Source of truth for package selection.
-- `python-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-mamba-env` or `make lock-dev-env` to create it).
+- `python-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-python-env` or `make lock-dev-env` to create it).
 
 Python is installed in a separate micromamba environment named `python-env`.
 
-Note: `conda-lock` handling is driven by the lock scripts. Keep the lock tooling/version behavior in sync with `devcontainer/shell-scripts/lock-mamba-env.sh` if you change the workflow.
+Note: `conda-lock` handling is driven by the lock scripts. Keep the lock tooling/version behavior in sync with `devcontainer/shell-scripts/lock-python-env.sh` if you change the workflow.
 
 ## R packages
 
@@ -355,7 +355,7 @@ Locking guidance:
 
 Individual lock targets:
 
-- `make lock-mamba-env` updates `devcontainer/python-environment/python-environment-lock.yml`
+- `make lock-python-env` updates `devcontainer/python-environment/python-environment-lock.yml`
 - `make lock-flower-env` updates `devcontainer/services-environment/flower/flower-environment-lock.yml` via `conda-lock` for `linux-64` and `linux-aarch64`
 - `make lock-r-env` updates `devcontainer/r-environment/r-environment-lock.yml`
 - `make lock-latex-env` updates `devcontainer/latex-environment/latex-environment-lock.txt`
@@ -371,7 +371,7 @@ Locked installs are handled by:
 Clean lock targets (run inside container):
 
 - `make clean-locks`
-- `make clean-lock-mamba`
+- `make clean-lock-python`
 - `make clean-lock-r`
 - `make clean-lock-latex`
 - `make clean-lock-quarto`
