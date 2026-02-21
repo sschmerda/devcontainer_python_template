@@ -169,6 +169,11 @@ dependencies:
   # - scrapy # Full-featured crawling and scraping framework
 
   ############################
+  # Experiment tracking
+  ############################
+  # - mlflow # Experiment tracking, model registry, and artifact logging
+
+  ############################
   # Utilities
   ############################
   # - pyyaml # YAML configuration file parsing
