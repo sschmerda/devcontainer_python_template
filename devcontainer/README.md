@@ -6,21 +6,22 @@ Use this order when reading/configuring the template:
 
 - 1. Create new repo from template
 - 2. Make commands
-- 3. .env configuration
-- 4. .env.secrets
-- 5. Environment variable loading model
-- 6. Development vs production secrets
-- 7. Host data mount
-- 8. Python and R version pins
-- 9. python-environment
-- 10. R packages
-- 11. LaTeX packages
-- 12. Quarto
-- 13. JupyterLab settings
-- 14. Additional services
-- 15. Web applications (FastAPI/Flask/Django)
-- 16. Locked vs latest builds
-- 17. Template repo setup
+- 3. Build metadata
+- 4. .env configuration
+- 5. .env.secrets
+- 6. Environment variable loading model
+- 7. Development vs production secrets
+- 8. Host data mount
+- 9. Python and R version pins
+- 10. python-environment
+- 11. R packages
+- 12. LaTeX packages
+- 13. Quarto
+- 14. JupyterLab settings
+- 15. Additional services
+- 16. Web applications (FastAPI/Flask/Django)
+- 17. Locked vs latest builds
+- 18. Template repo setup
 
 ## Create new repo from template
 
@@ -59,6 +60,29 @@ Run these from the `devcontainer` directory:
 - `make lock-services`: Generate `devcontainer/services-environment/services-lock.env` from current service images.
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build-assets/` (run inside the container).
 - `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build-assets/` (run inside the container).
+
+## Build metadata
+
+Build metadata is recorded automatically for every `up-*` and `rebuild-*` dev/services target.
+
+- Dev env non-lock metadata: `devcontainer/build-metadata/dev-env-builds-non-lock.log`
+- Dev env lock metadata: `devcontainer/build-metadata/dev-env-builds-lock.log`
+- Services non-lock metadata: `devcontainer/build-metadata/services-builds-non-lock.log`
+- Services lock metadata: `devcontainer/build-metadata/services-builds-lock.log`
+
+Behavior:
+
+- Each run writes exactly one file, chosen by scope (`dev`/`services`) and mode (`DEV_ENV_LOCKED=0/1`).
+- Keys are mode-agnostic (same key names in all four files) and overwritten on each run.
+
+Captured fields include:
+
+- UTC timestamp, command name, and build duration
+- Host OS/kernel/architecture/CPU/RAM
+- Docker client/server/compose versions and Docker context
+- Dev logs use singular keys: `SERVICE_NAME`, `IMAGE_NAME`, `IMAGE_SIZE`, `CONTAINER_NAME`, `CONTAINER_SIZE`
+- Services logs use plural keys: `SERVICE_NAMES`, `IMAGE_NAMES`, `IMAGE_SIZES`, `CONTAINER_NAMES`, `CONTAINER_SIZES`
+- Data mount flag (`DATA_MOUNT_USED`: `true` when a relevant bind mount is used, otherwise `false`)
 
 ## .env configuration
 

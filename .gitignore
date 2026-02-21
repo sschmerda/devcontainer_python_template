@@ -19,6 +19,8 @@ Thumbs.db
 
 # Logs and temp
 *.log
+!devcontainer/build-metadata/
+!devcontainer/build-metadata/*.log
 *.tmp
 tmp/
 

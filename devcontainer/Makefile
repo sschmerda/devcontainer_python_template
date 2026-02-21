@@ -104,7 +104,10 @@ endef
 # Unified dev-env commands (latest)
 .PHONY: up-dev-env
 up-dev-env:
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d --build
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d --build; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env
 
 .PHONY: up-dev-env-data-mount
 up-dev-env-data-mount:
@@ -113,12 +116,18 @@ up-dev-env-data-mount:
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d --build
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d --build; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-data-mount
 
 .PHONY: rebuild-dev-env
 rebuild-dev-env:
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) build --no-cache
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) build --no-cache; \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env
 
 .PHONY: rebuild-dev-env-data-mount
 rebuild-dev-env-data-mount:
@@ -127,13 +136,19 @@ rebuild-dev-env-data-mount:
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) build --no-cache
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) build --no-cache; \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-data-mount
 
 # Unified dev-env commands (locked)
 .PHONY: up-dev-env-lock
 up-dev-env-lock:
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d --build
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d --build; \
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock
 
 .PHONY: up-dev-env-lock-data-mount
 up-dev-env-lock-data-mount:
@@ -142,12 +157,18 @@ up-dev-env-lock-data-mount:
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d --build
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d --build; \
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock-data-mount
 
 .PHONY: rebuild-dev-env-lock
 rebuild-dev-env-lock:
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) build --no-cache
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) build --no-cache; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d; \
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock
 
 .PHONY: rebuild-dev-env-lock-data-mount
 rebuild-dev-env-lock-data-mount:
@@ -156,8 +177,11 @@ rebuild-dev-env-lock-data-mount:
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
 		exit 1; \
 	fi
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) build --no-cache
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d
+	@set -e; \
+	started=$$(date +%s); \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) build --no-cache; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d; \
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock-data-mount
 
 # Lock all dev environments (run inside container only)
 .PHONY: lock-dev-env
@@ -323,41 +347,53 @@ jupyter:
 .PHONY: up-services
 up-services:
 	$(call check_service_vars,0)
-	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	@set -e; \
+	started=$$(date +%s); \
+	services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build $$services; \
-	fi
+	fi; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services
 
 .PHONY: rebuild-services
 rebuild-services:
 	$(call check_service_vars,0)
-	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	@set -e; \
+	started=$$(date +%s); \
+	services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build --force-recreate $$services; \
-	fi
+	fi; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services
 
 # Additional services lifecycle (locked)
 .PHONY: up-services-lock
 up-services-lock:
 	$(call check_service_vars,1)
-	@services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	@set -e; \
+	started=$$(date +%s); \
+	services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build $$services; \
-	fi
+	fi; \
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-lock
 
 .PHONY: rebuild-services-lock
 rebuild-services-lock:
 	$(call check_service_vars,1)
-	@services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	@set -e; \
+	started=$$(date +%s); \
+	services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build --force-recreate $$services; \
-	fi
+	fi; \
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-lock
 
 .PHONY: down-services
 down-services:
