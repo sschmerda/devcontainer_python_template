@@ -46,6 +46,7 @@ Run these from the `devcontainer` directory:
 - `make up-dev-env-lock-data-mount`: Build/start locked env with external host data mount.
 - `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
 - `make rebuild-dev-env-lock-data-mount`: Rebuild/start locked env with external host data mount.
+- `make down-dev-env`: Stop and remove the main dev container service.
 - `make shell`: Open a shell in the container.
 - `make tmux`: Open tmux in the container.
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").

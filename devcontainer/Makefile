@@ -184,6 +184,14 @@ rebuild-dev-env-lock-data-mount:
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock-data-mount
 
+.PHONY: down-dev-env
+down-dev-env:
+	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		$(COMPOSE_CMD) stop $$services; \
+		$(COMPOSE_CMD) rm -f $$services; \
+	fi
+
 # Lock all dev environments (run inside container only)
 .PHONY: lock-dev-env
 lock-dev-env:
