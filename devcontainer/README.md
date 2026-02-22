@@ -357,6 +357,8 @@ Locking guidance:
 - Run `make lock-services` from the host in the `devcontainer/` directory.
 - All `lock-*` targets ask for confirmation before writing lockfiles.
 - Use `FORCE=1` to skip confirmation (useful for CI/non-interactive runs), e.g. `make lock-python-env FORCE=1`.
+- `stop-*` and `down-*` targets also ask for confirmation.
+- Use `FORCE=1` there as well, e.g. `make down-services FORCE=1`.
 
 Individual lock targets:
 

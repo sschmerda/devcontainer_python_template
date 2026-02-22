@@ -186,6 +186,11 @@ rebuild-dev-env-lock-data-mount:
 
 .PHONY: down-dev-env
 down-dev-env:
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Stop and remove dev container now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		$(COMPOSE_CMD) stop $$services; \
@@ -194,6 +199,11 @@ down-dev-env:
 
 .PHONY: stop-dev-env
 stop-dev-env:
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Stop dev container now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		$(COMPOSE_CMD) stop $$services; \
@@ -443,6 +453,11 @@ rebuild-services-lock:
 
 .PHONY: down-services
 down-services:
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Stop and remove additional services now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		$(COMPOSE_CMD_SERVICES) stop $$services; \
@@ -451,6 +466,11 @@ down-services:
 
 .PHONY: stop-services
 stop-services:
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Stop additional services now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		$(COMPOSE_CMD_SERVICES) stop $$services; \
