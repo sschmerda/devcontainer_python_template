@@ -193,8 +193,8 @@ down-dev-env:
 	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
-		$(COMPOSE_CMD) stop $$services; \
-		$(COMPOSE_CMD) rm -f $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD) stop $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD) rm -f $$services; \
 	fi
 
 .PHONY: stop-dev-env
@@ -206,7 +206,7 @@ stop-dev-env:
 	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
-		$(COMPOSE_CMD) stop $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD) stop $$services; \
 	fi
 
 # Lock all dev environments (run inside container only)
@@ -460,8 +460,8 @@ down-services:
 	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
-		$(COMPOSE_CMD_SERVICES) stop $$services; \
-		$(COMPOSE_CMD_SERVICES) rm -f $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) stop $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) rm -f $$services; \
 	fi
 
 .PHONY: stop-services
@@ -473,7 +473,7 @@ stop-services:
 	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
-		$(COMPOSE_CMD_SERVICES) stop $$services; \
+		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) stop $$services; \
 	fi
 
 .PHONY: lock-services
