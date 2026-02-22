@@ -192,6 +192,13 @@ down-dev-env:
 		$(COMPOSE_CMD) rm -f $$services; \
 	fi
 
+.PHONY: stop-dev-env
+stop-dev-env:
+	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		$(COMPOSE_CMD) stop $$services; \
+	fi
+
 # Lock all dev environments (run inside container only)
 .PHONY: lock-dev-env
 lock-dev-env:
@@ -440,6 +447,13 @@ down-services:
 	if [ -n "$$services" ]; then \
 		$(COMPOSE_CMD_SERVICES) stop $$services; \
 		$(COMPOSE_CMD_SERVICES) rm -f $$services; \
+	fi
+
+.PHONY: stop-services
+stop-services:
+	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	if [ -n "$$services" ]; then \
+		$(COMPOSE_CMD_SERVICES) stop $$services; \
 	fi
 
 .PHONY: lock-services

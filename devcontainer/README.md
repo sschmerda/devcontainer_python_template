@@ -46,6 +46,7 @@ Run these from the `devcontainer` directory:
 - `make up-dev-env-lock-data-mount`: Build/start locked env with external host data mount.
 - `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
 - `make rebuild-dev-env-lock-data-mount`: Rebuild/start locked env with external host data mount.
+- `make stop-dev-env`: Stop the main dev container service without removing it.
 - `make down-dev-env`: Stop and remove the main dev container service.
 - `make shell`: Open a shell in the container.
 - `make tmux`: Open tmux in the container.
@@ -57,6 +58,7 @@ Run these from the `devcontainer` directory:
 - `make rebuild-services`: Re-pull and recreate configured additional services (latest mode).
 - `make up-services-lock`: Pull and start configured additional services using locked image digests.
 - `make rebuild-services-lock`: Re-pull and recreate configured additional services using locked image digests.
+- `make stop-services`: Stop configured additional services without removing them.
 - `make down-services`: Stop and remove configured additional services.
 - `make lock-services`: Generate `devcontainer/services-environment/services-lock.env` from current service images.
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build-assets/` (run inside the container).
