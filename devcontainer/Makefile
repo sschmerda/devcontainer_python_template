@@ -5,6 +5,7 @@ COMPOSE_SERVICES_FILE=docker/docker-compose.services.yml
 COMPOSE_SERVICES_LOCK_FILE=docker/docker-compose.services-lock.yml
 COMPOSE_ENV_FILES=--env-file env-vars/.env --env-file env-vars/.env.secrets
 LOCK_ENV_FILE_ARG=$(if $(wildcard services-environment/services-lock.env),--env-file services-environment/services-lock.env,)
+FORCE ?= 0
 # Must match the service name under `services:` in docker-compose.yml.
 SERVICE=dev
 
@@ -190,6 +191,11 @@ lock-dev-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update all dev lockfiles now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
@@ -203,6 +209,11 @@ lock-python-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update Python lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 
 # Generate R lockfile (run inside container only)
@@ -212,6 +223,11 @@ lock-r-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update R lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 
 # Generate LaTeX lockfile (run inside container only)
@@ -221,6 +237,11 @@ lock-latex-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update LaTeX lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 
 # Generate Quarto lockfile (run inside container only)
@@ -230,6 +251,11 @@ lock-quarto-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update Quarto lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
 
 # Generate Flower lockfile from Python lockfile (run inside container only)
@@ -239,6 +265,11 @@ lock-flower-env:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update Flower lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 
 # Remove all lockfiles
@@ -405,6 +436,11 @@ down-services:
 
 .PHONY: lock-services
 lock-services:
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update services lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh"; \

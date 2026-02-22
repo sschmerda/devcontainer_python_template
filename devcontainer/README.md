@@ -352,6 +352,8 @@ Locking guidance:
 - After locking, prefer `make up-dev-env-lock` / `make rebuild-dev-env-lock` for consistent rebuilds.
 - Run `make lock-dev-env` and language-specific `make lock-<env>` targets inside the dev container.
 - Run `make lock-services` from the host in the `devcontainer/` directory.
+- All `lock-*` targets ask for confirmation before writing lockfiles.
+- Use `FORCE=1` to skip confirmation (useful for CI/non-interactive runs), e.g. `make lock-python-env FORCE=1`.
 
 Individual lock targets:
 
