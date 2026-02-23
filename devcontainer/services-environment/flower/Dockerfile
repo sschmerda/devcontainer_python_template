@@ -9,6 +9,8 @@ ENV PATH=/root/.local/bin:$PATH
 ENV MAMBA_ROOT_PREFIX=/root/.local/share/mamba
 
 COPY devcontainer/shell-scripts/install-micromamba.sh /tmp/install-micromamba.sh
+COPY devcontainer/shell-scripts/install-flower-packages.sh /tmp/install-flower-packages.sh
+COPY devcontainer/shell-scripts/install-flower-packages-lock.sh /tmp/install-flower-packages-lock.sh
 COPY devcontainer/services-environment/flower/ /tmp/flower-environment/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -18,23 +20,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN chmod +x /tmp/install-micromamba.sh && /tmp/install-micromamba.sh
+RUN chmod +x /tmp/install-micromamba.sh /tmp/install-flower-packages.sh /tmp/install-flower-packages-lock.sh && /tmp/install-micromamba.sh
 
 RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
-      if [ ! -s /tmp/flower-environment/flower-environment-lock.yml ]; then \
-        echo "Missing Flower lockfile: /tmp/flower-environment/flower-environment-lock.yml"; \
-        exit 1; \
-      fi; \
-      micromamba create -y -n locktools -c conda-forge conda-lock=4.0.0; \
-      micromamba run -n locktools conda-lock install --prefix "$MAMBA_ROOT_PREFIX/envs/celery-env" --micromamba /tmp/flower-environment/flower-environment-lock.yml; \
-      micromamba env remove -n locktools -y; \
+      /tmp/install-flower-packages-lock.sh; \
     else \
-      if [ ! -s /tmp/flower-environment/flower-environment.yml ]; then \
-        echo "Missing Flower environment file: /tmp/flower-environment/flower-environment.yml"; \
-        exit 1; \
-      fi; \
-      micromamba env create -y -n celery-env -f /tmp/flower-environment/flower-environment.yml; \
-    fi && \
-    micromamba clean --all --yes --force-pkgs-dirs
+      /tmp/install-flower-packages.sh; \
+    fi
 
 WORKDIR /app/workspace
