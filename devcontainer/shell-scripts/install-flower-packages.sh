@@ -33,16 +33,8 @@ ENV_FILE="/tmp/flower-environment/flower-environment.yml"
 
 if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
   if [ ! -f "$LOCK_FILE" ]; then
-    if [ -f "$ENV_FILE" ]; then
-      echo "Flower lockfile not found: $LOCK_FILE"
-      echo "Falling back to latest env: $ENV_FILE"
-      run_with_retries micromamba env create -y -n celery-env -f "$ENV_FILE"
-      micromamba clean --all --yes --force-pkgs-dirs
-    else
-      echo "Missing Flower lockfile: $LOCK_FILE"
-      echo "No environment file found; skipping Flower environment install."
-      exit 0
-    fi
+    echo "Flower lockfile does not exist: $LOCK_FILE"
+    exit 1
   else
     echo ">>> Installing conda-lock (temporary env)..."
     run_with_retries micromamba create -y -n locktools -c conda-forge conda-lock

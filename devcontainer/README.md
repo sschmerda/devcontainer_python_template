@@ -342,8 +342,14 @@ Use the unified targets for reproducible builds:
 
 Fallback behavior:
 
-- If a Python/R/LaTeX lockfile is missing or invalid, the build falls back to the latest package list for that language.
-- If both a lockfile and the latest package list are missing, the installer skips that language instead of failing.
+- In lock mode, missing lockfiles now fail fast:
+  - Python: `python-environment/python-environment-lock.yml`
+  - Celery worker/beat (service image build): `python-environment/python-environment-lock.yml`
+  - R: `r-environment/r-environment-lock.yml`
+  - LaTeX: `latex-environment/latex-environment-lock.txt`
+  - Quarto: `quarto-environment/quarto-lock.env`
+  - Flower: `services-environment/flower/flower-environment-lock.yml`
+- Non-lock mode continues to install from the latest environment/package definitions.
 - Python uses `python-environment/python-environment.yml` for latest and `python-environment/python-environment-lock.yml` for locked installs.
 - R uses `r-environment/r-environment.yml` for latest and `r-environment/r-environment-lock.yml` for locked installs.
 - LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/latex-environment-lock.txt` for locked installs.

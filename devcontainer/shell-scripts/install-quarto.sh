@@ -52,7 +52,7 @@ resolve_latest_url() {
 resolve_locked_url() {
   LOCK_FILE="/tmp/quarto-environment/quarto-lock.env"
   if [ ! -f "$LOCK_FILE" ]; then
-    echo "Quarto lockfile not found: $LOCK_FILE"
+    echo "Quarto lockfile does not exist: $LOCK_FILE"
     exit 1
   fi
 

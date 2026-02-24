@@ -34,16 +34,8 @@ ENV_FILE="/tmp/r-environment/r-environment.yml"
 
 if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
   if [ ! -f "$LOCK_FILE" ]; then
-    if [ -f "$ENV_FILE" ]; then
-      echo "R lockfile not found: $LOCK_FILE"
-      echo "Falling back to latest env: $ENV_FILE"
-      run_with_retries micromamba env create -y -n r-env -f "$ENV_FILE"
-      micromamba clean --all --yes --force-pkgs-dirs
-    else
-      echo "Missing R lockfile: $LOCK_FILE"
-      echo "No environment file found; skipping R environment install."
-      exit 0
-    fi
+    echo "R lockfile does not exist: $LOCK_FILE"
+    exit 1
   else
     echo ">>> Installing conda-lock (temporary env)..."
     run_with_retries micromamba create -y -n locktools -c conda-forge conda-lock

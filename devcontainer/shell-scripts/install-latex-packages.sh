@@ -42,12 +42,15 @@ if [ "${DEV_ENV_LOCKED:-0}" != "1" ]; then
   exit 0
 fi
 
+if [ ! -f "$REPO_FILE" ]; then
+  echo "LaTeX lockfile does not exist: $REPO_FILE"
+  exit 1
+fi
+
 REPO_URL=""
 TLPDB_SHA256=""
-if [ -f "$REPO_FILE" ]; then
-  REPO_URL="$(awk -F= '/^repo=/{print $2}' "$REPO_FILE" | head -n 1)"
-  TLPDB_SHA256="$(awk -F= '/^tlpdb_sha256=/{print $2}' "$REPO_FILE" | head -n 1)"
-fi
+REPO_URL="$(awk -F= '/^repo=/{print $2}' "$REPO_FILE" | head -n 1)"
+TLPDB_SHA256="$(awk -F= '/^tlpdb_sha256=/{print $2}' "$REPO_FILE" | head -n 1)"
 
 if [ -z "$REPO_URL" ] || [ -z "$TLPDB_SHA256" ]; then
   echo "LaTeX lockfile missing or incomplete; falling back to latest install."
