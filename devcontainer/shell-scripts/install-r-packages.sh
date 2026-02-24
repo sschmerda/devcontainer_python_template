@@ -48,9 +48,8 @@ if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
   fi
 else
   if [ ! -f "$ENV_FILE" ]; then
-    echo "Missing R environment file: $ENV_FILE"
-    echo "No environment file found; skipping R environment install."
-    exit 0
+    echo "R environment file does not exist: $ENV_FILE"
+    exit 1
   fi
   run_with_retries micromamba env create -y -n r-env -f "$ENV_FILE"
   micromamba clean --all --yes --force-pkgs-dirs

@@ -48,9 +48,8 @@ if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
 else
   echo ">>> Creating Flower micromamba environment..."
   if [ ! -f "$ENV_FILE" ]; then
-    echo "Missing Flower environment file: $ENV_FILE"
-    echo "No environment file found; skipping Flower environment install."
-    exit 0
+    echo "Flower environment file does not exist: $ENV_FILE"
+    exit 1
   fi
   run_with_retries micromamba env create -y -n celery-env -f "$ENV_FILE"
   micromamba clean --all --yes --force-pkgs-dirs
