@@ -370,10 +370,11 @@ Individual lock targets:
 
 Locked installs are handled by:
 
-- Python: `devcontainer/shell-scripts/install-python-packages-lock.sh`
-- R: `devcontainer/shell-scripts/install-r-packages-lock.sh`
-- LaTeX: `devcontainer/shell-scripts/install-latex-packages-lock.sh`
-- Quarto: `devcontainer/shell-scripts/install-quarto-lock.sh`
+- Python: `devcontainer/shell-scripts/install-python-packages.sh` (`DEV_ENV_LOCKED` branch)
+- R: `devcontainer/shell-scripts/install-r-packages.sh` (`DEV_ENV_LOCKED` branch)
+- LaTeX: `devcontainer/shell-scripts/install-latex-packages.sh` (`DEV_ENV_LOCKED` branch)
+- Quarto: `devcontainer/shell-scripts/install-quarto.sh` (`DEV_ENV_LOCKED` branch)
+- Flower: `devcontainer/shell-scripts/install-flower-packages.sh` (`DEV_ENV_LOCKED` branch)
 
 Clean lock targets (run inside container):
 

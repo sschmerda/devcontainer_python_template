@@ -28,16 +28,41 @@ run_with_retries() {
   done
 }
 
-echo ">>> Creating micromamba environment..."
+LOCK_FILE="/tmp/python-environment/python-environment-lock.yml"
 ENV_FILE="/tmp/python-environment/python-environment.yml"
-if [ ! -f "$ENV_FILE" ]; then
-  echo "Missing micromamba environment file: $ENV_FILE"
-  echo "No environment file found; skipping Python environment install."
-  exit 0
-fi
 
-run_with_retries micromamba env create -y -n python-env -f "$ENV_FILE"
-micromamba clean --all --yes --force-pkgs-dirs
+if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
+  if [ ! -f "$LOCK_FILE" ]; then
+    if [ -f "$ENV_FILE" ]; then
+      echo "Mamba lockfile not found: $LOCK_FILE"
+      echo "Falling back to latest env: $ENV_FILE"
+      run_with_retries micromamba env create -y -n python-env -f "$ENV_FILE"
+      micromamba clean --all --yes --force-pkgs-dirs
+    else
+      echo "Missing micromamba environment file: $LOCK_FILE"
+      echo "No environment file found; skipping Python environment install."
+      exit 0
+    fi
+  else
+    echo ">>> Installing conda-lock (temporary env)..."
+    run_with_retries micromamba create -y -n locktools -c conda-forge conda-lock
+    run_with_retries micromamba run -n locktools conda-lock install \
+      --prefix "$MAMBA_ROOT_PREFIX/envs/python-env" \
+      --micromamba \
+      "$LOCK_FILE"
+    micromamba env remove -n locktools -y
+    micromamba clean --all --yes --force-pkgs-dirs
+  fi
+else
+  echo ">>> Creating micromamba environment..."
+  if [ ! -f "$ENV_FILE" ]; then
+    echo "Missing micromamba environment file: $ENV_FILE"
+    echo "No environment file found; skipping Python environment install."
+    exit 0
+  fi
+  run_with_retries micromamba env create -y -n python-env -f "$ENV_FILE"
+  micromamba clean --all --yes --force-pkgs-dirs
+fi
 
 ZSHRC="$HOME/.zshrc"
 if [ -f "$ZSHRC" ]; then

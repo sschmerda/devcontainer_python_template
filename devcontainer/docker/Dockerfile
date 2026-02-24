@@ -9,17 +9,13 @@ COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
 COPY shell-scripts/install-additional-binaries-root.sh /tmp/install-additional-binaries-root.sh
 COPY shell-scripts/install-additional-binaries-user.sh /tmp/install-additional-binaries-user.sh
 COPY shell-scripts/install-quarto.sh /tmp/install-quarto.sh
-COPY shell-scripts/install-quarto-lock.sh /tmp/install-quarto-lock.sh
 COPY shell-scripts/install-tinytex.sh /tmp/install-tinytex.sh
 COPY shell-scripts/install-dotfiles.sh /tmp/install-dotfiles.sh
 COPY shell-scripts/install-micromamba.sh /tmp/install-micromamba.sh
 COPY shell-scripts/restore-jupyterlab-settings.sh /tmp/restore-jupyterlab-settings.sh
 COPY shell-scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
-COPY shell-scripts/install-latex-packages-lock.sh /tmp/install-latex-packages-lock.sh
 COPY shell-scripts/install-r-packages.sh /tmp/install-r-packages.sh
-COPY shell-scripts/install-r-packages-lock.sh /tmp/install-r-packages-lock.sh
 COPY shell-scripts/install-python-packages.sh /tmp/install-python-packages.sh
-COPY shell-scripts/install-python-packages-lock.sh /tmp/install-python-packages-lock.sh
 COPY shell-scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY shell-scripts/lock-python-env.sh /tmp/lock-python-env.sh
 COPY shell-scripts/lock-r-env.sh /tmp/lock-r-env.sh
@@ -30,7 +26,7 @@ COPY latex-environment/ /tmp/latex-environment/
 COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-quarto-lock.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-latex-packages-lock.sh /tmp/install-r-packages.sh /tmp/install-r-packages-lock.sh /tmp/install-python-packages.sh /tmp/install-python-packages-lock.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
 RUN /tmp/install-base-binaries.sh  
@@ -71,35 +67,19 @@ ARG DEV_ENV_LOCKED=0
 ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 
 # Install python libraries
-RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
-  su - dev -c "/tmp/install-python-packages-lock.sh"; \
-  else \
-  su - dev -c "/tmp/install-python-packages.sh"; \
-  fi
+RUN su - dev -c "/tmp/install-python-packages.sh"
 
 # Install R libraries
-RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
-  su - dev -c "/tmp/install-r-packages-lock.sh"; \
-  else \
-  su - dev -c "/tmp/install-r-packages.sh"; \
-  fi
+RUN su - dev -c "/tmp/install-r-packages.sh"
 
 # Install Quarto (latest or locked) as user.
-RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
-  su - dev -c "/tmp/install-quarto-lock.sh"; \
-  else \
-  su - dev -c "/tmp/install-quarto.sh"; \
-  fi
+RUN su - dev -c "/tmp/install-quarto.sh"
 
 # Install TinyTeX via temporary r-environment
 RUN su - dev -c "/tmp/install-tinytex.sh"
 
 # Install additional LaTeX packages (tlmgr)
-RUN if [ "$DEV_ENV_LOCKED" = "1" ]; then \
-  su - dev -c "/tmp/install-latex-packages-lock.sh"; \
-  else \
-  su - dev -c "/tmp/install-latex-packages.sh"; \
-  fi
+RUN su - dev -c "/tmp/install-latex-packages.sh"
 
 # Final micromamba cache cleanup to keep image size down.
 RUN su - dev -c "MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba /home/dev/.local/bin/micromamba clean --all --yes --force-pkgs-dirs"
