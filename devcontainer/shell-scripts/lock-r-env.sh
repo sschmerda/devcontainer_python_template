@@ -12,13 +12,14 @@ ROOT_PREFIX="$HOME/.local/share/mamba"
 
 export PATH="$BIN_DIR:$PATH"
 export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
+: "${CONDA_LOCK_VERSION:?CONDA_LOCK_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
 
 ts="$(date "+%Y-%m-%d %H:%M:%S %Z")"
 cd "$ENV_DIR"
 rm -f r-environment-lock.yml
 
 if ! command -v conda-lock >/dev/null 2>&1; then
-  micromamba create -y -n locktools -c conda-forge conda-lock=4.0.0
+  micromamba create -y -n locktools -c conda-forge "conda-lock=${CONDA_LOCK_VERSION}"
   micromamba run -n locktools conda-lock lock -f r-environment.yml --platform linux-64 --platform linux-aarch64 --lockfile r-environment-lock.yml
   micromamba env remove -n locktools -y
   micromamba clean --all --yes >/dev/null 2>&1 || true
