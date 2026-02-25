@@ -17,11 +17,12 @@ Use this order when reading/configuring the template:
 - 11. R packages
 - 12. LaTeX packages
 - 13. Quarto
-- 14. JupyterLab settings
-- 15. Additional services
-- 16. Web applications (FastAPI/Flask/Django)
-- 17. Locked vs latest builds
-- 18. Template repo setup
+- 14. Micromamba
+- 15. JupyterLab settings
+- 16. Additional services
+- 17. Web applications (FastAPI/Flask/Django)
+- 18. Locked vs latest builds
+- 19. Template repo setup
 
 ## Create new repo from template
 
@@ -53,7 +54,7 @@ Run these from the `devcontainer` directory:
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
 - Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT:-4200}`.
-- `make lock-dev-env`: Generate lockfiles for Python, R, LaTeX, and Quarto (run inside the container).
+- `make lock-dev-env`: Generate lockfiles for micromamba, Python, R, LaTeX, and Quarto (run inside the container).
 - `make up-services`: Pull and start configured additional services (latest mode).
 - `make rebuild-services`: Re-pull and recreate configured additional services (latest mode).
 - `make up-services-lock`: Pull and start configured additional services using locked image digests.
@@ -204,7 +205,17 @@ Quarto is installed user-local from GitHub release tarballs (not from conda):
 
 - Non-lock builds install the latest stable release (`releases/latest`).
 - Lock builds install the exact version and architecture URL stored in `devcontainer/quarto-environment/quarto-lock.env`.
-- Lock generation validates both Linux assets (`amd64` and `arm64`) so the same lockfile works across chips.
+- Lock generation resolves latest GitHub release assets (`amd64` and `arm64`) so lock captures upstream state at lock time.
+- Lockfile also stores SHA256 for both assets, and lock installs verify checksums before extraction.
+
+## Micromamba
+
+Micromamba is installed from GitHub releases (`mamba-org/micromamba-releases`):
+
+- Non-lock builds resolve the latest release via GitHub API and install the matching Linux asset for the current architecture.
+- Lock builds install exact URLs from `devcontainer/micromamba-environment/micromamba-lock.env`.
+- Lock generation (`make lock-micromamba-env` or `make lock-dev-env`) resolves latest GitHub release assets for both Linux architectures (`amd64`, `arm64`) and writes them to the lockfile.
+- Lockfile also stores SHA256 for both assets, and lock installs verify checksums before extraction.
 
 ## JupyterLab settings
 
@@ -339,11 +350,12 @@ Use the unified targets for reproducible builds:
 
 - `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
-- `make lock-dev-env` generates/updates lockfiles for Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
+- `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 
 Fallback behavior:
 
 - In lock mode, missing lockfiles now fail fast:
+  - Micromamba: `micromamba-environment/micromamba-lock.env`
   - Python: `python-environment/python-environment-lock.yml`
   - Celery worker/beat (service image build): `python-environment/python-environment-lock.yml`
   - R: `r-environment/r-environment-lock.yml`
@@ -355,6 +367,7 @@ Fallback behavior:
 - R uses `r-environment/r-environment.yml` for latest and `r-environment/r-environment-lock.yml` for locked installs.
 - LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/latex-environment-lock.txt` for locked installs.
 - Quarto uses GitHub latest for non-lock and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
+- Micromamba uses GitHub release latest for non-lock and `micromamba-environment/micromamba-lock.env` for lock; lock mode is strict (no fallback).
 
 Locking guidance:
 
@@ -374,6 +387,7 @@ Individual lock targets:
 - `make lock-r-env` updates `devcontainer/r-environment/r-environment-lock.yml`
 - `make lock-latex-env` updates `devcontainer/latex-environment/latex-environment-lock.txt`
 - `make lock-quarto-env` updates `devcontainer/quarto-environment/quarto-lock.env`
+- `make lock-micromamba-env` updates `devcontainer/micromamba-environment/micromamba-lock.env`
 
 Locked installs are handled by:
 
@@ -382,6 +396,7 @@ Locked installs are handled by:
 - LaTeX: `devcontainer/shell-scripts/install-latex-packages.sh` (`DEV_ENV_LOCKED` branch)
 - Quarto: `devcontainer/shell-scripts/install-quarto.sh` (`DEV_ENV_LOCKED` branch)
 - Flower: `devcontainer/shell-scripts/install-flower-packages.sh` (`DEV_ENV_LOCKED` branch)
+- Micromamba: `devcontainer/shell-scripts/install-micromamba.sh` (`DEV_ENV_LOCKED` branch)
 
 Clean lock targets (run inside container):
 
@@ -391,6 +406,7 @@ Clean lock targets (run inside container):
 - `make clean-lock-latex`
 - `make clean-lock-quarto`
 - `make clean-lock-flower`
+- `make clean-lock-micromamba`
 
 ## Template repo setup
 

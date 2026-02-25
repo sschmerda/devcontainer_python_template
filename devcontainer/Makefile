@@ -221,11 +221,26 @@ lock-dev-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-micromamba-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
+
+# Generate micromamba lockfile (run inside container only)
+.PHONY: lock-micromamba-env
+lock-micromamba-env:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update micromamba lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-micromamba-env.sh"
 
 # Generate Python lockfile (run inside container only)
 .PHONY: lock-python-env
@@ -308,6 +323,7 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/r-environment/r-environment-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
+	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
 	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/services-environment/services-lock.env
 
@@ -346,6 +362,15 @@ clean-lock-quarto:
 		exit 1; \
 	fi
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
+
+# Remove micromamba lockfile
+.PHONY: clean-lock-micromamba
+clean-lock-micromamba:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
 
 # Remove Flower lockfile
 .PHONY: clean-lock-flower

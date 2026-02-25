@@ -3,6 +3,8 @@ ARG DEVCONTAINER_OS_IMAGE
 FROM ${DEVCONTAINER_OS_IMAGE}
 
 USER root
+ARG DEV_ENV_LOCKED=0
+ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 
 # Copy shell scripts
 COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
@@ -17,6 +19,7 @@ COPY shell-scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
 COPY shell-scripts/install-r-packages.sh /tmp/install-r-packages.sh
 COPY shell-scripts/install-python-packages.sh /tmp/install-python-packages.sh
 COPY shell-scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY shell-scripts/lock-micromamba-env.sh /tmp/lock-micromamba-env.sh
 COPY shell-scripts/lock-python-env.sh /tmp/lock-python-env.sh
 COPY shell-scripts/lock-r-env.sh /tmp/lock-r-env.sh
 COPY shell-scripts/lock-latex-env.sh /tmp/lock-latex-env.sh
@@ -25,8 +28,9 @@ COPY build-assets/ /tmp/build-assets/
 COPY latex-environment/ /tmp/latex-environment/
 COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
+COPY micromamba-environment/ /tmp/micromamba-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
 RUN /tmp/install-base-binaries.sh  
@@ -62,9 +66,6 @@ RUN su - dev -c "/tmp/restore-jupyterlab-settings.sh"
 RUN su - dev -c "/tmp/install-micromamba.sh"
 RUN chown -R dev:dev /tmp/python-environment
 RUN chown -R dev:dev /tmp/r-environment
-
-ARG DEV_ENV_LOCKED=0
-ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 
 # Install python libraries
 RUN su - dev -c "/tmp/install-python-packages.sh"

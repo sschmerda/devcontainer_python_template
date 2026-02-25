@@ -7,9 +7,11 @@ ARG DEV_ENV_LOCKED=0
 ENV HOME=/root
 ENV PATH=/root/.local/bin:$PATH
 ENV MAMBA_ROOT_PREFIX=/root/.local/share/mamba
+ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 
 COPY devcontainer/shell-scripts/install-micromamba.sh /tmp/install-micromamba.sh
 COPY devcontainer/shell-scripts/install-celery-packages.sh /tmp/install-celery-packages.sh
+COPY devcontainer/micromamba-environment/ /tmp/micromamba-environment/
 COPY devcontainer/python-environment/ /tmp/python-environment/
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
