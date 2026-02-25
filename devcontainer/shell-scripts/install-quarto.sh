@@ -68,9 +68,11 @@ resolve_locked_url() {
   case "$ARCH" in
     x86_64|amd64)
       URL="${QUARTO_LINUX_AMD64_URL:-}"
+      SHA256="${QUARTO_LINUX_AMD64_SHA256:-}"
       ;;
     aarch64|arm64)
       URL="${QUARTO_LINUX_ARM64_URL:-}"
+      SHA256="${QUARTO_LINUX_ARM64_SHA256:-}"
       ;;
     *)
       echo "Unsupported architecture: $ARCH"
@@ -80,6 +82,10 @@ resolve_locked_url() {
 
   if [ -z "$URL" ]; then
     echo "Missing locked Quarto URL for architecture ${ARCH} in $LOCK_FILE"
+    exit 1
+  fi
+  if [ -z "$SHA256" ]; then
+    echo "Missing locked Quarto SHA256 for architecture ${ARCH} in $LOCK_FILE"
     exit 1
   fi
 
@@ -96,6 +102,15 @@ else
 fi
 
 curl -fL "$URL" -o /tmp/quarto.tar.gz
+if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
+  ACTUAL_SHA256="$(sha256sum /tmp/quarto.tar.gz | awk '{print $1}')"
+  if [ "$ACTUAL_SHA256" != "$SHA256" ]; then
+    echo "Quarto checksum mismatch for locked asset."
+    echo "Expected: $SHA256"
+    echo "Actual:   $ACTUAL_SHA256"
+    exit 1
+  fi
+fi
 rm -rf /tmp/quarto-extract
 mkdir -p /tmp/quarto-extract
 tar -xzf /tmp/quarto.tar.gz -C /tmp/quarto-extract
