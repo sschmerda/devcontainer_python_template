@@ -198,6 +198,7 @@ R is installed in a separate micromamba environment named `r-env`.
 
 Additional LaTeX packages are managed via `devcontainer/latex-environment/latex-packages.txt` and installed during the image build by `devcontainer/shell-scripts/install-latex-packages.sh`. Uncomment the packages you need and rebuild the image.
 TinyTeX itself is installed via `devcontainer/shell-scripts/install-tinytex.sh` using a temporary micromamba installer environment (`tinytex-installer`), so `r-env` remains focused on analysis packages.
+`make lock-latex-env` now resolves latest TeX Live upstream (`mirror.ctan.org`), stores the effective mirror URL, and records `tlpdb_sha256` to capture upstream state at lock time.
 
 ## Quarto
 
@@ -351,6 +352,7 @@ Use the unified targets for reproducible builds:
 - `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
 - `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
+- All `lock-*` targets capture current upstream/latest state at lock time, then `*-lock` builds use those pinned lockfiles for deterministic rebuilds.
 
 Fallback behavior:
 
