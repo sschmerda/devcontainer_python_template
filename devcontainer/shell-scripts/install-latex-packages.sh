@@ -6,7 +6,7 @@ REPO_FILE="/tmp/latex-environment/latex-environment-lock.txt"
 
 if [ ! -f "$PACKAGES_FILE" ]; then
   echo "LaTeX packages file not found: $PACKAGES_FILE"
-  exit 0
+  exit 1
 fi
 
 # Ensure TinyTeX bin is on PATH for non-interactive shells
@@ -53,9 +53,8 @@ REPO_URL="$(awk -F= '/^repo=/{print $2}' "$REPO_FILE" | head -n 1)"
 TLPDB_SHA256="$(awk -F= '/^tlpdb_sha256=/{print $2}' "$REPO_FILE" | head -n 1)"
 
 if [ -z "$REPO_URL" ] || [ -z "$TLPDB_SHA256" ]; then
-  echo "LaTeX lockfile missing or incomplete; falling back to latest install."
-  install_latest
-  exit 0
+  echo "LaTeX lockfile is missing required fields (repo/tlpdb_sha256): $REPO_FILE"
+  exit 1
 fi
 
 tlmgr option repository "$REPO_URL" >/dev/null
@@ -71,18 +70,16 @@ if curl -fsSL "$TLPDB_URL" -o "$TMP_DIR/texlive.tlpdb" >/dev/null 2>&1; then
 elif curl -fsSL "$TLPDB_XZ_URL" -o "$TMP_DIR/texlive.tlpdb.xz" >/dev/null 2>&1; then
   xz -d "$TMP_DIR/texlive.tlpdb.xz"
 else
-  echo "Unable to download texlive.tlpdb from ${REPO_URL}; falling back to latest install."
-  install_latest
-  exit 0
+  echo "Unable to download texlive.tlpdb from ${REPO_URL}"
+  exit 1
 fi
 
 CURRENT_SHA256="$(sha256sum "$TMP_DIR/texlive.tlpdb" | awk '{print $1}')"
 if [ "$CURRENT_SHA256" != "$TLPDB_SHA256" ]; then
-  echo "TeX Live repository has changed since lock was created; falling back to latest install."
+  echo "TeX Live repository has changed since lock was created."
   echo "Expected: $TLPDB_SHA256"
   echo "Current:  $CURRENT_SHA256"
-  install_latest
-  exit 0
+  exit 1
 fi
 
 printf '%s\n' "$PACKAGES" | xargs tlmgr install
