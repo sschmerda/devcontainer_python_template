@@ -4,6 +4,8 @@ COMPOSE_DATA_FILE=docker/docker-compose.data.yml
 COMPOSE_SERVICES_FILE=docker/docker-compose.services.yml
 COMPOSE_SERVICES_LOCK_FILE=docker/docker-compose.services-lock.yml
 COMPOSE_ENV_FILES=--env-file env-vars/.env --env-file env-vars/.env.secrets
+OS_LOCK_ENV_FILE=os-environment/os-lock.env
+OS_LOCK_ENV_FILE_ARG=$(if $(wildcard $(OS_LOCK_ENV_FILE)),--env-file $(OS_LOCK_ENV_FILE),)
 LOCK_ENV_FILE_ARG=$(if $(wildcard services-environment/services-lock.env),--env-file services-environment/services-lock.env,)
 FORCE ?= 0
 # Must match the service name under `services:` in docker-compose.yml.
@@ -22,8 +24,10 @@ COMPOSE_SERVICES_LOCK_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_SERVICES_FILE) -f 
 
 COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES)
 COMPOSE_CMD_DATA = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_DATA_FILES)
+COMPOSE_CMD_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(COMPOSE_BASE_FILES)
+COMPOSE_CMD_LOCK_DATA = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(COMPOSE_DATA_FILES)
 COMPOSE_CMD_SERVICES = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES)
-COMPOSE_CMD_SERVICES_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(LOCK_ENV_FILE_ARG) $(COMPOSE_SERVICES_LOCK_FILES)
+COMPOSE_CMD_SERVICES_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(LOCK_ENV_FILE_ARG) $(COMPOSE_SERVICES_LOCK_FILES)
 
 define check_service_vars
 	@set -a; \
@@ -146,13 +150,21 @@ rebuild-dev-env-data-mount:
 # Unified dev-env commands (locked)
 .PHONY: up-dev-env-lock
 up-dev-env-lock:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		exit 1; \
+	fi
 	@set -e; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d --build; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) up -d --build; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock
 
 .PHONY: up-dev-env-lock-data-mount
 up-dev-env-lock-data-mount:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		exit 1; \
+	fi
 	@set -a; . env-vars/.env.secrets; set +a; \
 	if [ -z "$$HOST_DATA_DIR" ]; then \
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
@@ -160,19 +172,27 @@ up-dev-env-lock-data-mount:
 	fi
 	@set -e; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d --build; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) up -d --build; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock-data-mount
 
 .PHONY: rebuild-dev-env-lock
 rebuild-dev-env-lock:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		exit 1; \
+	fi
 	@set -e; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) build --no-cache; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD) up -d; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) build --no-cache; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) up -d; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock
 
 .PHONY: rebuild-dev-env-lock-data-mount
 rebuild-dev-env-lock-data-mount:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		exit 1; \
+	fi
 	@set -a; . env-vars/.env.secrets; set +a; \
 	if [ -z "$$HOST_DATA_DIR" ]; then \
 		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
@@ -180,8 +200,8 @@ rebuild-dev-env-lock-data-mount:
 	fi
 	@set -e; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) build --no-cache; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_DATA) up -d; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) build --no-cache; \
+	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) up -d; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock-data-mount
 
 .PHONY: down-dev-env
@@ -227,6 +247,16 @@ lock-dev-env:
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
+
+# Lock base OS image digest used for Dockerfile FROM (run on host).
+.PHONY: lock-os-image
+lock-os-image:
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update OS image lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
+	sh shell-scripts/lock-os-image.sh
 
 # Generate micromamba lockfile (run inside container only)
 .PHONY: lock-micromamba-env
@@ -324,6 +354,7 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
+	rm -f /home/dev/dev_container/devcontainer/os-environment/os-lock.env
 	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/services-environment/services-lock.env
 
@@ -371,6 +402,10 @@ clean-lock-micromamba:
 		exit 1; \
 	fi
 	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
+
+.PHONY: clean-lock-os-image
+clean-lock-os-image:
+	rm -f os-environment/os-lock.env
 
 # Remove Flower lockfile
 .PHONY: clean-lock-flower
@@ -452,6 +487,10 @@ rebuild-services:
 # Additional services lifecycle (locked)
 .PHONY: up-services-lock
 up-services-lock:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		exit 1; \
+	fi
 	$(call check_service_vars,1)
 	@set -e; \
 	started=$$(date +%s); \
@@ -465,6 +504,10 @@ up-services-lock:
 
 .PHONY: rebuild-services-lock
 rebuild-services-lock:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		exit 1; \
+	fi
 	$(call check_service_vars,1)
 	@set -e; \
 	started=$$(date +%s); \

@@ -18,11 +18,12 @@ Use this order when reading/configuring the template:
 - 12. LaTeX packages
 - 13. Quarto
 - 14. Micromamba
-- 15. JupyterLab settings
-- 16. Additional services
-- 17. Web applications (FastAPI/Flask/Django)
-- 18. Locked vs latest builds
-- 19. Template repo setup
+- 15. OS base image lock
+- 16. JupyterLab settings
+- 17. Additional services
+- 18. Web applications (FastAPI/Flask/Django)
+- 19. Locked vs latest builds
+- 20. Template repo setup
 
 ## Create new repo from template
 
@@ -55,6 +56,7 @@ Run these from the `devcontainer` directory:
 - `make jupyter`: Start JupyterLab inside the container.
 - Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT:-4200}`.
 - `make lock-dev-env`: Generate lockfiles for micromamba, Python, R, LaTeX, and Quarto (run inside the container).
+- `make lock-os-image`: Generate `devcontainer/os-environment/os-lock.env` from `DEVCONTAINER_OS_IMAGE` (run on host).
 - `make up-services`: Pull and start configured additional services (latest mode).
 - `make rebuild-services`: Re-pull and recreate configured additional services (latest mode).
 - `make up-services-lock`: Pull and start configured additional services using locked image digests.
@@ -218,6 +220,15 @@ Micromamba is installed from GitHub releases (`mamba-org/micromamba-releases`):
 - Lock generation (`make lock-micromamba-env` or `make lock-dev-env`) resolves latest GitHub release assets for both Linux architectures (`amd64`, `arm64`) and writes them to the lockfile.
 - Lockfile also stores SHA256 for both assets, and lock installs verify checksums before extraction.
 
+## OS base image lock
+
+Base image locking is handled separately from in-container lock targets:
+
+- `make lock-os-image` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env`.
+- If it is a moving tag (for example `debian:13-slim`), it resolves the digest and writes:
+  - `devcontainer/os-environment/os-lock.env`
+- Lock-mode dev builds (`up/rebuild-*-lock`) require this file and use it automatically.
+
 ## JupyterLab settings
 
 If you want to persist your custom settings, export them with `make jupyter-settings-export` (inside the container). The archive is stored in `devcontainer/build-assets/jupyterlab-user-settings.tar.gz` and restored at build time by `devcontainer/shell-scripts/restore-jupyterlab-settings.sh`.
@@ -352,11 +363,13 @@ Use the unified targets for reproducible builds:
 - `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
 - `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
+- `make lock-os-image` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
 - All `lock-*` targets capture current upstream/latest state at lock time, then `*-lock` builds use those pinned lockfiles for deterministic rebuilds.
 
 Fallback behavior:
 
 - In lock mode, missing lockfiles now fail fast:
+  - Base OS image: `os-environment/os-lock.env`
   - Micromamba: `micromamba-environment/micromamba-lock.env`
   - Python: `python-environment/python-environment-lock.yml`
   - Celery worker/beat (service image build): `python-environment/python-environment-lock.yml`
@@ -376,7 +389,9 @@ Locking guidance:
 - For reproducibility, run `make lock-dev-env` immediately after installing/updating packages.
 - After locking, prefer `make up-dev-env-lock` / `make rebuild-dev-env-lock` for consistent rebuilds.
 - Run `make lock-dev-env` and language-specific `make lock-<env>` targets inside the dev container.
+- Run `make lock-os-image` from the host in the `devcontainer/` directory.
 - Run `make lock-services` from the host in the `devcontainer/` directory.
+- Recommended order: `make lock-os-image` (host) -> `make lock-dev-env` (inside container) -> lock-mode rebuild commands.
 - All `lock-*` targets ask for confirmation before writing lockfiles.
 - Use `FORCE=1` to skip confirmation (useful for CI/non-interactive runs), e.g. `make lock-python-env FORCE=1`.
 - `stop-*` and `down-*` targets also ask for confirmation.
@@ -390,6 +405,7 @@ Individual lock targets:
 - `make lock-latex-env` updates `devcontainer/latex-environment/latex-environment-lock.txt`
 - `make lock-quarto-env` updates `devcontainer/quarto-environment/quarto-lock.env`
 - `make lock-micromamba-env` updates `devcontainer/micromamba-environment/micromamba-lock.env`
+- `make lock-os-image` updates `devcontainer/os-environment/os-lock.env`
 
 Locked installs are handled by:
 
@@ -400,7 +416,7 @@ Locked installs are handled by:
 - Flower: `devcontainer/shell-scripts/install-flower-packages.sh` (`DEV_ENV_LOCKED` branch)
 - Micromamba: `devcontainer/shell-scripts/install-micromamba.sh` (`DEV_ENV_LOCKED` branch)
 
-Clean lock targets (run inside container):
+Clean lock targets (inside container unless noted):
 
 - `make clean-locks`
 - `make clean-lock-python`
@@ -409,6 +425,7 @@ Clean lock targets (run inside container):
 - `make clean-lock-quarto`
 - `make clean-lock-flower`
 - `make clean-lock-micromamba`
+- `make clean-lock-os-image` (run on host)
 
 ## Template repo setup
 
