@@ -9,13 +9,8 @@ fi
 OUT_FILE="/home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt"
 STAMP="$(date "+%Y-%m-%d %H:%M:%S %Z")"
 
-REPO_URL="${TEXLIVE_REPO_URL:-}"
+REPO_URL="${TEXLIVE_REPO_URL:-https://mirror.ctan.org/systems/texlive/tlnet}"
 TMP_DIR="$(mktemp -d)"
-if [ -z "$REPO_URL" ]; then
-  if command -v tlmgr >/dev/null 2>&1; then
-  REPO_URL="$(tlmgr option repository | sed -n 's/.*repository)[[:space:]]*:[[:space:]]*//p' | head -n 1)"
-  fi
-fi
 
 case "$REPO_URL" in
   http://*|https://*) ;;
@@ -31,8 +26,8 @@ if [ -z "$REPO_URL" ]; then
   exit 1
 fi
 
-TLPDB_URL="${REPO_URL}/tlpkg/texlive.tlpdb"
-TLPDB_XZ_URL="${REPO_URL}/tlpkg/texlive.tlpdb.xz"
+TLPDB_URL="${REPO_URL%/}/tlpkg/texlive.tlpdb"
+TLPDB_XZ_URL="${REPO_URL%/}/tlpkg/texlive.tlpdb.xz"
 
 cleanup() {
   rm -rf "$TMP_DIR"
@@ -40,9 +35,13 @@ cleanup() {
 trap cleanup EXIT
 
 TLPDB_FILE=""
-if curl -fsSL "$TLPDB_URL" -o "$TMP_DIR/texlive.tlpdb" >/dev/null 2>&1; then
+if curl -fsSL -w '%{url_effective}' "$TLPDB_URL" -o "$TMP_DIR/texlive.tlpdb" >"$TMP_DIR/effective_url"; then
+  EFFECTIVE_URL="$(cat "$TMP_DIR/effective_url")"
+  REPO_URL="${EFFECTIVE_URL%/tlpkg/texlive.tlpdb}"
   TLPDB_FILE="$TMP_DIR/texlive.tlpdb"
-elif curl -fsSL "$TLPDB_XZ_URL" -o "$TMP_DIR/texlive.tlpdb.xz" >/dev/null 2>&1; then
+elif curl -fsSL -w '%{url_effective}' "$TLPDB_XZ_URL" -o "$TMP_DIR/texlive.tlpdb.xz" >"$TMP_DIR/effective_url"; then
+  EFFECTIVE_URL="$(cat "$TMP_DIR/effective_url")"
+  REPO_URL="${EFFECTIVE_URL%/tlpkg/texlive.tlpdb.xz}"
   xz -d "$TMP_DIR/texlive.tlpdb.xz"
   TLPDB_FILE="$TMP_DIR/texlive.tlpdb"
 else
