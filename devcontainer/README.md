@@ -227,6 +227,13 @@ Base image locking is handled separately from in-container lock targets:
 - `make lock-os-image` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env`.
 - If it is a moving tag (for example `debian:13-slim`), it resolves the digest and writes:
   - `devcontainer/os-environment/os-lock.env`
+- The same lockfile also stores:
+  - `APT_SNAPSHOT_TIMESTAMP`
+  - `APT_DIST_ID`
+  - `APT_DIST_CODENAME`
+  - `APT_MAIN_BASE_URL`, `APT_SECURITY_BASE_URL`
+  - `APT_MAIN_RELEASE_SHA256`, `APT_UPDATES_RELEASE_SHA256`, `APT_SECURITY_RELEASE_SHA256`
+- Lock-mode builds pin apt to distro-aware snapshot sources (Debian/Ubuntu) and verify these `Release` file hashes after `apt-get update`.
 - Lock-mode dev builds (`up/rebuild-*-lock`) require this file and use it automatically.
 
 ## JupyterLab settings
@@ -383,6 +390,7 @@ Fallback behavior:
 - LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/latex-environment-lock.txt` for locked installs.
 - Quarto uses GitHub latest for non-lock and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
 - Micromamba uses GitHub release latest for non-lock and `micromamba-environment/micromamba-lock.env` for lock; lock mode is strict (no fallback).
+- Apt repositories use live distro mirrors in non-lock mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` in lock mode.
 
 Locking guidance:
 

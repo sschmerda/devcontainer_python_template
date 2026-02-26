@@ -11,10 +11,15 @@ ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 
 COPY devcontainer/shell-scripts/install-micromamba.sh /tmp/install-micromamba.sh
 COPY devcontainer/shell-scripts/install-celery-packages.sh /tmp/install-celery-packages.sh
+COPY devcontainer/shell-scripts/apply-apt-snapshot-state.sh /tmp/apply-apt-snapshot-state.sh
+COPY devcontainer/shell-scripts/verify-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh
 COPY devcontainer/micromamba-environment/ /tmp/micromamba-environment/
+COPY devcontainer/os-environment/ /tmp/os-environment/
 COPY devcontainer/python-environment/ /tmp/python-environment/
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN chmod +x /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh && /tmp/apply-apt-snapshot-state.sh
+
+RUN apt-get update && /tmp/verify-apt-snapshot-state.sh && apt-get install -y --no-install-recommends \
       bash \
       bzip2 \
       ca-certificates \

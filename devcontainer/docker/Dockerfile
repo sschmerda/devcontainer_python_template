@@ -8,6 +8,8 @@ ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 
 # Copy shell scripts
 COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
+COPY shell-scripts/apply-apt-snapshot-state.sh /tmp/apply-apt-snapshot-state.sh
+COPY shell-scripts/verify-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh
 COPY shell-scripts/install-additional-binaries-root.sh /tmp/install-additional-binaries-root.sh
 COPY shell-scripts/install-additional-binaries-user.sh /tmp/install-additional-binaries-user.sh
 COPY shell-scripts/install-quarto.sh /tmp/install-quarto.sh
@@ -29,10 +31,12 @@ COPY latex-environment/ /tmp/latex-environment/
 COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
 COPY micromamba-environment/ /tmp/micromamba-environment/
+COPY os-environment/ /tmp/os-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
+RUN /tmp/apply-apt-snapshot-state.sh
 RUN /tmp/install-base-binaries.sh  
 # Install additional software
 RUN /tmp/install-additional-binaries-root.sh
