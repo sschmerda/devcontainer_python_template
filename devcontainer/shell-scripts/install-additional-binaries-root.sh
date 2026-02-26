@@ -11,7 +11,7 @@ FZF_VERSION="0.67.0"
 
 if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "amd64" ]; then
   FZF_TAR="fzf-${FZF_VERSION}-linux_amd64.tar.gz"
-elif [ "$ARCH" = "aarch64" ]; then
+elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
   FZF_TAR="fzf-${FZF_VERSION}-linux_arm64.tar.gz"
 else
   echo "Unsupported architecture: $ARCH"
@@ -32,7 +32,7 @@ NEOVIM_VERSION="0.11.5"
 
 if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "amd64" ]; then
   NVIM_TAR="nvim-linux-x86_64.tar.gz"
-elif [ "$ARCH" = "aarch64" ]; then
+elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
   NVIM_TAR="nvim-linux-arm64.tar.gz"
 else
   echo "Unsupported architecture: $ARCH"
@@ -58,7 +58,7 @@ LSD_VERSION="1.2.0"
 
 if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "amd64" ]; then
   LSD_ASSET="lsd-musl_${LSD_VERSION}_amd64.deb"
-elif [ "$ARCH" = "aarch64" ]; then
+elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
   LSD_ASSET="lsd-musl_${LSD_VERSION}_arm64.deb"
 else
   echo "Unsupported architecture: $ARCH"
