@@ -24,22 +24,39 @@ if [ -z "$SOURCE_IMAGE" ]; then
   exit 1
 fi
 
-if printf '%s' "$SOURCE_IMAGE" | grep -q '@sha256:'; then
-  LOCKED_IMAGE="$SOURCE_IMAGE"
-else
-  docker pull "$SOURCE_IMAGE" >/dev/null
-  LOCKED_IMAGE="$(docker image inspect --format '{{index .RepoDigests 0}}' "$SOURCE_IMAGE" 2>/dev/null || true)"
-  if [ -z "$LOCKED_IMAGE" ]; then
-    echo "Failed to resolve digest for $SOURCE_IMAGE"
+resolve_digest_for_arch() {
+  arch="$1"
+  docker pull --platform "linux/${arch}" "$SOURCE_IMAGE" >/dev/null
+  digest_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$SOURCE_IMAGE" 2>/dev/null || true)"
+  if [ -z "$digest_ref" ]; then
+    echo "Failed to resolve digest for ${SOURCE_IMAGE} (${arch})"
     exit 1
   fi
-fi
+  printf '%s' "$digest_ref"
+}
 
-OS_INFO="$(docker run --rm --entrypoint /bin/sh "$LOCKED_IMAGE" -lc '. /etc/os-release && printf "%s|%s" "${ID:-}" "${VERSION_CODENAME:-}"')"
+LOCKED_IMAGE_AMD64="$(resolve_digest_for_arch amd64)"
+LOCKED_IMAGE_ARM64="$(resolve_digest_for_arch arm64)"
+
+HOST_ARCH="$(uname -m)"
+case "$HOST_ARCH" in
+  x86_64|amd64)
+    LOCKED_IMAGE_HOST="$LOCKED_IMAGE_AMD64"
+    ;;
+  aarch64|arm64)
+    LOCKED_IMAGE_HOST="$LOCKED_IMAGE_ARM64"
+    ;;
+  *)
+    echo "Unsupported host architecture: $HOST_ARCH"
+    exit 1
+    ;;
+esac
+
+OS_INFO="$(docker run --rm --entrypoint /bin/sh "$LOCKED_IMAGE_HOST" -lc '. /etc/os-release && printf "%s|%s" "${ID:-}" "${VERSION_CODENAME:-}"')"
 DIST_ID="$(printf '%s' "$OS_INFO" | awk -F'|' '{print $1}')"
 CODENAME="$(printf '%s' "$OS_INFO" | awk -F'|' '{print $2}')"
 if [ -z "$DIST_ID" ] || [ -z "$CODENAME" ]; then
-  echo "Unable to determine distro id/codename from image: $LOCKED_IMAGE"
+  echo "Unable to determine distro id/codename from image: $LOCKED_IMAGE_HOST"
   exit 1
 fi
 
@@ -80,7 +97,8 @@ mkdir -p "$LOCK_DIR"
 {
   printf '# Created: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')"
   printf 'DEVCONTAINER_OS_IMAGE_SOURCE=%s\n' "$SOURCE_IMAGE"
-  printf 'DEVCONTAINER_OS_IMAGE=%s\n' "$LOCKED_IMAGE"
+  printf 'DEVCONTAINER_OS_IMAGE_AMD64=%s\n' "$LOCKED_IMAGE_AMD64"
+  printf 'DEVCONTAINER_OS_IMAGE_ARM64=%s\n' "$LOCKED_IMAGE_ARM64"
   printf 'APT_DIST_ID=%s\n' "$DIST_ID"
   printf 'APT_DIST_CODENAME=%s\n' "$CODENAME"
   printf 'APT_SNAPSHOT_TIMESTAMP=%s\n' "$SNAPSHOT_TS"
