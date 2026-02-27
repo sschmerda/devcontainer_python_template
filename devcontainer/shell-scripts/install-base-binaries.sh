@@ -16,9 +16,12 @@ apt-get install -y \
     stow \
     curl \
     wget \
+    ca-certificates \
+    unzip \
     make \
     gcc \
     g++ \
+    pkg-config \
     ripgrep \
     bzip2 \
     libfontconfig1 \
