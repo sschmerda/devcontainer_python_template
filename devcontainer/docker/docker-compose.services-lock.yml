@@ -2,8 +2,8 @@ services:
   ## `*_IMAGE_LOCK` values are exported by Make lock targets from
   ## arch-specific keys (`*_IMAGE_LOCK_AMD64` / `*_IMAGE_LOCK_ARM64`)
   ## in services-environment/services-lock.env.
-  postgres:
-    image: ${POSTGRES_IMAGE_LOCK}
+  # postgres:
+  #   image: ${POSTGRES_IMAGE_LOCK}
 
   # mysql:
   #   image: ${MYSQL_IMAGE_LOCK}
