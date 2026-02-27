@@ -225,8 +225,11 @@ Micromamba is installed from GitHub releases (`mamba-org/micromamba-releases`):
 Base image locking is handled separately from in-container lock targets:
 
 - `make lock-os-image` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env`.
-- If it is a moving tag (for example `debian:13-slim`), it resolves the digest and writes:
+- If it is a moving tag (for example `debian:13-slim`), it resolves architecture-specific digests and writes:
   - `devcontainer/os-environment/os-lock.env`
+- OS lockfile keys:
+  - `DEVCONTAINER_OS_IMAGE_AMD64`
+  - `DEVCONTAINER_OS_IMAGE_ARM64`
 - The same lockfile also stores:
   - `APT_SNAPSHOT_TIMESTAMP`
   - `APT_DIST_ID`
@@ -291,13 +294,13 @@ Celery image behavior:
 Locking behavior:
 
 - Non-lock service commands use the image tags from `devcontainer/env-vars/.env` (e.g. `postgres:latest`).
-- `make lock-services` resolves and stores immutable digests in `devcontainer/services-environment/services-lock.env`.
+- `make lock-services` resolves and stores immutable digests in `devcontainer/services-environment/services-lock.env` for both architectures (for example `POSTGRES_IMAGE_LOCK_AMD64` and `POSTGRES_IMAGE_LOCK_ARM64`).
 - Lock service commands use those stored digests.
 - Service commands automatically target all uncommented services in `devcontainer/docker/docker-compose.services.yml` (excluding the `dev` container).
 - Build-based services (`celery-worker`, `celery-beat`, `flower`) are not digest-locked by `make lock-services`.
 - Keep `devcontainer/docker/docker-compose.services-lock.yml` aligned with `devcontainer/docker/docker-compose.services.yml` for pull-based services:
   - If a service is commented in `docker-compose.services.yml`, keep it commented in `docker-compose.services-lock.yml`.
-  - If a lock entry is enabled but its `*_IMAGE_LOCK` key is absent in `services-lock.env`, lock rebuilds fail (example: `MYSQL_IMAGE_LOCK` unset while `mysql` lock entry is enabled).
+  - If a lock entry is enabled but its `*_IMAGE_LOCK_AMD64` / `*_IMAGE_LOCK_ARM64` keys are absent in `services-lock.env`, lock rebuilds fail.
 
 Minimal enable workflow:
 
@@ -312,7 +315,7 @@ Lock verification:
 - Render non-lock images:
   - `docker compose --env-file env-vars/.env --env-file env-vars/.env.secrets -f docker/docker-compose.yml -f docker/docker-compose.services.yml config | rg 'image:'`
 - Render lock images:
-  - `DEV_ENV_LOCKED=1 docker compose --env-file env-vars/.env --env-file env-vars/.env.secrets --env-file services-environment/services-lock.env -f docker/docker-compose.yml -f docker/docker-compose.services.yml -f docker/docker-compose.services-lock.yml config | rg 'image:'`
+  - `eval "$(sh shell-scripts/export-cross-platform-lock-vars.sh all)" && DEV_ENV_LOCKED=1 docker compose --env-file env-vars/.env --env-file env-vars/.env.secrets --env-file os-environment/os-lock.env --env-file services-environment/services-lock.env -f docker/docker-compose.yml -f docker/docker-compose.services.yml -f docker/docker-compose.services-lock.yml config | rg 'image:'`
 - Verify running pull-based services use digest refs:
   - `docker inspect dev_postgres --format '{{.Config.Image}}'`
   - `docker inspect dev_redis --format '{{.Config.Image}}'`
@@ -371,6 +374,7 @@ Use the unified targets for reproducible builds:
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
 - `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 - `make lock-os-image` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
+- Lock-mode targets auto-select the right digest for host architecture (`amd64` or `arm64`) via `devcontainer/shell-scripts/export-cross-platform-lock-vars.sh`.
 - All `lock-*` targets capture current upstream/latest state at lock time, then `*-lock` builds use those pinned lockfiles for deterministic rebuilds.
 
 Fallback behavior:

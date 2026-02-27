@@ -33,6 +33,10 @@ service_lock_var() {
   printf '%s_IMAGE_LOCK' "$(printf '%s' "$1" | tr '[:lower:]-' '[:upper:]_')"
 }
 
+service_arch_lock_var() {
+  printf '%s_%s' "$(service_lock_var "$1")" "$2"
+}
+
 service_image_ref() {
   svc="$1"
   printf '%s\n' "$COMPOSE_CONFIG" | awk -v svc="$svc" '
@@ -68,6 +72,7 @@ lock_value() {
 lock_image() {
   var_name="$1"
   image_ref="$2"
+  arch="$3"
 
   if [ -z "$image_ref" ]; then
     echo "No image reference found for ${var_name}" >&2
@@ -79,11 +84,11 @@ lock_image() {
     return
   fi
 
-  docker pull "$image_ref" >/dev/null
+  docker pull --platform "linux/${arch}" "$image_ref" >/dev/null
   digest_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$image_ref" 2>/dev/null || true)"
 
   if [ -z "$digest_ref" ]; then
-    echo "Failed to resolve digest for ${image_ref}" >&2
+    echo "Failed to resolve digest for ${image_ref} (${arch})" >&2
     exit 1
   fi
 
@@ -98,10 +103,16 @@ validate_locks() {
     if service_has_build "$service"; then
       continue
     fi
-    var_name="$(service_lock_var "$service")"
-    value="$(lock_value "$var_name")"
-    if [ -z "$value" ]; then
-      echo "Missing lock value for ${service}: ${var_name}" >&2
+    var_name_amd64="$(service_arch_lock_var "$service" "AMD64")"
+    var_name_arm64="$(service_arch_lock_var "$service" "ARM64")"
+    value_amd64="$(lock_value "$var_name_amd64")"
+    value_arm64="$(lock_value "$var_name_arm64")"
+    if [ -z "$value_amd64" ]; then
+      echo "Missing lock value for ${service}: ${var_name_amd64}" >&2
+      missing=1
+    fi
+    if [ -z "$value_arm64" ]; then
+      echo "Missing lock value for ${service}: ${var_name_arm64}" >&2
       missing=1
     fi
   done
@@ -133,7 +144,8 @@ mkdir -p "$(dirname "$LOCK_FILE")"
       echo "# ${service}: build-based service (not digest-locked)"
       continue
     fi
-    lock_image "$(service_lock_var "$service")" "$(service_image_ref "$service")"
+    lock_image "$(service_arch_lock_var "$service" "AMD64")" "$(service_image_ref "$service")" "amd64"
+    lock_image "$(service_arch_lock_var "$service" "ARM64")" "$(service_image_ref "$service")" "arm64"
   done
 } > "$LOCK_FILE"
 

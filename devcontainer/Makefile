@@ -156,7 +156,9 @@ up-dev-env-lock:
 	fi
 	@set -e; \
 	started=$$(date +%s); \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) up -d --build; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock
 
 .PHONY: up-dev-env-lock-data-mount
@@ -172,7 +174,9 @@ up-dev-env-lock-data-mount:
 	fi
 	@set -e; \
 	started=$$(date +%s); \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) up -d --build; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock-data-mount
 
 .PHONY: rebuild-dev-env-lock
@@ -183,8 +187,10 @@ rebuild-dev-env-lock:
 	fi
 	@set -e; \
 	started=$$(date +%s); \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) build --no-cache; \
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) up -d; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock
 
 .PHONY: rebuild-dev-env-lock-data-mount
@@ -200,8 +206,10 @@ rebuild-dev-env-lock-data-mount:
 	fi
 	@set -e; \
 	started=$$(date +%s); \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) build --no-cache; \
 	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) up -d; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock-data-mount
 
 .PHONY: down-dev-env
@@ -497,9 +505,11 @@ up-services-lock:
 	services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
+		eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build $$services; \
 	fi; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-lock
 
 .PHONY: rebuild-services-lock
@@ -514,9 +524,11 @@ rebuild-services-lock:
 	services="$$(DEV_ENV_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
+		eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build --force-recreate $$services; \
 	fi; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-lock
 
 .PHONY: down-services
