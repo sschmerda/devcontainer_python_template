@@ -225,7 +225,7 @@ Micromamba is installed from GitHub releases (`mamba-org/micromamba-releases`):
 Base image locking is handled separately from in-container lock targets:
 
 - `make lock-os-image` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env`.
-- If it is a moving tag (for example `debian:13-slim`), it resolves architecture-specific digests and writes:
+- If it is a moving tag (for example `debian:13-slim`), it resolves linux platform child digests from the multi-arch manifest list and writes:
   - `devcontainer/os-environment/os-lock.env`
 - OS lockfile keys:
   - `DEVCONTAINER_OS_IMAGE_AMD64`
@@ -294,7 +294,7 @@ Celery image behavior:
 Locking behavior:
 
 - Non-lock service commands use the image tags from `devcontainer/env-vars/.env` (e.g. `postgres:latest`).
-- `make lock-services` resolves and stores immutable digests in `devcontainer/services-environment/services-lock.env` for both architectures (for example `POSTGRES_IMAGE_LOCK_AMD64` and `POSTGRES_IMAGE_LOCK_ARM64`).
+- `make lock-services` resolves and stores linux platform child digests in `devcontainer/services-environment/services-lock.env` for both architectures (for example `POSTGRES_IMAGE_LOCK_AMD64` and `POSTGRES_IMAGE_LOCK_ARM64`).
 - Lock service commands use those stored digests.
 - Service commands automatically target all uncommented services in `devcontainer/docker/docker-compose.services.yml` (excluding the `dev` container).
 - Build-based services (`celery-worker`, `celery-beat`, `flower`) are not digest-locked by `make lock-services`.
@@ -375,6 +375,7 @@ Use the unified targets for reproducible builds:
 - `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 - `make lock-os-image` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
 - Lock-mode targets auto-select the right digest for host architecture (`amd64` or `arm64`) via `devcontainer/shell-scripts/export-cross-platform-lock-vars.sh`.
+- OS/service lock generation requires multi-arch images with `linux/amd64` and `linux/arm64` entries; otherwise locking fails fast.
 - All `lock-*` targets capture current upstream/latest state at lock time, then `*-lock` builds use those pinned lockfiles for deterministic rebuilds.
 
 Fallback behavior:

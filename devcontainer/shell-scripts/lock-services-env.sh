@@ -8,7 +8,6 @@ MODE="${1:-lock}"
 # Compose files contain DEV_ENV_LOCKED build args; default prevents warning noise.
 : "${DEV_ENV_LOCKED:=0}"
 export DEV_ENV_LOCKED
-
 compose_cmd() {
   docker compose \
     --env-file "${ROOT_DIR}/env-vars/.env" \
@@ -84,11 +83,27 @@ lock_image() {
     return
   fi
 
-  docker pull --platform "linux/${arch}" "$image_ref" >/dev/null
-  digest_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$image_ref" 2>/dev/null || true)"
+  digest_ref="$(
+    docker buildx imagetools inspect "$image_ref" 2>/dev/null | awk -v target="linux/${arch}" '
+      $1 == "Name:" {name=$2}
+      $1 == "Platform:" {
+        if ($2 == target || index($2, target "/") == 1) {
+          if (name ~ /@sha256:/) {
+            print name
+            found=1
+            exit
+          }
+        }
+      }
+      END {
+        if (!found) exit 1
+      }
+    '
+  )" || true
 
   if [ -z "$digest_ref" ]; then
-    echo "Failed to resolve digest for ${image_ref} (${arch})" >&2
+    echo "Failed to resolve linux/${arch} child digest for ${image_ref}." >&2
+    echo "Ensure ${image_ref} is a multi-arch image with a linux/${arch} manifest." >&2
     exit 1
   fi
 

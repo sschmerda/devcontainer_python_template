@@ -26,10 +26,27 @@ fi
 
 resolve_digest_for_arch() {
   arch="$1"
-  docker pull --platform "linux/${arch}" "$SOURCE_IMAGE" >/dev/null
-  digest_ref="$(docker image inspect --format '{{index .RepoDigests 0}}' "$SOURCE_IMAGE" 2>/dev/null || true)"
+  digest_ref="$(
+    docker buildx imagetools inspect "$SOURCE_IMAGE" 2>/dev/null | awk -v target="linux/${arch}" '
+      $1 == "Name:" {name=$2}
+      $1 == "Platform:" {
+        if ($2 == target || index($2, target "/") == 1) {
+          if (name ~ /@sha256:/) {
+            print name
+            found=1
+            exit
+          }
+        }
+      }
+      END {
+        if (!found) exit 1
+      }
+    '
+  )" || true
+
   if [ -z "$digest_ref" ]; then
-    echo "Failed to resolve digest for ${SOURCE_IMAGE} (${arch})"
+    echo "Failed to resolve linux/${arch} child digest for ${SOURCE_IMAGE}."
+    echo "Ensure ${SOURCE_IMAGE} is a multi-arch image with a linux/${arch} manifest."
     exit 1
   fi
   printf '%s' "$digest_ref"
