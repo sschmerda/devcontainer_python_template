@@ -48,9 +48,21 @@ ENV LC_ALL=C.UTF-8
 # Create default non-root user
 ARG USER_UID
 ARG USER_GID
+ARG DEV_USER_PASSWORD=
 
 RUN groupadd --gid ${USER_GID} dev \
   && useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh dev
+
+# Optional local dev password for sudo/auth flows.
+RUN if [ -n "${DEV_USER_PASSWORD}" ]; then \
+  echo "dev:${DEV_USER_PASSWORD}" | chpasswd; \
+fi
+
+# Grant sudo privileges to dev user.
+RUN getent group sudo >/dev/null || groupadd sudo \
+  && usermod -aG sudo dev \
+  && printf '%%sudo ALL=(ALL:ALL) ALL\n' > /etc/sudoers.d/10-sudo-group \
+  && chmod 0440 /etc/sudoers.d/10-sudo-group
 
 # Set Zsh as default shell for the non-root user
 RUN chsh -s /usr/bin/zsh dev
