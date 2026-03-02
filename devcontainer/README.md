@@ -373,6 +373,7 @@ Use the unified targets for reproducible builds:
 - `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
 - `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
+- `make lock-additional-binaries-root-env` generates/updates `devcontainer/additional-binaries-environment/additional-binaries-root-lock.env` for root-installed binaries (`fzf`, `neovim`, `lsd`) with amd64/arm64 URLs and SHA256 checksums.
 - `make lock-os-image` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
 - Lock-mode targets auto-select the right digest for host architecture (`amd64` or `arm64`) via `devcontainer/shell-scripts/export-cross-platform-lock-vars.sh`.
 - OS/service lock generation requires multi-arch images with `linux/amd64` and `linux/arm64` entries; otherwise locking fails fast.
@@ -382,6 +383,7 @@ Fallback behavior:
 
 - In lock mode, missing lockfiles now fail fast:
   - Base OS image: `os-environment/os-lock.env`
+  - Additional root binaries: `additional-binaries-environment/additional-binaries-root-lock.env`
   - Micromamba: `micromamba-environment/micromamba-lock.env`
   - Python: `python-environment/python-environment-lock.yml`
   - Celery worker/beat (service image build): `python-environment/python-environment-lock.yml`
@@ -395,6 +397,7 @@ Fallback behavior:
 - LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/latex-environment-lock.txt` for locked installs.
 - Quarto uses GitHub latest for non-lock and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
 - Micromamba uses GitHub release latest for non-lock and `micromamba-environment/micromamba-lock.env` for lock; lock mode is strict (no fallback).
+- Additional root binaries (`fzf`, `neovim`, `lsd`) use GitHub latest in non-lock and `additional-binaries-environment/additional-binaries-root-lock.env` in lock mode; lock mode verifies SHA256 and is strict (no fallback).
 - Apt repositories use live distro mirrors in non-lock mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` in lock mode.
 
 Locking guidance:
@@ -418,6 +421,7 @@ Individual lock targets:
 - `make lock-latex-env` updates `devcontainer/latex-environment/latex-environment-lock.txt`
 - `make lock-quarto-env` updates `devcontainer/quarto-environment/quarto-lock.env`
 - `make lock-micromamba-env` updates `devcontainer/micromamba-environment/micromamba-lock.env`
+- `make lock-additional-binaries-root-env` updates `devcontainer/additional-binaries-environment/additional-binaries-root-lock.env`
 - `make lock-os-image` updates `devcontainer/os-environment/os-lock.env`
 
 Locked installs are handled by:
@@ -428,6 +432,7 @@ Locked installs are handled by:
 - Quarto: `devcontainer/shell-scripts/install-quarto.sh` (`DEV_ENV_LOCKED` branch)
 - Flower: `devcontainer/shell-scripts/install-flower-packages.sh` (`DEV_ENV_LOCKED` branch)
 - Micromamba: `devcontainer/shell-scripts/install-micromamba.sh` (`DEV_ENV_LOCKED` branch)
+- Additional root binaries: `devcontainer/shell-scripts/install-additional-binaries-root.sh` (`DEV_ENV_LOCKED` branch)
 
 Clean lock targets (inside container unless noted):
 
@@ -438,6 +443,7 @@ Clean lock targets (inside container unless noted):
 - `make clean-lock-quarto`
 - `make clean-lock-flower`
 - `make clean-lock-micromamba`
+- `make clean-lock-additional-binaries-root`
 - `make clean-lock-os-image` (run on host)
 
 ## Template repo setup

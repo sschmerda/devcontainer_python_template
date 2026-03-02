@@ -12,6 +12,7 @@ COPY shell-scripts/apply-apt-snapshot-state.sh /tmp/apply-apt-snapshot-state.sh
 COPY shell-scripts/verify-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh
 COPY shell-scripts/install-additional-binaries-root.sh /tmp/install-additional-binaries-root.sh
 COPY shell-scripts/install-additional-binaries-user.sh /tmp/install-additional-binaries-user.sh
+COPY shell-scripts/lock-additional-binaries-root-env.sh /tmp/lock-additional-binaries-root-env.sh
 COPY shell-scripts/install-quarto.sh /tmp/install-quarto.sh
 COPY shell-scripts/install-tinytex.sh /tmp/install-tinytex.sh
 COPY shell-scripts/install-dotfiles.sh /tmp/install-dotfiles.sh
@@ -32,8 +33,9 @@ COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
 COPY micromamba-environment/ /tmp/micromamba-environment/
 COPY os-environment/ /tmp/os-environment/
+COPY additional-binaries-environment/ /tmp/additional-binaries-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-root-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
 RUN /tmp/apply-apt-snapshot-state.sh
