@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
 if [ ! -f /.dockerenv ]; then
   echo "This script must be run inside the container."
@@ -7,6 +7,8 @@ if [ ! -f /.dockerenv ]; then
 fi
 
 ENV_DIR="/home/dev/dev_container/devcontainer/additional-binaries-environment"
+LIST_FILE="${ENV_DIR}/root-binaries.list"
+CONFIG_DIR="${ENV_DIR}/root-binaries"
 LOCK_FILE="${ENV_DIR}/additional-binaries-root-lock.env"
 TMP_DIR="$(mktemp -d)"
 
@@ -15,7 +17,66 @@ cleanup() {
 }
 trap cleanup EXIT
 
+if [ ! -f "$LIST_FILE" ]; then
+  echo "Missing additional binaries list file: $LIST_FILE"
+  exit 1
+fi
+
+if [ ! -d "$CONFIG_DIR" ]; then
+  echo "Missing additional binaries config directory: $CONFIG_DIR"
+  exit 1
+fi
+
+require_var() {
+  local name value
+  name="$1"
+  value="${!name:-}"
+  if [ -z "$value" ]; then
+    echo "Missing required env var: $name"
+    exit 1
+  fi
+  printf '%s' "$value"
+}
+
+assert_install_method() {
+  local method
+  method="$1"
+  case "$method" in
+    tar|zip|deb) ;;
+    *)
+      echo "Unsupported INSTALL_METHOD: $method"
+      exit 1
+      ;;
+  esac
+}
+
+list_binaries() {
+  awk '
+    /^[[:space:]]*#/ {next}
+    /^[[:space:]]*$/ {next}
+    {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0); print $0}
+  ' "$LIST_FILE"
+}
+
+reset_binary_vars() {
+  unset INSTALL_METHOD REPO GITHUB_VERSION_TAG_PREFIX ASSET_FILE_NAME_AMD64 ASSET_FILE_NAME_ARM64 TAR_BIN_PATH ZIP_BIN_PATH INSTALL_TARGET_PATH TAR_INSTALL_MODE TAR_INSTALL_ROOT_GLOB TAR_INSTALL_DIR
+}
+
+load_binary_config() {
+  local binary config_file
+  binary="$1"
+  config_file="${CONFIG_DIR}/${binary}.env"
+  if [ ! -f "$config_file" ]; then
+    echo "Missing binary config file: $config_file"
+    exit 1
+  fi
+  reset_binary_vars
+  # shellcheck disable=SC1090
+  . "$config_file"
+}
+
 fetch_tag() {
+  local repo
   repo="$1"
   curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
     | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' \
@@ -23,60 +84,60 @@ fetch_tag() {
 }
 
 download_and_sha() {
+  local url out
   url="$1"
   out="$2"
   curl -fL --retry 4 --retry-delay 3 --retry-all-errors "$url" -o "$out"
   sha256sum "$out" | awk '{print $1}'
 }
 
-FZF_TAG="$(fetch_tag "junegunn/fzf")"
-NEOVIM_TAG="$(fetch_tag "neovim/neovim")"
-LSD_TAG="$(fetch_tag "lsd-rs/lsd")"
-
-if [ -z "$FZF_TAG" ] || [ -z "$NEOVIM_TAG" ] || [ -z "$LSD_TAG" ]; then
-  echo "Unable to determine latest tags for fzf/neovim/lsd."
-  exit 1
-fi
-
-FZF_VERSION="${FZF_TAG#v}"
-NEOVIM_VERSION="${NEOVIM_TAG#v}"
-LSD_VERSION="${LSD_TAG#v}"
-
-FZF_LINUX_AMD64_URL="https://github.com/junegunn/fzf/releases/download/${FZF_TAG}/fzf-${FZF_VERSION}-linux_amd64.tar.gz"
-FZF_LINUX_ARM64_URL="https://github.com/junegunn/fzf/releases/download/${FZF_TAG}/fzf-${FZF_VERSION}-linux_arm64.tar.gz"
-NEOVIM_LINUX_AMD64_URL="https://github.com/neovim/neovim/releases/download/${NEOVIM_TAG}/nvim-linux-x86_64.tar.gz"
-NEOVIM_LINUX_ARM64_URL="https://github.com/neovim/neovim/releases/download/${NEOVIM_TAG}/nvim-linux-arm64.tar.gz"
-LSD_LINUX_AMD64_URL="https://github.com/lsd-rs/lsd/releases/download/${LSD_TAG}/lsd-musl_${LSD_VERSION}_amd64.deb"
-LSD_LINUX_ARM64_URL="https://github.com/lsd-rs/lsd/releases/download/${LSD_TAG}/lsd-musl_${LSD_VERSION}_arm64.deb"
-
-FZF_LINUX_AMD64_SHA256="$(download_and_sha "$FZF_LINUX_AMD64_URL" "$TMP_DIR/fzf-amd64.tar.gz")"
-FZF_LINUX_ARM64_SHA256="$(download_and_sha "$FZF_LINUX_ARM64_URL" "$TMP_DIR/fzf-arm64.tar.gz")"
-NEOVIM_LINUX_AMD64_SHA256="$(download_and_sha "$NEOVIM_LINUX_AMD64_URL" "$TMP_DIR/nvim-amd64.tar.gz")"
-NEOVIM_LINUX_ARM64_SHA256="$(download_and_sha "$NEOVIM_LINUX_ARM64_URL" "$TMP_DIR/nvim-arm64.tar.gz")"
-LSD_LINUX_AMD64_SHA256="$(download_and_sha "$LSD_LINUX_AMD64_URL" "$TMP_DIR/lsd-amd64.deb")"
-LSD_LINUX_ARM64_SHA256="$(download_and_sha "$LSD_LINUX_ARM64_URL" "$TMP_DIR/lsd-arm64.deb")"
+build_url() {
+  local repo tag template version asset
+  repo="$1"
+  tag="$2"
+  template="$3"
+  version="$4"
+  asset="${template//\{VERSION\}/$version}"
+  asset="${asset//\{TAG\}/$tag}"
+  printf '%s' "https://github.com/${repo}/releases/download/${tag}/${asset}"
+}
 
 mkdir -p "$ENV_DIR"
 {
   printf '# Created: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')"
-  printf 'FZF_TAG=%s\n' "$FZF_TAG"
-  printf 'FZF_VERSION=%s\n' "$FZF_VERSION"
-  printf 'FZF_LINUX_AMD64_URL=%s\n' "$FZF_LINUX_AMD64_URL"
-  printf 'FZF_LINUX_ARM64_URL=%s\n' "$FZF_LINUX_ARM64_URL"
-  printf 'FZF_LINUX_AMD64_SHA256=%s\n' "$FZF_LINUX_AMD64_SHA256"
-  printf 'FZF_LINUX_ARM64_SHA256=%s\n' "$FZF_LINUX_ARM64_SHA256"
-  printf 'NEOVIM_TAG=%s\n' "$NEOVIM_TAG"
-  printf 'NEOVIM_VERSION=%s\n' "$NEOVIM_VERSION"
-  printf 'NEOVIM_LINUX_AMD64_URL=%s\n' "$NEOVIM_LINUX_AMD64_URL"
-  printf 'NEOVIM_LINUX_ARM64_URL=%s\n' "$NEOVIM_LINUX_ARM64_URL"
-  printf 'NEOVIM_LINUX_AMD64_SHA256=%s\n' "$NEOVIM_LINUX_AMD64_SHA256"
-  printf 'NEOVIM_LINUX_ARM64_SHA256=%s\n' "$NEOVIM_LINUX_ARM64_SHA256"
-  printf 'LSD_TAG=%s\n' "$LSD_TAG"
-  printf 'LSD_VERSION=%s\n' "$LSD_VERSION"
-  printf 'LSD_LINUX_AMD64_URL=%s\n' "$LSD_LINUX_AMD64_URL"
-  printf 'LSD_LINUX_ARM64_URL=%s\n' "$LSD_LINUX_ARM64_URL"
-  printf 'LSD_LINUX_AMD64_SHA256=%s\n' "$LSD_LINUX_AMD64_SHA256"
-  printf 'LSD_LINUX_ARM64_SHA256=%s\n' "$LSD_LINUX_ARM64_SHA256"
+
+  list_binaries | while IFS= read -r binary; do
+    [ -n "$binary" ] || continue
+    load_binary_config "$binary"
+
+    install_method="$(require_var INSTALL_METHOD)"
+    assert_install_method "$install_method"
+    repo="$(require_var REPO)"
+    tag_prefix="$(require_var GITHUB_VERSION_TAG_PREFIX)"
+    asset_amd64="$(require_var ASSET_FILE_NAME_AMD64)"
+    asset_arm64="$(require_var ASSET_FILE_NAME_ARM64)"
+
+    tag="$(fetch_tag "$repo")"
+    if [ -z "$tag" ]; then
+      echo "Unable to determine latest tag for ${repo}."
+      exit 1
+    fi
+    version="${tag#${tag_prefix}}"
+
+    url_amd64="$(build_url "$repo" "$tag" "$asset_amd64" "$version")"
+    url_arm64="$(build_url "$repo" "$tag" "$asset_arm64" "$version")"
+
+    sha_amd64="$(download_and_sha "$url_amd64" "$TMP_DIR/${binary}-amd64.asset")"
+    sha_arm64="$(download_and_sha "$url_arm64" "$TMP_DIR/${binary}-arm64.asset")"
+
+    key="$(printf '%s' "$binary" | tr '[:lower:]-' '[:upper:]_')"
+    printf '%s_TAG=%s\n' "$key" "$tag"
+    printf '%s_VERSION=%s\n' "$key" "$version"
+    printf '%s_LINUX_AMD64_URL=%s\n' "$key" "$url_amd64"
+    printf '%s_LINUX_ARM64_URL=%s\n' "$key" "$url_arm64"
+    printf '%s_LINUX_AMD64_SHA256=%s\n' "$key" "$sha_amd64"
+    printf '%s_LINUX_ARM64_SHA256=%s\n' "$key" "$sha_arm64"
+  done
 } >"$LOCK_FILE"
 
 echo "Created lockfile: $LOCK_FILE"

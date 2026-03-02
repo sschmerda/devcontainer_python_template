@@ -250,7 +250,7 @@ lock-dev-env:
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-micromamba-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-root-env.sh"
+	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-root-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
@@ -279,7 +279,7 @@ lock-additional-binaries-root-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-root-env.sh"
+	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-root-env.sh"
 
 # Generate micromamba lockfile (run inside container only)
 .PHONY: lock-micromamba-env

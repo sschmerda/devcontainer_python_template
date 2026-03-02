@@ -374,6 +374,8 @@ Use the unified targets for reproducible builds:
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
 - `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 - `make lock-additional-binaries-root-env` generates/updates `devcontainer/additional-binaries-environment/additional-binaries-root-lock.env` for root-installed binaries (`fzf`, `neovim`, `lsd`) with amd64/arm64 URLs and SHA256 checksums.
+  - Enabled binaries and order come from `devcontainer/additional-binaries-environment/root-binaries.list`.
+  - Binary metadata is read from one file per binary in `devcontainer/additional-binaries-environment/root-binaries/` (no hardcoded defaults in install script).
 - `make lock-os-image` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
 - Lock-mode targets auto-select the right digest for host architecture (`amd64` or `arm64`) via `devcontainer/shell-scripts/export-cross-platform-lock-vars.sh`.
 - OS/service lock generation requires multi-arch images with `linux/amd64` and `linux/arm64` entries; otherwise locking fails fast.
