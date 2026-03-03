@@ -251,6 +251,7 @@ lock-dev-env:
 	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-micromamba-env.sh"
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-root-env.sh"
+	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
@@ -294,6 +295,20 @@ lock-micromamba-env:
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-micromamba-env.sh"
+
+# Generate tooling config lockfile (run inside container only)
+.PHONY: lock-tooling-config-env
+lock-tooling-config-env:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Update tooling config lockfile now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
+	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"
 
 # Generate Python lockfile (run inside container only)
 .PHONY: lock-python-env
@@ -378,6 +393,7 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
 	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-root-lock.env
+	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/tooling-config-lock.env
 	rm -f /home/dev/dev_container/devcontainer/os-environment/os-lock.env
 	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
 	rm -f /home/dev/dev_container/devcontainer/services-environment/services-lock.env
@@ -435,6 +451,15 @@ clean-lock-additional-binaries-root:
 		exit 1; \
 	fi
 	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-root-lock.env
+
+# Remove tooling config lockfile
+.PHONY: clean-lock-tooling-config
+clean-lock-tooling-config:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/tooling-config-lock.env
 
 .PHONY: clean-lock-os-image
 clean-lock-os-image:
