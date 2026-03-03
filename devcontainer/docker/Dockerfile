@@ -11,7 +11,8 @@ COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
 COPY shell-scripts/apply-apt-snapshot-state.sh /tmp/apply-apt-snapshot-state.sh
 COPY shell-scripts/verify-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh
 COPY shell-scripts/install-additional-binaries-root.sh /tmp/install-additional-binaries-root.sh
-COPY shell-scripts/install-additional-binaries-user.sh /tmp/install-additional-binaries-user.sh
+COPY shell-scripts/configure-user-tooling.sh /tmp/configure-user-tooling.sh
+COPY shell-scripts/activate-nvim-config.sh /tmp/activate-nvim-config.sh
 COPY shell-scripts/lock-additional-binaries-root-env.sh /tmp/lock-additional-binaries-root-env.sh
 COPY shell-scripts/install-quarto.sh /tmp/install-quarto.sh
 COPY shell-scripts/install-tinytex.sh /tmp/install-tinytex.sh
@@ -35,7 +36,7 @@ COPY micromamba-environment/ /tmp/micromamba-environment/
 COPY os-environment/ /tmp/os-environment/
 COPY additional-binaries-environment/ /tmp/additional-binaries-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/install-additional-binaries-user.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-root-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries-root.sh /tmp/configure-user-tooling.sh /tmp/activate-nvim-config.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-root-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
 RUN /tmp/apply-apt-snapshot-state.sh
@@ -58,7 +59,7 @@ RUN groupadd --gid ${USER_GID} dev \
 # Optional local dev password for sudo/auth flows.
 RUN if [ -n "${DEV_USER_PASSWORD}" ]; then \
   echo "dev:${DEV_USER_PASSWORD}" | chpasswd; \
-fi
+  fi
 
 # Grant sudo privileges to dev user.
 RUN getent group sudo >/dev/null || groupadd sudo \
@@ -75,9 +76,10 @@ RUN chown -R dev:dev /home/dev
 
 # Install dotfiles as the non-root user (correct HOME)
 RUN su - dev -c "/tmp/install-dotfiles.sh"
+RUN su - dev -c "/tmp/activate-nvim-config.sh"
 
 # Install user-level binaries/config after dotfiles
-RUN su - dev -c "/tmp/install-additional-binaries-user.sh"
+RUN su - dev -c "/tmp/configure-user-tooling.sh"
 RUN su - dev -c "/tmp/restore-jupyterlab-settings.sh"
 
 # install correct micromamba based on chip architecture (user-only install)

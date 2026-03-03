@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-echo ">>> Installing additional user packages..."
+echo ">>> Configuring user tooling..."
 
 # -------------------------
 # oh-my-zsh
@@ -24,4 +24,4 @@ git clone --depth=1 https://github.com/tmux-plugins/tpm "$TMUX_PLUGIN_MANAGER_PA
 chmod +x "$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
 "$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
 
-echo ">>> Additional user software installation completed."
+echo ">>> User tooling configuration completed."
