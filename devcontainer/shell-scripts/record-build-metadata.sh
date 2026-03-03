@@ -146,6 +146,7 @@ if [ -z "${docker_server_version:-}" ]; then
   docker_server_version="unavailable"
 fi
 docker_context_name="$(docker context show 2>/dev/null || echo unavailable)"
+make_version="$(make --version 2>/dev/null | head -n 1 || echo unavailable)"
 build_duration_seconds="${BUILD_DURATION_SECONDS:-unknown}"
 
 duration_human() {
@@ -304,6 +305,7 @@ DOCKER_CLIENT=$(sanitize_inline "$docker_client_version")
 DOCKER_COMPOSE=$(sanitize_inline "$docker_compose_version")
 DOCKER_SERVER=$(sanitize_inline "$docker_server_version")
 DOCKER_CONTEXT=${docker_context_name}
+MAKE_VERSION=$(sanitize_inline "$make_version")
 SERVICE_NAME=${services_inline}
 IMAGE_NAME=${images_inline}
 IMAGE_SIZE=${image_sizes_inline}
@@ -326,6 +328,7 @@ DOCKER_CLIENT=$(sanitize_inline "$docker_client_version")
 DOCKER_COMPOSE=$(sanitize_inline "$docker_compose_version")
 DOCKER_SERVER=$(sanitize_inline "$docker_server_version")
 DOCKER_CONTEXT=${docker_context_name}
+MAKE_VERSION=$(sanitize_inline "$make_version")
 SERVICE_NAMES=${services_inline}
 IMAGE_NAMES=${images_inline}
 IMAGE_SIZES=${image_sizes_inline}

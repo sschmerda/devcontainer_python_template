@@ -87,6 +87,7 @@ Captured fields include:
 - UTC timestamp, command name, and build duration
 - Host OS/kernel/architecture/CPU/RAM
 - Docker client/server/compose versions and Docker context
+- Host Make version (`MAKE_VERSION`)
 - Dev logs use singular keys: `SERVICE_NAME`, `IMAGE_NAME`, `IMAGE_SIZE`, `CONTAINER_NAME`, `CONTAINER_SIZE`
 - Services logs use plural keys: `SERVICE_NAMES`, `IMAGE_NAMES`, `IMAGE_SIZES`, `CONTAINER_NAMES`, `CONTAINER_SIZES`
 - Data mount flag (`DATA_MOUNT_USED`: `true` when a relevant bind mount is used, otherwise `false`)
