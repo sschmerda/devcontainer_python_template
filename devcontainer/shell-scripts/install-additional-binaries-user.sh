@@ -24,9 +24,4 @@ git clone --depth=1 https://github.com/tmux-plugins/tpm "$TMUX_PLUGIN_MANAGER_PA
 chmod +x "$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
 "$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
 
-# -------------------------
-# nvim + lazyvim
-# -------------------------
-nvim --headless +'Lazy! sync' +qa
-
 echo ">>> Additional user software installation completed."

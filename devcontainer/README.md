@@ -435,6 +435,8 @@ Locked installs are handled by:
 - Flower: `devcontainer/shell-scripts/install-flower-packages.sh` (`DEV_ENV_LOCKED` branch)
 - Micromamba: `devcontainer/shell-scripts/install-micromamba.sh` (`DEV_ENV_LOCKED` branch)
 - Additional root binaries: `devcontainer/shell-scripts/install-additional-binaries-root.sh` (`DEV_ENV_LOCKED` branch)
+- Additional user tooling (oh-my-zsh/tmux plugins): `devcontainer/shell-scripts/install-additional-binaries-user.sh`
+- Neovim config activation (Lazy sync): `devcontainer/shell-scripts/activate-nvim-config.sh`
 
 Clean lock targets (inside container unless noted):
 
