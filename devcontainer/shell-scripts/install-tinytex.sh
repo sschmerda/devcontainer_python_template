@@ -7,6 +7,7 @@ BIN_DIR="$HOME/.local/bin"
 ROOT_PREFIX="$HOME/.local/share/mamba"
 export PATH="$BIN_DIR:$PATH"
 export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
+: "${R_BASE_VERSION:?R_BASE_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
 
 if ! command -v micromamba >/dev/null 2>&1; then
   echo "micromamba not found on PATH"
@@ -22,7 +23,7 @@ trap cleanup_installer_env EXIT
 
 # Recreate the installer env every time to avoid stale state.
 cleanup_installer_env
-micromamba create -y -n "$INSTALLER_ENV" -c conda-forge r-base=4.5 r-tinytex
+micromamba create -y -n "$INSTALLER_ENV" -c conda-forge "r-base=${R_BASE_VERSION}" r-tinytex
 
 TEXLIVE_REPO_FILE="/tmp/latex-environment/latex-environment-lock.txt"
 LOCKED_REPO_URL=""

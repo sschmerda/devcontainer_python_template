@@ -103,7 +103,7 @@ RUN su - dev -c "R_BASE_VERSION=${R_BASE_VERSION} /tmp/install-r-packages.sh"
 RUN su - dev -c "/tmp/install-quarto.sh"
 
 # Install TinyTeX via temporary r-environment
-RUN su - dev -c "/tmp/install-tinytex.sh"
+RUN su - dev -c "R_BASE_VERSION=${R_BASE_VERSION} /tmp/install-tinytex.sh"
 
 # Install additional LaTeX packages (tlmgr)
 RUN su - dev -c "/tmp/install-latex-packages.sh"
