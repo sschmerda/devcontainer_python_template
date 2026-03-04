@@ -23,9 +23,7 @@ COMPOSE_SERVICES_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_SERVICES_FILE)
 COMPOSE_SERVICES_LOCK_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_SERVICES_FILE) -f $(COMPOSE_SERVICES_LOCK_FILE)
 
 COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES)
-COMPOSE_CMD_DATA = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_DATA_FILES)
 COMPOSE_CMD_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(COMPOSE_BASE_FILES)
-COMPOSE_CMD_LOCK_DATA = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(COMPOSE_DATA_FILES)
 COMPOSE_CMD_SERVICES = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES)
 COMPOSE_CMD_SERVICES_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(LOCK_ENV_FILE_ARG) $(COMPOSE_SERVICES_LOCK_FILES)
 
@@ -110,42 +108,37 @@ endef
 .PHONY: up-dev-env
 up-dev-env:
 	@set -e; \
+	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
+	compose_files="$(COMPOSE_BASE_FILES)"; \
+	if [ -n "$$HOST_DATA_DIR" ]; then \
+		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
+		if [ ! -d "$$HOST_DATA_DIR" ]; then \
+			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
+			exit 1; \
+		fi; \
+		compose_files="$(COMPOSE_DATA_FILES)"; \
+	fi; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d --build; \
+	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d --build; \
 	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env
-
-.PHONY: up-dev-env-data-mount
-up-dev-env-data-mount:
-	@set -a; . env-vars/.env.secrets; set +a; \
-	if [ -z "$$HOST_DATA_DIR" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
-		exit 1; \
-	fi
-	@set -e; \
-	started=$$(date +%s); \
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d --build; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-data-mount
 
 .PHONY: rebuild-dev-env
 rebuild-dev-env:
 	@set -e; \
+	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
+	compose_files="$(COMPOSE_BASE_FILES)"; \
+	if [ -n "$$HOST_DATA_DIR" ]; then \
+		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
+		if [ ! -d "$$HOST_DATA_DIR" ]; then \
+			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
+			exit 1; \
+		fi; \
+		compose_files="$(COMPOSE_DATA_FILES)"; \
+	fi; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) build --no-cache; \
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) up -d; \
+	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files build --no-cache; \
+	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d; \
 	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env
-
-.PHONY: rebuild-dev-env-data-mount
-rebuild-dev-env-data-mount:
-	@set -a; . env-vars/.env.secrets; set +a; \
-	if [ -z "$$HOST_DATA_DIR" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
-		exit 1; \
-	fi
-	@set -e; \
-	started=$$(date +%s); \
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) build --no-cache; \
-	DEV_ENV_LOCKED=0 $(COMPOSE_CMD_DATA) up -d; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-data-mount
 
 # Unified dev-env commands (locked)
 .PHONY: up-dev-env-lock
@@ -155,29 +148,21 @@ up-dev-env-lock:
 		exit 1; \
 	fi
 	@set -e; \
+	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
+	compose_files="$(COMPOSE_BASE_FILES)"; \
+	if [ -n "$$HOST_DATA_DIR" ]; then \
+		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
+		if [ ! -d "$$HOST_DATA_DIR" ]; then \
+			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
+			exit 1; \
+		fi; \
+		compose_files="$(COMPOSE_DATA_FILES)"; \
+	fi; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) up -d --build; \
+	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock
-
-.PHONY: up-dev-env-lock-data-mount
-up-dev-env-lock-data-mount:
-	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
-		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
-		exit 1; \
-	fi
-	@set -a; . env-vars/.env.secrets; set +a; \
-	if [ -z "$$HOST_DATA_DIR" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
-		exit 1; \
-	fi
-	@set -e; \
-	started=$$(date +%s); \
-	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) up -d --build; \
-	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock-data-mount
 
 .PHONY: rebuild-dev-env-lock
 rebuild-dev-env-lock:
@@ -186,31 +171,22 @@ rebuild-dev-env-lock:
 		exit 1; \
 	fi
 	@set -e; \
+	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
+	compose_files="$(COMPOSE_BASE_FILES)"; \
+	if [ -n "$$HOST_DATA_DIR" ]; then \
+		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
+		if [ ! -d "$$HOST_DATA_DIR" ]; then \
+			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
+			exit 1; \
+		fi; \
+		compose_files="$(COMPOSE_DATA_FILES)"; \
+	fi; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) build --no-cache; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK) up -d; \
+	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
+	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock
-
-.PHONY: rebuild-dev-env-lock-data-mount
-rebuild-dev-env-lock-data-mount:
-	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
-		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
-		exit 1; \
-	fi
-	@set -a; . env-vars/.env.secrets; set +a; \
-	if [ -z "$$HOST_DATA_DIR" ]; then \
-		echo "HOST_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
-		exit 1; \
-	fi
-	@set -e; \
-	started=$$(date +%s); \
-	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) build --no-cache; \
-	DEV_ENV_LOCKED=1 $(COMPOSE_CMD_LOCK_DATA) up -d; \
-	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock-data-mount
 
 .PHONY: down-dev-env
 down-dev-env:

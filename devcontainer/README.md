@@ -41,13 +41,9 @@ Use this order when reading/configuring the template:
 Run these from the `devcontainer` directory:
 
 - `make up-dev-env`: Build and start using latest package definitions.
-- `make up-dev-env-data-mount`: Build/start latest env with external host data mount.
 - `make rebuild-dev-env`: Rebuild using latest package definitions.
-- `make rebuild-dev-env-data-mount`: Rebuild/start latest env with external host data mount.
 - `make up-dev-env-lock`: Build and start using lockfiles when present.
-- `make up-dev-env-lock-data-mount`: Build/start locked env with external host data mount.
 - `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
-- `make rebuild-dev-env-lock-data-mount`: Rebuild/start locked env with external host data mount.
 - `make stop-dev-env`: Stop the main dev container service without removing it.
 - `make down-dev-env`: Stop and remove the main dev container service.
 - `make shell`: Open a shell in the container.
@@ -68,6 +64,12 @@ Run these from the `devcontainer` directory:
 - `make lock-services`: Generate `devcontainer/services-environment/services-lock.env` from current service images.
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build-assets/` (run inside the container).
 - `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build-assets/` (run inside the container).
+
+Data-mount behavior for dev targets:
+
+- If `HOST_DATA_DIR` is set, dev targets auto-include `docker-compose.data.yml`.
+- If `HOST_DATA_DIR` is empty, dev targets run without host data mount.
+- If `HOST_DATA_DIR` is set but invalid (non-absolute or missing directory), dev targets fail fast.
 
 ## Build metadata
 
@@ -112,7 +114,7 @@ Common variables:
 - `FLOWER_PYTHON_VERSION`: Python major/minor used to render `services-environment/flower/flower-environment.yml` for non-lock builds and lock generation.
 - `DOTFILES_REPO`: Dotfiles git repository URL used by `install-dotfiles.sh` (non-lock) and `lock-dotfiles-env.sh` (lock generation).
 - `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
-- `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when using `*-data-mount` targets.
+- `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when it is set.
 - `HOST_DATA_SYMLINK_PATH`: Symlink created in the container pointing to `HOST_DATA_MOUNT_PATH`.
 - `POSTGRES_*`: Active default service settings for local PostgreSQL (image, container name, port, db, user).
 - `MYSQL_*`, `REDIS_*`, `NGINX_*`, `CELERY_*`, `FLOWER_*`: Optional service templates (commented by default).
@@ -165,23 +167,27 @@ Production (recommended):
 
 External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/env-vars/.env.secrets`.
 
-- Data mounting is enabled only when using `*-data-mount` Make targets.
-- If `HOST_DATA_DIR` is set and a `*-data-mount` target is used, Docker Compose adds a bind mount:
+- `make up-dev-env`, `make rebuild-dev-env`, `make up-dev-env-lock`, and `make rebuild-dev-env-lock` automatically include the data-mount compose file when `HOST_DATA_DIR` is non-empty.
+- If `HOST_DATA_DIR` is set, Docker Compose adds a bind mount:
   - host: `HOST_DATA_DIR`
   - container: `HOST_DATA_MOUNT_PATH`
   - mode: controlled by `HOST_DATA_READ_ONLY` in `devcontainer/env-vars/.env`
 - On container startup, a symlink is created:
   - `HOST_DATA_SYMLINK_PATH -> HOST_DATA_MOUNT_PATH`
-- If `HOST_DATA_DIR` is empty, `*-data-mount` targets fail early and the symlink is removed/not created.
-- `HOST_DATA_DIR=` (key present but empty value) is treated as unset for data mounts; no host data bind mount is created.
+- If `HOST_DATA_DIR` is empty, data mount is skipped (no bind mount, no symlink).
+- If `HOST_DATA_DIR` is set, Make validates it before build/start:
+  - must be an absolute path
+  - must exist on host as a directory
+  - otherwise target fails fast
 
 ## Python and R version pins
 
-Python and R runtime versions are explicitly pinned in environment files (not via `.env` variables):
+Python and R runtime versions are controlled centrally via `.env`:
 
-- Set Python version in `devcontainer/python-environment/python-environment.yml` (`python=...`).
-- Set R version in `devcontainer/r-environment/r-environment.yml` (`r-base=...`).
-- Keep `devcontainer/services-environment/flower/flower-environment.yml` on the same Python major/minor version as `devcontainer/python-environment/python-environment.yml`.
+- `PYTHON_VERSION` renders `devcontainer/python-environment/python-environment.yml` at build/lock time.
+- `R_BASE_VERSION` renders `devcontainer/r-environment/r-environment.yml` at build/lock time.
+- `FLOWER_PYTHON_VERSION` renders `devcontainer/services-environment/flower/flower-environment.yml` at build/lock time.
+- Keep `FLOWER_PYTHON_VERSION` aligned with `PYTHON_VERSION` unless you explicitly want different runtimes.
 
 ## python-environment
 

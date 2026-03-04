@@ -34,11 +34,20 @@ docker_compose_cmd() {
     "$@"
 }
 
+host_data_dir_from_secrets() {
+  secrets_file="${ROOT_DIR}/env-vars/.env.secrets"
+  if [ ! -f "$secrets_file" ]; then
+    return
+  fi
+  awk -F= '/^HOST_DATA_DIR=/{print substr($0, index($0, "=")+1); exit}' "$secrets_file"
+}
+
 compose_files_for_scope() {
   case "$SCOPE" in
     dev)
       printf '%s' "-f ${ROOT_DIR}/docker/docker-compose.yml"
-      if printf '%s' "$COMMAND_NAME" | grep -q "data-mount"; then
+      host_data_dir="$(host_data_dir_from_secrets)"
+      if [ -n "${host_data_dir:-}" ]; then
         printf ' %s' "-f ${ROOT_DIR}/docker/docker-compose.data.yml"
       fi
       ;;
@@ -284,7 +293,7 @@ images_inline="$(sanitize_inline "$image_summary")"
 image_sizes_inline="$(sanitize_inline "$image_size_summary")"
 
 data_mount_used="false"
-if [ "$SCOPE" = "dev" ] && printf '%s' "$COMMAND_NAME" | grep -q "data-mount"; then
+if [ "$SCOPE" = "dev" ] && [ -n "$(host_data_dir_from_secrets)" ]; then
   data_mount_used="true"
 elif [ "$SCOPE" = "services" ] && [ "$(services_have_volume_mounts)" = "true" ]; then
   data_mount_used="true"
