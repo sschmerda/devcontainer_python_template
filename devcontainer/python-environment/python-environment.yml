@@ -8,7 +8,7 @@ dependencies:
   ############################
   # Core runtime
   ############################
-  - python=3.12 # Python language runtime
+  - python=__PYTHON_VERSION__ # Python language runtime
   - pip # Install PyPI-only packages when needed
 
   ############################

@@ -4,7 +4,7 @@ name: celery-env
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
+  - python=__FLOWER_PYTHON_VERSION__
   - celery
   - flower
   - redis-py

@@ -5,6 +5,12 @@ FROM ${DEVCONTAINER_OS_IMAGE}
 USER root
 ARG DEV_ENV_LOCKED=0
 ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
+ARG PYTHON_VERSION
+ARG R_BASE_VERSION
+ARG FLOWER_PYTHON_VERSION
+ENV PYTHON_VERSION=${PYTHON_VERSION}
+ENV R_BASE_VERSION=${R_BASE_VERSION}
+ENV FLOWER_PYTHON_VERSION=${FLOWER_PYTHON_VERSION}
 
 # Copy shell scripts
 COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
@@ -88,10 +94,10 @@ RUN chown -R dev:dev /tmp/python-environment
 RUN chown -R dev:dev /tmp/r-environment
 
 # Install python libraries
-RUN su - dev -c "/tmp/install-python-packages.sh"
+RUN su - dev -c "PYTHON_VERSION=${PYTHON_VERSION} /tmp/install-python-packages.sh"
 
 # Install R libraries
-RUN su - dev -c "/tmp/install-r-packages.sh"
+RUN su - dev -c "R_BASE_VERSION=${R_BASE_VERSION} /tmp/install-r-packages.sh"
 
 # Install Quarto (latest or locked) as user.
 RUN su - dev -c "/tmp/install-quarto.sh"

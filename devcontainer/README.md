@@ -106,6 +106,9 @@ Common variables:
 - `RETRY_ATTEMPTS`: Number of retry attempts for micromamba/conda-lock install commands during Python/R environment creation (default: `4`).
 - `RETRY_DELAY_SECONDS`: Base delay in seconds for retries; each retry sleeps `base_delay * attempt` (default: `10`).
 - `CONDA_LOCK_VERSION`: `conda-lock` version used by lock scripts (`lock-python-env`, `lock-r-env`, `lock-flower-env`).
+- `PYTHON_VERSION`: Python major/minor used to render `python-environment.yml` for non-lock builds and lock generation.
+- `R_BASE_VERSION`: R major/minor used to render `r-environment.yml` for non-lock builds and lock generation.
+- `FLOWER_PYTHON_VERSION`: Python major/minor used to render `services-environment/flower/flower-environment.yml` for non-lock builds and lock generation.
 - `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
 - `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when using `*-data-mount` targets.
 - `HOST_DATA_SYMLINK_PATH`: Symlink created in the container pointing to `HOST_DATA_MOUNT_PATH`.

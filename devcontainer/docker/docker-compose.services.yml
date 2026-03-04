@@ -134,6 +134,7 @@ services:
   #     args:
   #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
   #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
+  #       PYTHON_VERSION: ${PYTHON_VERSION}
   #   container_name: ${CELERY_WORKER_CONTAINER_NAME}
   #   restart: unless-stopped
   #   working_dir: ${CELERY_WORKDIR}
@@ -168,6 +169,7 @@ services:
   #     args:
   #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
   #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
+  #       PYTHON_VERSION: ${PYTHON_VERSION}
   #   container_name: ${CELERY_BEAT_CONTAINER_NAME}
   #   restart: unless-stopped
   #   working_dir: ${CELERY_WORKDIR}
@@ -202,6 +204,7 @@ services:
   #     args:
   #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
   #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
+  #       FLOWER_PYTHON_VERSION: ${FLOWER_PYTHON_VERSION}
   #   container_name: ${FLOWER_CONTAINER_NAME}
   #   restart: unless-stopped
   #   working_dir: ${CELERY_WORKDIR}

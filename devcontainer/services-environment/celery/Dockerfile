@@ -3,11 +3,13 @@ ARG DEVCONTAINER_OS_IMAGE
 FROM ${DEVCONTAINER_OS_IMAGE}
 
 ARG DEV_ENV_LOCKED=0
+ARG PYTHON_VERSION
 
 ENV HOME=/root
 ENV PATH=/root/.local/bin:$PATH
 ENV MAMBA_ROOT_PREFIX=/root/.local/share/mamba
 ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
+ENV PYTHON_VERSION=${PYTHON_VERSION}
 
 COPY devcontainer/shell-scripts/install-micromamba.sh /tmp/install-micromamba.sh
 COPY devcontainer/shell-scripts/install-celery-packages.sh /tmp/install-celery-packages.sh
