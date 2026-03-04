@@ -8,9 +8,11 @@ ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 ARG PYTHON_VERSION
 ARG R_BASE_VERSION
 ARG FLOWER_PYTHON_VERSION
+ARG DOTFILES_REPO
 ENV PYTHON_VERSION=${PYTHON_VERSION}
 ENV R_BASE_VERSION=${R_BASE_VERSION}
 ENV FLOWER_PYTHON_VERSION=${FLOWER_PYTHON_VERSION}
+ENV DOTFILES_REPO=${DOTFILES_REPO}
 
 # Copy shell scripts
 COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
@@ -35,6 +37,7 @@ COPY shell-scripts/lock-r-env.sh /tmp/lock-r-env.sh
 COPY shell-scripts/lock-latex-env.sh /tmp/lock-latex-env.sh
 COPY shell-scripts/lock-quarto-env.sh /tmp/lock-quarto-env.sh
 COPY build-assets/ /tmp/build-assets/
+COPY dotfiles-environment/ /tmp/dotfiles-environment/
 COPY latex-environment/ /tmp/latex-environment/
 COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
@@ -81,7 +84,7 @@ ENV SHELL=/usr/bin/zsh
 RUN chown -R dev:dev /home/dev
 
 # Install dotfiles as the non-root user (correct HOME)
-RUN su - dev -c "/tmp/install-dotfiles.sh"
+RUN su - dev -c "DOTFILES_REPO=${DOTFILES_REPO} /tmp/install-dotfiles.sh"
 RUN su - dev -c "/tmp/activate-nvim-config.sh"
 
 # Install user-level binaries/config after dotfiles

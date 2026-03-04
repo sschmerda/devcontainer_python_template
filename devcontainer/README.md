@@ -55,8 +55,9 @@ Run these from the `devcontainer` directory:
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
 - Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT:-4200}`.
-- `make lock-dev-env`: Generate lockfiles for micromamba, additional root binaries, user tooling repos, Python, R, LaTeX, and Quarto (run inside the container).
+- `make lock-dev-env`: Generate lockfiles for micromamba, additional root binaries, user tooling repos, dotfiles repo ref, Python, R, LaTeX, and Quarto (run inside the container).
 - `make lock-tooling-config-env`: Generate `devcontainer/additional-binaries-environment/tooling-config-lock.env` for oh-my-zsh, zsh plugins/theme, and tmux TPM repos.
+- `make lock-dotfiles-env`: Generate `devcontainer/dotfiles-environment/dotfiles-lock.env` with a pinned dotfiles commit.
 - `make lock-os-image`: Generate `devcontainer/os-environment/os-lock.env` from `DEVCONTAINER_OS_IMAGE` (run on host).
 - `make up-services`: Pull and start configured additional services (latest mode).
 - `make rebuild-services`: Re-pull and recreate configured additional services (latest mode).
@@ -109,6 +110,7 @@ Common variables:
 - `PYTHON_VERSION`: Python major/minor used to render `python-environment.yml` for non-lock builds and lock generation.
 - `R_BASE_VERSION`: R major/minor used to render `r-environment.yml` for non-lock builds and lock generation.
 - `FLOWER_PYTHON_VERSION`: Python major/minor used to render `services-environment/flower/flower-environment.yml` for non-lock builds and lock generation.
+- `DOTFILES_REPO`: Dotfiles git repository URL used by `install-dotfiles.sh` (non-lock) and `lock-dotfiles-env.sh` (lock generation).
 - `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
 - `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when using `*-data-mount` targets.
 - `HOST_DATA_SYMLINK_PATH`: Symlink created in the container pointing to `HOST_DATA_MOUNT_PATH`.
@@ -377,11 +379,12 @@ Use the unified targets for reproducible builds:
 
 - `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
-- `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), additional root binaries (GitHub release assets), user tooling repos (git commit refs), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
+- `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), additional root binaries (GitHub release assets), user tooling repos (git commit refs), dotfiles repo (git commit ref), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 - `make lock-additional-binaries-root-env` generates/updates `devcontainer/additional-binaries-environment/additional-binaries-root-lock.env` for root-installed binaries (`fzf`, `neovim`, `lsd`) with amd64/arm64 URLs and SHA256 checksums.
   - Enabled binaries and order come from `devcontainer/additional-binaries-environment/root-binaries.list`.
   - Binary metadata is read from one file per binary in `devcontainer/additional-binaries-environment/root-binaries/` (no hardcoded defaults in install script).
 - `make lock-tooling-config-env` generates/updates `devcontainer/additional-binaries-environment/tooling-config-lock.env` with pinned git commit refs for oh-my-zsh and tmux/zsh plugin repos.
+- `make lock-dotfiles-env` generates/updates `devcontainer/dotfiles-environment/dotfiles-lock.env` with pinned `DOTFILES_REPO` and `DOTFILES_REF`.
 - `make lock-os-image` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
 - Lock-mode targets auto-select the right digest for host architecture (`amd64` or `arm64`) via `devcontainer/shell-scripts/export-cross-platform-lock-vars.sh`.
 - OS/service lock generation requires multi-arch images with `linux/amd64` and `linux/arm64` entries; otherwise locking fails fast.
@@ -393,6 +396,7 @@ Fallback behavior:
   - Base OS image: `os-environment/os-lock.env`
   - Additional root binaries: `additional-binaries-environment/additional-binaries-root-lock.env`
   - Additional tooling repos: `additional-binaries-environment/tooling-config-lock.env`
+  - Dotfiles repo: `dotfiles-environment/dotfiles-lock.env`
   - Micromamba: `micromamba-environment/micromamba-lock.env`
   - Python: `python-environment/python-environment-lock.yml`
   - Celery worker/beat (service image build): `python-environment/python-environment-lock.yml`
@@ -408,6 +412,7 @@ Fallback behavior:
 - Micromamba uses GitHub release latest for non-lock and `micromamba-environment/micromamba-lock.env` for lock; lock mode is strict (no fallback).
 - Additional root binaries (`fzf`, `neovim`, `lsd`) use GitHub latest in non-lock and `additional-binaries-environment/additional-binaries-root-lock.env` in lock mode; lock mode verifies SHA256 and is strict (no fallback).
 - Additional tooling (oh-my-zsh, zsh plugins/theme, tmux TPM) uses latest git HEAD in non-lock and `additional-binaries-environment/tooling-config-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
+- Dotfiles (`zsh`, `tmux`, `nvim` stow source) uses latest default branch HEAD in non-lock and `dotfiles-environment/dotfiles-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
 - Apt repositories use live distro mirrors in non-lock mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` in lock mode.
 
 Locking guidance:
@@ -433,6 +438,7 @@ Individual lock targets:
 - `make lock-micromamba-env` updates `devcontainer/micromamba-environment/micromamba-lock.env`
 - `make lock-additional-binaries-root-env` updates `devcontainer/additional-binaries-environment/additional-binaries-root-lock.env`
 - `make lock-tooling-config-env` updates `devcontainer/additional-binaries-environment/tooling-config-lock.env`
+- `make lock-dotfiles-env` updates `devcontainer/dotfiles-environment/dotfiles-lock.env`
 - `make lock-os-image` updates `devcontainer/os-environment/os-lock.env`
 
 Locked installs are handled by:
@@ -445,6 +451,7 @@ Locked installs are handled by:
 - Micromamba: `devcontainer/shell-scripts/install-micromamba.sh` (`DEV_ENV_LOCKED` branch)
 - Additional root binaries: `devcontainer/shell-scripts/install-additional-binaries-root.sh` (`DEV_ENV_LOCKED` branch)
 - Additional tooling (oh-my-zsh/tmux plugins): `devcontainer/shell-scripts/install-tooling-config.sh` (`DEV_ENV_LOCKED` branch)
+- Dotfiles (stow source repo): `devcontainer/shell-scripts/install-dotfiles.sh` (`DEV_ENV_LOCKED` branch)
 - Neovim config activation (Lazy sync): `devcontainer/shell-scripts/activate-nvim-config.sh`
 
 Clean lock targets (inside container unless noted):
@@ -458,6 +465,7 @@ Clean lock targets (inside container unless noted):
 - `make clean-lock-micromamba`
 - `make clean-lock-additional-binaries-root`
 - `make clean-lock-tooling-config`
+- `make clean-lock-dotfiles`
 - `make clean-lock-os-image` (run on host)
 
 ## Template repo setup

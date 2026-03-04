@@ -16,6 +16,7 @@ services:
         PYTHON_VERSION: ${PYTHON_VERSION}
         R_BASE_VERSION: ${R_BASE_VERSION}
         FLOWER_PYTHON_VERSION: ${FLOWER_PYTHON_VERSION}
+        DOTFILES_REPO: ${DOTFILES_REPO}
     volumes:
       - ../..:/home/dev/dev_container
     working_dir: /home/dev/dev_container
