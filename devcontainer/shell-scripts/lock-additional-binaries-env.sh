@@ -7,9 +7,9 @@ if [ ! -f /.dockerenv ]; then
 fi
 
 ENV_DIR="/home/dev/dev_container/devcontainer/additional-binaries-environment"
-LIST_FILE="${ENV_DIR}/root-binaries.list"
-CONFIG_DIR="${ENV_DIR}/root-binaries"
-LOCK_FILE="${ENV_DIR}/additional-binaries-root-lock.env"
+LIST_FILE="${ENV_DIR}/additional-binaries.list"
+CONFIG_DIR="${ENV_DIR}/additional-binaries"
+LOCK_FILE="${ENV_DIR}/additional-binaries-lock.env"
 TMP_DIR="$(mktemp -d)"
 
 cleanup() {

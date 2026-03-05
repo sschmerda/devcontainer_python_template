@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ARCH="$(uname -m)"
-LIST_FILE="/tmp/additional-binaries-environment/root-binaries.list"
-CONFIG_DIR="/tmp/additional-binaries-environment/root-binaries"
-LOCK_FILE="/tmp/additional-binaries-environment/additional-binaries-root-lock.env"
+LIST_FILE="/tmp/additional-binaries-environment/additional-binaries.list"
+CONFIG_DIR="/tmp/additional-binaries-environment/additional-binaries"
+LOCK_FILE="/tmp/additional-binaries-environment/additional-binaries-lock.env"
 RETRY_ATTEMPTS="${RETRY_ATTEMPTS:-4}"
 RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS:-10}"
 

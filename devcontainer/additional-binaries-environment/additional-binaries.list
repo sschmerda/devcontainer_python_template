@@ -1,6 +1,6 @@
-## Root binary install order.
+## Additional binary install order.
 ## Each entry is a binary key and must match a config filename in
-## devcontainer/additional-binaries-environment/root-binaries/<key>.env
+## devcontainer/additional-binaries-environment/additional-binaries/<key>.env
 ## (examples: fzf -> fzf.env, neovim -> neovim.env).
 fzf
 neovim

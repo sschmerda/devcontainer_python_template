@@ -120,7 +120,7 @@ up-dev-env-latest:
 	fi; \
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d --build; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest-latest
 
 .PHONY: rebuild-dev-env-latest
 rebuild-dev-env-latest:
@@ -138,7 +138,7 @@ rebuild-dev-env-latest:
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files build --no-cache; \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest-latest
 
 # Unified dev-env commands (locked)
 .PHONY: up-dev-env-lock
@@ -226,7 +226,7 @@ lock-dev-env:
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-micromamba-env.sh"
-	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-root-env.sh"
+	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-env.sh"
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-dotfiles-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
@@ -245,19 +245,19 @@ lock-os-image:
 	fi'
 	sh shell-scripts/lock-os-image.sh
 
-# Generate additional root binaries lockfile (run inside container only)
-.PHONY: lock-additional-binaries-root-env
-lock-additional-binaries-root-env:
+# Generate additional binaries lockfile (run inside container only)
+.PHONY: lock-additional-binaries-env
+lock-additional-binaries-env:
 	@if [ ! -f /.dockerenv ]; then \
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
 	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
-		printf "Update additional root binaries lockfile now? [y/N] "; \
+		printf "Update additional binaries lockfile now? [y/N] "; \
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
-	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-root-env.sh"
+	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-env.sh"
 
 # Generate micromamba lockfile (run inside container only)
 .PHONY: lock-micromamba-env
@@ -383,7 +383,7 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
-	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-root-lock.env
+	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-lock.env
 	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/tooling-config-lock.env
 	rm -f /home/dev/dev_container/devcontainer/dotfiles-environment/dotfiles-lock.env
 	rm -f /home/dev/dev_container/devcontainer/os-environment/os-lock.env
@@ -435,14 +435,14 @@ clean-lock-micromamba:
 	fi
 	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
 
-# Remove additional root binaries lockfile
-.PHONY: clean-lock-additional-binaries-root
-clean-lock-additional-binaries-root:
+# Remove additional binaries lockfile
+.PHONY: clean-lock-additional-binaries
+clean-lock-additional-binaries:
 	@if [ ! -f /.dockerenv ]; then \
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-root-lock.env
+	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-lock.env
 
 # Remove tooling config lockfile
 .PHONY: clean-lock-tooling-config
@@ -529,7 +529,7 @@ up-services-latest:
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build $$services; \
 	fi; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-latest-latest
 
 .PHONY: rebuild-services-latest
 rebuild-services-latest:
@@ -541,7 +541,7 @@ rebuild-services-latest:
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build --force-recreate $$services; \
 	fi; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-latest-latest
 
 # Additional services lifecycle (locked)
 .PHONY: up-services-lock
