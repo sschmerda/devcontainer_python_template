@@ -384,7 +384,7 @@ clean-locks:
 	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
 	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
 	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-lock.env
-	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/tooling-config-lock.env
+	rm -f /home/dev/dev_container/devcontainer/tooling-config-environment/tooling-config-lock.env
 	rm -f /home/dev/dev_container/devcontainer/dotfiles-environment/dotfiles-lock.env
 	rm -f /home/dev/dev_container/devcontainer/os-environment/os-lock.env
 	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
@@ -451,7 +451,7 @@ clean-lock-tooling-config:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
-	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/tooling-config-lock.env
+	rm -f /home/dev/dev_container/devcontainer/tooling-config-environment/tooling-config-lock.env
 
 # Remove dotfiles lockfile
 .PHONY: clean-lock-dotfiles

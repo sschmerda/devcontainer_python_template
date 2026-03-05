@@ -6,7 +6,8 @@ if [ ! -f /.dockerenv ]; then
   exit 1
 fi
 
-LOCK_FILE="/home/dev/dev_container/devcontainer/additional-binaries-environment/tooling-config-lock.env"
+LOCK_FILE="/home/dev/dev_container/devcontainer/tooling-config-environment/tooling-config-lock.env"
+mkdir -p "$(dirname "$LOCK_FILE")"
 
 OH_MY_ZSH_REPO="https://github.com/ohmyzsh/ohmyzsh.git"
 ZSH_AUTOSUGGESTIONS_REPO="https://github.com/zsh-users/zsh-autosuggestions.git"

@@ -3,7 +3,7 @@ set -euo pipefail
 
 echo ">>> Configuring tooling..."
 
-LOCK_FILE="/tmp/additional-binaries-environment/tooling-config-lock.env"
+LOCK_FILE="/tmp/tooling-config-environment/tooling-config-lock.env"
 
 OH_MY_ZSH_REPO_DEFAULT="https://github.com/ohmyzsh/ohmyzsh.git"
 ZSH_AUTOSUGGESTIONS_REPO_DEFAULT="https://github.com/zsh-users/zsh-autosuggestions.git"

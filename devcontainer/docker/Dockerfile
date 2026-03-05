@@ -44,6 +44,7 @@ COPY quarto-environment/ /tmp/quarto-environment/
 COPY micromamba-environment/ /tmp/micromamba-environment/
 COPY os-environment/ /tmp/os-environment/
 COPY additional-binaries-environment/ /tmp/additional-binaries-environment/
+COPY tooling-config-environment/ /tmp/tooling-config-environment/
 COPY python-environment/ /tmp/python-environment/
 RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries.sh /tmp/install-tooling-config.sh /tmp/activate-nvim-config.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
