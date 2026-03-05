@@ -40,8 +40,8 @@ Use this order when reading/configuring the template:
 
 Run these from the `devcontainer` directory:
 
-- `make up-dev-env`: Build and start using latest package definitions.
-- `make rebuild-dev-env`: Rebuild using latest package definitions.
+- `make up-dev-env-latest`: Build and start using latest package definitions.
+- `make rebuild-dev-env-latest`: Rebuild using latest package definitions.
 - `make up-dev-env-lock`: Build and start using lockfiles when present.
 - `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
 - `make stop-dev-env`: Stop the main dev container service without removing it.
@@ -55,8 +55,8 @@ Run these from the `devcontainer` directory:
 - `make lock-tooling-config-env`: Generate `devcontainer/additional-binaries-environment/tooling-config-lock.env` for oh-my-zsh, zsh plugins/theme, and tmux TPM repos.
 - `make lock-dotfiles-env`: Generate `devcontainer/dotfiles-environment/dotfiles-lock.env` with a pinned dotfiles commit.
 - `make lock-os-image`: Generate `devcontainer/os-environment/os-lock.env` from `DEVCONTAINER_OS_IMAGE` (run on host).
-- `make up-services`: Pull and start configured additional services (latest mode).
-- `make rebuild-services`: Re-pull and recreate configured additional services (latest mode).
+- `make up-services-latest`: Pull and start configured additional services (latest mode).
+- `make rebuild-services-latest`: Re-pull and recreate configured additional services (latest mode).
 - `make up-services-lock`: Pull and start configured additional services using locked image digests.
 - `make rebuild-services-lock`: Re-pull and recreate configured additional services using locked image digests.
 - `make stop-services`: Stop configured additional services without removing them.
@@ -75,9 +75,9 @@ Data-mount behavior for dev targets:
 
 Build metadata is recorded automatically for every `up-*` and `rebuild-*` dev/services target.
 
-- Dev env non-lock metadata: `devcontainer/build-metadata/dev-env-builds-non-lock.log`
+- Dev env latest metadata: `devcontainer/build-metadata/dev-env-builds-latest.log`
 - Dev env lock metadata: `devcontainer/build-metadata/dev-env-builds-lock.log`
-- Services non-lock metadata: `devcontainer/build-metadata/services-builds-non-lock.log`
+- Services latest metadata: `devcontainer/build-metadata/services-builds-latest.log`
 - Services lock metadata: `devcontainer/build-metadata/services-builds-lock.log`
 
 Behavior:
@@ -109,10 +109,10 @@ Common variables:
 - `RETRY_ATTEMPTS`: Number of retry attempts for micromamba/conda-lock install commands during Python/R environment creation (default: `4`).
 - `RETRY_DELAY_SECONDS`: Base delay in seconds for retries; each retry sleeps `base_delay * attempt` (default: `10`).
 - `CONDA_LOCK_VERSION`: `conda-lock` version used by lock scripts (`lock-python-env`, `lock-r-env`, `lock-flower-env`).
-- `PYTHON_VERSION`: Python major/minor used to render `python-environment.yml` for non-lock builds and lock generation.
-- `R_BASE_VERSION`: R major/minor used to render `r-environment.yml` for non-lock builds and lock generation.
-- `FLOWER_PYTHON_VERSION`: Python major/minor used to render `services-environment/flower/flower-environment.yml` for non-lock builds and lock generation.
-- `DOTFILES_REPO`: Dotfiles git repository URL used by `install-dotfiles.sh` (non-lock) and `lock-dotfiles-env.sh` (lock generation).
+- `PYTHON_VERSION`: Python major/minor used to render `python-environment.yml` for latest builds and lock generation.
+- `R_BASE_VERSION`: R major/minor used to render `r-environment.yml` for latest builds and lock generation.
+- `FLOWER_PYTHON_VERSION`: Python major/minor used to render `services-environment/flower/flower-environment.yml` for latest builds and lock generation.
+- `DOTFILES_REPO`: Dotfiles git repository URL used by `install-dotfiles.sh` (latest) and `lock-dotfiles-env.sh` (lock generation).
 - `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
 - `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when it is set.
 - `HOST_DATA_SYMLINK_PATH`: Symlink created in the container pointing to `HOST_DATA_MOUNT_PATH`.
@@ -167,7 +167,7 @@ Production (recommended):
 
 External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/env-vars/.env.secrets`.
 
-- `make up-dev-env`, `make rebuild-dev-env`, `make up-dev-env-lock`, and `make rebuild-dev-env-lock` automatically include the data-mount compose file when `HOST_DATA_DIR` is non-empty.
+- `make up-dev-env-latest`, `make rebuild-dev-env-latest`, `make up-dev-env-lock`, and `make rebuild-dev-env-lock` automatically include the data-mount compose file when `HOST_DATA_DIR` is non-empty.
 - If `HOST_DATA_DIR` is set, Docker Compose adds a bind mount:
   - host: `HOST_DATA_DIR`
   - container: `HOST_DATA_MOUNT_PATH`
@@ -274,7 +274,7 @@ When adding or enabling a service, update these files in this order:
 After enabling a service:
 
 - run `make lock-services` to refresh digest locks for active pull-based services.
-- run `make rebuild-services` (latest mode) or `make rebuild-services-lock` (lock mode).
+- run `make rebuild-services-latest` (latest mode) or `make rebuild-services-lock` (lock mode).
 
 Current default:
 
@@ -301,7 +301,7 @@ Celery image behavior:
 - `flower` uses `devcontainer/services-environment/flower/Dockerfile` with minimal `celery-env` from:
   - `DEV_ENV_LOCKED=0` -> `services-environment/flower/flower-environment.yml`
   - `DEV_ENV_LOCKED=1` -> `services-environment/flower/flower-environment-lock.yml`
-- `make up-services` / `make rebuild-services` build Celery with `DEV_ENV_LOCKED=0`.
+- `make up-services-latest` / `make rebuild-services-latest` build Celery with `DEV_ENV_LOCKED=0`.
 - `make up-services-lock` / `make rebuild-services-lock` build Celery with `DEV_ENV_LOCKED=1`.
 
 Locking behavior:
@@ -321,11 +321,11 @@ Minimal enable workflow:
 2. For pull-based services, uncomment the matching lock override in `devcontainer/docker/docker-compose.services-lock.yml`.
 3. Set required non-secret vars in `devcontainer/env-vars/.env` and required secrets/paths in `devcontainer/env-vars/.env.secrets`.
 4. Run `make lock-services` to refresh `devcontainer/services-environment/services-lock.env`.
-5. Run `make rebuild-services` (latest mode) or `make rebuild-services-lock` (lock mode).
+5. Run `make rebuild-services-latest` (latest mode) or `make rebuild-services-lock` (lock mode).
 
 Lock verification:
 
-- Render non-lock images:
+- Render latest images:
   - `docker compose --env-file env-vars/.env --env-file env-vars/.env.secrets -f docker/docker-compose.yml -f docker/docker-compose.services.yml config | rg 'image:'`
 - Render lock images:
   - `eval "$(sh shell-scripts/export-cross-platform-lock-vars.sh all)" && DEV_ENV_LOCKED=1 docker compose --env-file env-vars/.env --env-file env-vars/.env.secrets --env-file os-environment/os-lock.env --env-file services-environment/services-lock.env -f docker/docker-compose.yml -f docker/docker-compose.services.yml -f docker/docker-compose.services-lock.yml config | rg 'image:'`
@@ -383,7 +383,7 @@ Note:
 
 Use the unified targets for reproducible builds:
 
-- `make up-dev-env` / `make rebuild-dev-env` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
+- `make up-dev-env-latest` / `make rebuild-dev-env-latest` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
 - `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), additional root binaries (GitHub release assets), user tooling repos (git commit refs), dotfiles repo (git commit ref), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 - `make lock-additional-binaries-root-env` generates/updates `devcontainer/additional-binaries-environment/additional-binaries-root-lock.env` for root-installed binaries (`fzf`, `neovim`, `lsd`) with amd64/arm64 URLs and SHA256 checksums.
@@ -414,12 +414,12 @@ Fallback behavior:
 - Python uses `python-environment/python-environment.yml` for latest and `python-environment/python-environment-lock.yml` for locked installs.
 - R uses `r-environment/r-environment.yml` for latest and `r-environment/r-environment-lock.yml` for locked installs.
 - LaTeX uses `latex-environment/latex-packages.txt` for latest and `latex-environment/latex-environment-lock.txt` for locked installs.
-- Quarto uses GitHub latest for non-lock and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
-- Micromamba uses GitHub release latest for non-lock and `micromamba-environment/micromamba-lock.env` for lock; lock mode is strict (no fallback).
-- Additional root binaries (`fzf`, `neovim`, `lsd`) use GitHub latest in non-lock and `additional-binaries-environment/additional-binaries-root-lock.env` in lock mode; lock mode verifies SHA256 and is strict (no fallback).
-- Additional tooling (oh-my-zsh, zsh plugins/theme, tmux TPM) uses latest git HEAD in non-lock and `additional-binaries-environment/tooling-config-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
-- Dotfiles (`zsh`, `tmux`, `nvim` stow source) uses latest default branch HEAD in non-lock and `dotfiles-environment/dotfiles-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
-- Apt repositories use live distro mirrors in non-lock mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` in lock mode.
+- Quarto uses GitHub latest for latest and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
+- Micromamba uses GitHub release latest for latest and `micromamba-environment/micromamba-lock.env` for lock; lock mode is strict (no fallback).
+- Additional root binaries (`fzf`, `neovim`, `lsd`) use GitHub latest in latest and `additional-binaries-environment/additional-binaries-root-lock.env` in lock mode; lock mode verifies SHA256 and is strict (no fallback).
+- Additional tooling (oh-my-zsh, zsh plugins/theme, tmux TPM) uses latest git HEAD in latest and `additional-binaries-environment/tooling-config-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
+- Dotfiles (`zsh`, `tmux`, `nvim` stow source) uses latest default branch HEAD in latest and `dotfiles-environment/dotfiles-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
+- Apt repositories use live distro mirrors in latest mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` in lock mode.
 
 Locking guidance:
 

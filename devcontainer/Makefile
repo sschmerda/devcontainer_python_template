@@ -105,8 +105,8 @@ define check_service_vars
 endef
 
 # Unified dev-env commands (latest)
-.PHONY: up-dev-env
-up-dev-env:
+.PHONY: up-dev-env-latest
+up-dev-env-latest:
 	@set -e; \
 	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
 	compose_files="$(COMPOSE_BASE_FILES)"; \
@@ -120,10 +120,10 @@ up-dev-env:
 	fi; \
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d --build; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest
 
-.PHONY: rebuild-dev-env
-rebuild-dev-env:
+.PHONY: rebuild-dev-env-latest
+rebuild-dev-env-latest:
 	@set -e; \
 	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
 	compose_files="$(COMPOSE_BASE_FILES)"; \
@@ -138,7 +138,7 @@ rebuild-dev-env:
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files build --no-cache; \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest
 
 # Unified dev-env commands (locked)
 .PHONY: up-dev-env-lock
@@ -162,7 +162,7 @@ up-dev-env-lock:
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest-lock
 
 .PHONY: rebuild-dev-env-lock
 rebuild-dev-env-lock:
@@ -186,7 +186,7 @@ rebuild-dev-env-lock:
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest-lock
 
 .PHONY: down-dev-env
 down-dev-env:
@@ -519,8 +519,8 @@ jupyter:
 	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec $(SERVICE) sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/run-jupyter-with-token.sh"
 
 # Additional services lifecycle (latest)
-.PHONY: up-services
-up-services:
+.PHONY: up-services-latest
+up-services-latest:
 	$(call check_service_vars,0)
 	@set -e; \
 	started=$$(date +%s); \
@@ -529,10 +529,10 @@ up-services:
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build $$services; \
 	fi; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-latest
 
-.PHONY: rebuild-services
-rebuild-services:
+.PHONY: rebuild-services-latest
+rebuild-services-latest:
 	$(call check_service_vars,0)
 	@set -e; \
 	started=$$(date +%s); \
@@ -541,7 +541,7 @@ rebuild-services:
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build --force-recreate $$services; \
 	fi; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-latest
 
 # Additional services lifecycle (locked)
 .PHONY: up-services-lock
@@ -561,7 +561,7 @@ up-services-lock:
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build $$services; \
 	fi; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-latest-lock
 
 .PHONY: rebuild-services-lock
 rebuild-services-lock:
@@ -580,7 +580,7 @@ rebuild-services-lock:
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build --force-recreate $$services; \
 	fi; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-latest-lock
 
 .PHONY: down-services
 down-services:

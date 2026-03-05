@@ -13,7 +13,7 @@ fi
 if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
   MODE="lock"
 else
-  MODE="non-lock"
+  MODE="latest"
 fi
 
 case "$SCOPE" in
