@@ -66,6 +66,7 @@ Run these from the `devcontainer` directory:
 - `make stop-services`: Stop configured additional services without removing them.
 - `make down-services`: Stop and remove configured additional services.
 - `make lock-services`: Generate `devcontainer/services-environment/services-lock.env` from current service images.
+- `make clean-build-metadata`: Remove all metadata log files from `devcontainer/build-metadata/`.
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build-assets/` (run inside the container).
 - `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build-assets/` (run inside the container).
 

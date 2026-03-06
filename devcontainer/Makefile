@@ -532,6 +532,10 @@ terminfo:
 	fi
 	infocmp -x "$$TERM" | DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc 'tic -x -'
 
+.PHONY: clean-build-metadata
+clean-build-metadata:
+	rm -f build-metadata/*.log
+
 # Export JupyterLab user settings to build-assets (run inside container only)
 .PHONY: jupyter-settings-export
 jupyter-settings-export:
