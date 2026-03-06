@@ -56,7 +56,7 @@ if [ -z "$AMD64_SHA256" ] || [ -z "$ARM64_SHA256" ]; then
   exit 1
 fi
 
-ts="$(date '+%Y-%m-%d %H:%M:%S %Z')"
+ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 {
   printf '# Created: %s\n' "$ts"
   printf 'MICROMAMBA_TAG=%s\n' "$TAG"

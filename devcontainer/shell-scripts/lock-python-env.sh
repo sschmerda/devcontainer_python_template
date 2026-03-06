@@ -15,7 +15,7 @@ export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
 : "${CONDA_LOCK_VERSION:?CONDA_LOCK_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
 : "${PYTHON_VERSION:?PYTHON_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
 
-ts="$(date "+%Y-%m-%d %H:%M:%S %Z")"
+ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 cd "$ENV_DIR"
 rm -f python-environment-lock.yml
 RENDERED_ENV_FILE="$(mktemp /tmp/python-env-lock-input.XXXXXX.yml)"

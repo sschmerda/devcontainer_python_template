@@ -112,7 +112,7 @@ SECURITY_RELEASE_SHA256="$(sha256sum "$TMP_DIR/security-index" | awk '{print $1}
 
 mkdir -p "$LOCK_DIR"
 {
-  printf '# Created: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')"
+  printf '# Created: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
   printf 'DEVCONTAINER_OS_IMAGE_SOURCE=%s\n' "$SOURCE_IMAGE"
   printf 'DEVCONTAINER_OS_IMAGE_AMD64=%s\n' "$LOCKED_IMAGE_AMD64"
   printf 'DEVCONTAINER_OS_IMAGE_ARM64=%s\n' "$LOCKED_IMAGE_ARM64"

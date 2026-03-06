@@ -104,7 +104,7 @@ build_url() {
 
 mkdir -p "$ENV_DIR"
 {
-  printf '# Created: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')"
+  printf '# Created: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
   list_binaries | while IFS= read -r binary; do
     [ -n "$binary" ] || continue

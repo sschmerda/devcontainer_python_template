@@ -15,7 +15,7 @@ export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
 : "${CONDA_LOCK_VERSION:?CONDA_LOCK_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
 : "${R_BASE_VERSION:?R_BASE_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
 
-ts="$(date "+%Y-%m-%d %H:%M:%S %Z")"
+ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 cd "$ENV_DIR"
 rm -f r-environment-lock.yml
 RENDERED_ENV_FILE="$(mktemp /tmp/r-env-lock-input.XXXXXX.yml)"

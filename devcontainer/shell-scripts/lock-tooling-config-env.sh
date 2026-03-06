@@ -41,7 +41,7 @@ done
 
 tmp_file="$(mktemp)"
 {
-  printf '# Created: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')"
+  printf '# Created: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
   printf 'OH_MY_ZSH_REPO=%s\n' "$OH_MY_ZSH_REPO"
   printf 'OH_MY_ZSH_REF=%s\n' "$OH_MY_ZSH_REF"
   printf 'ZSH_AUTOSUGGESTIONS_REPO=%s\n' "$ZSH_AUTOSUGGESTIONS_REPO"

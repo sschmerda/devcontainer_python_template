@@ -16,7 +16,7 @@ if [ -z "${DOTFILES_REF:-}" ]; then
 fi
 
 {
-  printf '# Created: %s\n' "$(date '+%Y-%m-%d %H:%M:%S %Z')"
+  printf '# Created: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
   printf 'DOTFILES_REPO=%s\n' "$DOTFILES_REPO"
   printf 'DOTFILES_REF=%s\n' "$DOTFILES_REF"
 } >"$LOCK_FILE"

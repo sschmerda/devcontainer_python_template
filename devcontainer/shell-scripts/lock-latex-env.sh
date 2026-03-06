@@ -7,7 +7,7 @@ if [ ! -f /.dockerenv ]; then
 fi
 
 OUT_FILE="/home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt"
-STAMP="$(date "+%Y-%m-%d %H:%M:%S %Z")"
+STAMP="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
 REPO_URL="${TEXLIVE_REPO_URL:-https://mirror.ctan.org/systems/texlive/tlnet}"
 TMP_DIR="$(mktemp -d)"
