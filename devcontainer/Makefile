@@ -120,7 +120,7 @@ up-dev-env-latest:
 	fi; \
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d --build; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest
 
 .PHONY: rebuild-dev-env-latest
 rebuild-dev-env-latest:
@@ -138,13 +138,61 @@ rebuild-dev-env-latest:
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files build --no-cache; \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest
+
+# Unified dev-env commands (latest package resolution + locked OS base image)
+.PHONY: up-dev-env-latest-os-lock
+up-dev-env-latest-os-lock:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image-host first."; \
+		exit 1; \
+	fi
+	@set -e; \
+	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
+	compose_files="$(COMPOSE_BASE_FILES)"; \
+	if [ -n "$$HOST_DATA_DIR" ]; then \
+		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
+		if [ ! -d "$$HOST_DATA_DIR" ]; then \
+			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
+			exit 1; \
+		fi; \
+		compose_files="$(COMPOSE_DATA_FILES)"; \
+	fi; \
+	started=$$(date +%s); \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
+	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest-os-lock
+
+.PHONY: rebuild-dev-env-latest-os-lock
+rebuild-dev-env-latest-os-lock:
+	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image-host first."; \
+		exit 1; \
+	fi
+	@set -e; \
+	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
+	compose_files="$(COMPOSE_BASE_FILES)"; \
+	if [ -n "$$HOST_DATA_DIR" ]; then \
+		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
+		if [ ! -d "$$HOST_DATA_DIR" ]; then \
+			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
+			exit 1; \
+		fi; \
+		compose_files="$(COMPOSE_DATA_FILES)"; \
+	fi; \
+	started=$$(date +%s); \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
+	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
+	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
+	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest-os-lock
 
 # Unified dev-env commands (locked)
 .PHONY: up-dev-env-lock
 up-dev-env-lock:
 	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
-		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image-host first."; \
 		exit 1; \
 	fi
 	@set -e; \
@@ -162,12 +210,12 @@ up-dev-env-lock:
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock
 
 .PHONY: rebuild-dev-env-lock
 rebuild-dev-env-lock:
 	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
-		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image-host first."; \
 		exit 1; \
 	fi
 	@set -e; \
@@ -186,7 +234,7 @@ rebuild-dev-env-lock:
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock
 
 .PHONY: down-dev-env
 down-dev-env:
@@ -214,8 +262,8 @@ stop-dev-env:
 	fi
 
 # Lock all dev environments (run inside container only)
-.PHONY: lock-dev-env
-lock-dev-env:
+.PHONY: lock-dev-env-container
+lock-dev-env-container:
 	@if [ ! -f /.dockerenv ]; then \
 		echo "This target must be run inside the container."; \
 		exit 1; \
@@ -236,14 +284,54 @@ lock-dev-env:
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
 
 # Lock base OS image digest used for Dockerfile FROM (run on host).
-.PHONY: lock-os-image
-lock-os-image:
+.PHONY: lock-os-image-host
+lock-os-image-host:
+	@if [ -f /.dockerenv ]; then \
+		echo "This target must be run on the host."; \
+		exit 1; \
+	fi
 	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
 		printf "Update OS image lockfile now? [y/N] "; \
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
 	sh shell-scripts/lock-os-image.sh
+
+# Lock dev env from host by orchestrating OS lock + build + in-container lock.
+.PHONY: lock-dev-env
+lock-dev-env:
+	@if [ -f /.dockerenv ]; then \
+		echo "This target must be run on the host."; \
+		exit 1; \
+	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Run host lock pipeline now (lock OS + rebuild latest with OS lock + dev lock + cleanup)? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
+	@$(MAKE) lock-os-image-host FORCE=$(FORCE)
+	@$(MAKE) rebuild-dev-env-latest-os-lock FORCE=1
+	@DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc "cd /home/dev/dev_container/devcontainer && make lock-dev-env-container FORCE=1"
+	@set -e; \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) stop $(SERVICE) >/dev/null 2>&1 || true; \
+	DEV_ENV_LOCKED=0 $(COMPOSE_CMD) rm -f $(SERVICE) >/dev/null 2>&1 || true; \
+	image_id="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) images -q $(SERVICE) | head -n 1)"; \
+	if [ -n "$$image_id" ]; then docker image rm "$$image_id" >/dev/null 2>&1 || true; fi
+
+# Lock dev env from host and rebuild from lockfiles.
+.PHONY: lock-dev-env-and-rebuild
+lock-dev-env-and-rebuild:
+	@if [ -f /.dockerenv ]; then \
+		echo "This target must be run on the host."; \
+		exit 1; \
+	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Run lock pipeline and rebuild from lock now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
+	@$(MAKE) lock-dev-env FORCE=1
+	@$(MAKE) rebuild-dev-env-lock FORCE=1
 
 # Generate additional binaries lockfile (run inside container only)
 .PHONY: lock-additional-binaries-env
@@ -529,7 +617,7 @@ up-services-latest:
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build $$services; \
 	fi; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-latest-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-latest
 
 .PHONY: rebuild-services-latest
 rebuild-services-latest:
@@ -541,13 +629,13 @@ rebuild-services-latest:
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build --force-recreate $$services; \
 	fi; \
-	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-latest-latest
+	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-latest
 
 # Additional services lifecycle (locked)
 .PHONY: up-services-lock
 up-services-lock:
 	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
-		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image-host first."; \
 		exit 1; \
 	fi
 	$(call check_service_vars,1)
@@ -561,12 +649,12 @@ up-services-lock:
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build $$services; \
 	fi; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-latest-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services up-services-lock
 
 .PHONY: rebuild-services-lock
 rebuild-services-lock:
 	@if [ ! -f "$(OS_LOCK_ENV_FILE)" ]; then \
-		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image first."; \
+		echo "Missing $(OS_LOCK_ENV_FILE). Run make lock-os-image-host first."; \
 		exit 1; \
 	fi
 	$(call check_service_vars,1)
@@ -580,7 +668,7 @@ rebuild-services-lock:
 		DEV_ENV_LOCKED=1 $(COMPOSE_CMD_SERVICES_LOCK) up -d --build --force-recreate $$services; \
 	fi; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
-	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-latest-lock
+	DEV_ENV_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh services rebuild-services-lock
 
 .PHONY: down-services
 down-services:

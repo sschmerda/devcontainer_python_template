@@ -42,6 +42,8 @@ Run these from the `devcontainer` directory:
 
 - `make up-dev-env-latest`: Build and start using latest package definitions.
 - `make rebuild-dev-env-latest`: Rebuild using latest package definitions.
+- `make up-dev-env-latest-os-lock`: Build/start with latest package definitions but locked OS image (`os-lock.env` required, host).
+- `make rebuild-dev-env-latest-os-lock`: Rebuild/start with latest package definitions but locked OS image (`os-lock.env` required, host).
 - `make up-dev-env-lock`: Build and start using lockfiles when present.
 - `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
 - `make stop-dev-env`: Stop the main dev container service without removing it.
@@ -51,10 +53,12 @@ Run these from the `devcontainer` directory:
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
 - Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT:-4200}`.
-- `make lock-dev-env`: Generate lockfiles for micromamba, additional binaries, user tooling repos, dotfiles repo ref, Python, R, LaTeX, and Quarto (run inside the container).
+- `make lock-dev-env-container`: Generate lockfiles for micromamba, additional binaries, user tooling repos, dotfiles repo ref, Python, R, LaTeX, and Quarto (run inside the container).
 - `make lock-tooling-config-env`: Generate `devcontainer/tooling-config-environment/tooling-config-lock.env` for oh-my-zsh, zsh plugins/theme, and tmux TPM repos.
 - `make lock-dotfiles-env`: Generate `devcontainer/dotfiles-environment/dotfiles-lock.env` with a pinned dotfiles commit.
-- `make lock-os-image`: Generate `devcontainer/os-environment/os-lock.env` from `DEVCONTAINER_OS_IMAGE` (run on host).
+- `make lock-os-image-host`: Generate `devcontainer/os-environment/os-lock.env` from `DEVCONTAINER_OS_IMAGE` (run on host).
+- `make lock-dev-env`: Host lock pipeline (os lock + latest rebuild with OS lock + in-container dev lock + cleanup).
+- `make lock-dev-env-and-rebuild`: Host lock pipeline plus rebuild from lockfiles.
 - `make up-services-latest`: Pull and start configured additional services (latest mode).
 - `make rebuild-services-latest`: Re-pull and recreate configured additional services (latest mode).
 - `make up-services-lock`: Pull and start configured additional services using locked image digests.
@@ -64,6 +68,11 @@ Run these from the `devcontainer` directory:
 - `make lock-services`: Generate `devcontainer/services-environment/services-lock.env` from current service images.
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build-assets/` (run inside the container).
 - `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build-assets/` (run inside the container).
+
+Where to run lock commands:
+
+- Host: `make lock-os-image-host`, `make lock-dev-env`, `make lock-dev-env-and-rebuild`, `make lock-services`
+- Container: `make lock-dev-env-container` and individual env lock targets (`lock-python-env`, `lock-r-env`, `lock-latex-env`, `lock-quarto-env`, `lock-micromamba-env`, `lock-additional-binaries-env`, `lock-tooling-config-env`, `lock-dotfiles-env`, `lock-flower-env`)
 
 Data-mount behavior for dev targets:
 
@@ -194,7 +203,7 @@ Python and R runtime versions are controlled centrally via `.env`:
 Mamba environment specs live in `devcontainer/python-environment/`:
 
 - `python-environment.yml`: Source of truth for package selection.
-- `python-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-python-env` or `make lock-dev-env` to create it).
+- `python-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-python-env` or `make lock-dev-env-container` to create it).
 
 Python is installed in a separate micromamba environment named `python-env`.
 
@@ -205,7 +214,7 @@ Note: `conda-lock` handling is driven by the lock scripts. Keep the lock tooling
 R environment specs live in `devcontainer/r-environment/`:
 
 - `r-environment.yml`: Source of truth for package selection.
-- `r-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-r-env` or `make lock-dev-env` to create it).
+- `r-environment-lock.yml`: Generated lockfile for reproducible builds (run `make lock-r-env` or `make lock-dev-env-container` to create it).
 
 R is installed in a separate micromamba environment named `r-env`.
 
@@ -230,14 +239,14 @@ Micromamba is installed from GitHub releases (`mamba-org/micromamba-releases`):
 
 - Non-lock builds resolve the latest release via GitHub API and install the matching Linux asset for the current architecture.
 - Lock builds install exact URLs from `devcontainer/micromamba-environment/micromamba-lock.env`.
-- Lock generation (`make lock-micromamba-env` or `make lock-dev-env`) resolves latest GitHub release assets for both Linux architectures (`amd64`, `arm64`) and writes them to the lockfile.
+- Lock generation (`make lock-micromamba-env` or `make lock-dev-env-container`) resolves latest GitHub release assets for both Linux architectures (`amd64`, `arm64`) and writes them to the lockfile.
 - Lockfile also stores SHA256 for both assets, and lock installs verify checksums before extraction.
 
 ## OS base image lock
 
 Base image locking is handled separately from in-container lock targets:
 
-- `make lock-os-image` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env`.
+- `make lock-os-image-host` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env`.
 - If it is a moving tag (for example `debian:13-slim`), it resolves linux platform child digests from the multi-arch manifest list and writes:
   - `devcontainer/os-environment/os-lock.env`
 - OS lockfile keys:
@@ -384,14 +393,15 @@ Note:
 Use the unified targets for reproducible builds:
 
 - `make up-dev-env-latest` / `make rebuild-dev-env-latest` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
+- `make up-dev-env-latest-os-lock` / `make rebuild-dev-env-latest-os-lock` uses latest package resolution (`DEV_ENV_LOCKED=0`) while pinning the OS base image via `os-lock.env`.
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
-- `make lock-dev-env` generates/updates lockfiles for micromamba (GitHub release assets), additional binaries (GitHub release assets), user tooling repos (git commit refs), dotfiles repo (git commit ref), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
+- `make lock-dev-env-container` generates/updates lockfiles for micromamba (GitHub release assets), additional binaries (GitHub release assets), user tooling repos (git commit refs), dotfiles repo (git commit ref), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 - `make lock-additional-binaries-env` generates/updates `devcontainer/additional-binaries-environment/additional-binaries-lock.env` for additional binaries (`fzf`, `neovim`, `lsd`) with amd64/arm64 URLs and SHA256 checksums.
   - Enabled binaries and order come from `devcontainer/additional-binaries-environment/additional-binaries.list`.
   - Binary metadata is read from one file per binary in `devcontainer/additional-binaries-environment/additional-binaries/` (no hardcoded defaults in install script).
 - `make lock-tooling-config-env` generates/updates `devcontainer/tooling-config-environment/tooling-config-lock.env` with pinned git commit refs for oh-my-zsh and tmux/zsh plugin repos.
 - `make lock-dotfiles-env` generates/updates `devcontainer/dotfiles-environment/dotfiles-lock.env` with pinned `DOTFILES_REPO` and `DOTFILES_REF`.
-- `make lock-os-image` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
+- `make lock-os-image-host` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
 - Lock-mode targets auto-select the right digest for host architecture (`amd64` or `arm64`) via `devcontainer/shell-scripts/export-cross-platform-lock-vars.sh`.
 - OS/service lock generation requires multi-arch images with `linux/amd64` and `linux/arm64` entries; otherwise locking fails fast.
 - All `lock-*` targets capture current upstream/latest state at lock time, then `*-lock` builds use those pinned lockfiles for deterministic rebuilds.
@@ -423,12 +433,12 @@ Fallback behavior:
 
 Locking guidance:
 
-- For reproducibility, run `make lock-dev-env` immediately after installing/updating packages.
+- For reproducibility, run `make lock-dev-env-and-rebuild` from host for a full deterministic refresh.
 - After locking, prefer `make up-dev-env-lock` / `make rebuild-dev-env-lock` for consistent rebuilds.
-- Run `make lock-dev-env` and language-specific `make lock-<env>` targets inside the dev container.
-- Run `make lock-os-image` from the host in the `devcontainer/` directory.
+- Run `make lock-dev-env-container` and language-specific `make lock-<env>` targets inside the dev container.
+- Run `make lock-os-image-host` from the host in the `devcontainer/` directory.
 - Run `make lock-services` from the host in the `devcontainer/` directory.
-- Recommended order: `make lock-os-image` (host) -> `make lock-dev-env` (inside container) -> lock-mode rebuild commands.
+- Recommended host pipeline: `make lock-dev-env` (lock only) or `make lock-dev-env-and-rebuild` (lock + rebuild from lockfiles).
 - All `lock-*` targets ask for confirmation before writing lockfiles.
 - Use `FORCE=1` to skip confirmation (useful for CI/non-interactive runs), e.g. `make lock-python-env FORCE=1`.
 - `stop-*` and `down-*` targets also ask for confirmation.
@@ -445,7 +455,7 @@ Individual lock targets:
 - `make lock-additional-binaries-env` updates `devcontainer/additional-binaries-environment/additional-binaries-lock.env`
 - `make lock-tooling-config-env` updates `devcontainer/tooling-config-environment/tooling-config-lock.env`
 - `make lock-dotfiles-env` updates `devcontainer/dotfiles-environment/dotfiles-lock.env`
-- `make lock-os-image` updates `devcontainer/os-environment/os-lock.env`
+- `make lock-os-image-host` updates `devcontainer/os-environment/os-lock.env`
 
 Locked installs are handled by:
 
