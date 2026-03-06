@@ -460,95 +460,59 @@ lock-flower-env:
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 
 # Remove all lockfiles
-.PHONY: clean-locks
-clean-locks:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/python-environment/python-environment-lock.yml
-	rm -f /home/dev/dev_container/devcontainer/r-environment/r-environment-lock.yml
-	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
-	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
-	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
-	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-lock.env
-	rm -f /home/dev/dev_container/devcontainer/tooling-config-environment/tooling-config-lock.env
-	rm -f /home/dev/dev_container/devcontainer/dotfiles-environment/dotfiles-lock.env
-	rm -f /home/dev/dev_container/devcontainer/os-environment/os-lock.env
-	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
-	rm -f /home/dev/dev_container/devcontainer/services-environment/services-lock.env
+.PHONY: clean-lock-all
+clean-lock-all:
+	rm -f python-environment/python-environment-lock.yml
+	rm -f r-environment/r-environment-lock.yml
+	rm -f latex-environment/latex-environment-lock.txt
+	rm -f quarto-environment/quarto-lock.env
+	rm -f micromamba-environment/micromamba-lock.env
+	rm -f additional-binaries-environment/additional-binaries-lock.env
+	rm -f tooling-config-environment/tooling-config-lock.env
+	rm -f dotfiles-environment/dotfiles-lock.env
+	rm -f os-environment/os-lock.env
+	rm -f services-environment/flower/flower-environment-lock.yml
+	rm -f services-environment/services-lock.env
 
 # Remove Python lockfile
 .PHONY: clean-lock-python
 clean-lock-python:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/python-environment/python-environment-lock.yml
+	rm -f python-environment/python-environment-lock.yml
 
 # Remove R lockfile
 .PHONY: clean-lock-r
 clean-lock-r:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/r-environment/r-environment-lock.yml
+	rm -f r-environment/r-environment-lock.yml
 
 # Remove LaTeX lockfile
 .PHONY: clean-lock-latex
 clean-lock-latex:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt
+	rm -f latex-environment/latex-environment-lock.txt
 
 # Remove Quarto lockfile
 .PHONY: clean-lock-quarto
 clean-lock-quarto:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/quarto-environment/quarto-lock.env
+	rm -f quarto-environment/quarto-lock.env
 
 # Remove micromamba lockfile
 .PHONY: clean-lock-micromamba
 clean-lock-micromamba:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/micromamba-environment/micromamba-lock.env
+	rm -f micromamba-environment/micromamba-lock.env
 
 # Remove additional binaries lockfile
 .PHONY: clean-lock-additional-binaries
 clean-lock-additional-binaries:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/additional-binaries-environment/additional-binaries-lock.env
+	rm -f additional-binaries-environment/additional-binaries-lock.env
 
 # Remove tooling config lockfile
 .PHONY: clean-lock-tooling-config
 clean-lock-tooling-config:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/tooling-config-environment/tooling-config-lock.env
+	rm -f tooling-config-environment/tooling-config-lock.env
 
 # Remove dotfiles lockfile
 .PHONY: clean-lock-dotfiles
 clean-lock-dotfiles:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/dotfiles-environment/dotfiles-lock.env
+	rm -f dotfiles-environment/dotfiles-lock.env
 
 .PHONY: clean-lock-os-image
 clean-lock-os-image:
@@ -557,11 +521,7 @@ clean-lock-os-image:
 # Remove Flower lockfile
 .PHONY: clean-lock-flower
 clean-lock-flower:
-	@if [ ! -f /.dockerenv ]; then \
-		echo "This target must be run inside the container."; \
-		exit 1; \
-	fi
-	rm -f /home/dev/dev_container/devcontainer/services-environment/flower/flower-environment-lock.yml
+	rm -f services-environment/flower/flower-environment-lock.yml
 
 # Ensure terminal definition exists in the container
 .PHONY: terminfo

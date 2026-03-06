@@ -470,9 +470,9 @@ Locked installs are handled by:
 - Dotfiles (stow source repo): `devcontainer/shell-scripts/install-dotfiles.sh` (`DEV_ENV_LOCKED` branch)
 - Neovim config activation (Lazy sync): `devcontainer/shell-scripts/activate-nvim-config.sh`
 
-Clean lock targets (inside container unless noted):
+Clean lock targets:
 
-- `make clean-locks`
+- `make clean-lock-all`
 - `make clean-lock-python`
 - `make clean-lock-r`
 - `make clean-lock-latex`
@@ -482,7 +482,10 @@ Clean lock targets (inside container unless noted):
 - `make clean-lock-additional-binaries`
 - `make clean-lock-tooling-config`
 - `make clean-lock-dotfiles`
-- `make clean-lock-os-image` (run on host)
+- `make clean-lock-os-image`
+- `make clean-lock-services`
+
+All `clean-lock-*` targets can run on host or inside the container.
 
 ## Template repo setup
 
