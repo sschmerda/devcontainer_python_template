@@ -9,10 +9,14 @@ ARG PYTHON_VERSION
 ARG R_BASE_VERSION
 ARG FLOWER_PYTHON_VERSION
 ARG DOTFILES_REPO
+ARG GIT_USER_NAME
+ARG GIT_USER_EMAIL
 ENV PYTHON_VERSION=${PYTHON_VERSION}
 ENV R_BASE_VERSION=${R_BASE_VERSION}
 ENV FLOWER_PYTHON_VERSION=${FLOWER_PYTHON_VERSION}
 ENV DOTFILES_REPO=${DOTFILES_REPO}
+ENV GIT_USER_NAME=${GIT_USER_NAME}
+ENV GIT_USER_EMAIL=${GIT_USER_EMAIL}
 
 # Copy shell scripts
 COPY shell-scripts/install-base-binaries.sh /tmp/install-base-binaries.sh
@@ -25,6 +29,7 @@ COPY shell-scripts/lock-additional-binaries-env.sh /tmp/lock-additional-binaries
 COPY shell-scripts/install-quarto.sh /tmp/install-quarto.sh
 COPY shell-scripts/install-tinytex.sh /tmp/install-tinytex.sh
 COPY shell-scripts/install-dotfiles.sh /tmp/install-dotfiles.sh
+COPY shell-scripts/configure-git-identity.sh /tmp/configure-git-identity.sh
 COPY shell-scripts/install-micromamba.sh /tmp/install-micromamba.sh
 COPY shell-scripts/restore-jupyterlab-settings.sh /tmp/restore-jupyterlab-settings.sh
 COPY shell-scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
@@ -46,7 +51,7 @@ COPY os-environment/ /tmp/os-environment/
 COPY additional-binaries-environment/ /tmp/additional-binaries-environment/
 COPY tooling-config-environment/ /tmp/tooling-config-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/install-additional-binaries.sh /tmp/install-tooling-config.sh /tmp/activate-nvim-config.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/configure-git-identity.sh /tmp/install-additional-binaries.sh /tmp/install-tooling-config.sh /tmp/activate-nvim-config.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh
 
 # Install base software
 RUN /tmp/apply-apt-snapshot-state.sh
@@ -81,11 +86,15 @@ RUN getent group sudo >/dev/null || groupadd sudo \
 RUN chsh -s /usr/bin/zsh dev
 ENV SHELL=/usr/bin/zsh
 
-# Ensure home ownership
-RUN chown -R dev:dev /home/dev
+# Ensure home ownership and create a standard SSH config directory for optional
+# host SSH config/known_hosts mounts.
+RUN mkdir -p /home/dev/.ssh \
+  && chmod 700 /home/dev/.ssh \
+  && chown -R dev:dev /home/dev
 
 # Install dotfiles as the non-root user (correct HOME)
 RUN su - dev -c "DOTFILES_REPO=${DOTFILES_REPO} /tmp/install-dotfiles.sh"
+RUN runuser -u dev -- env GIT_USER_NAME="${GIT_USER_NAME}" GIT_USER_EMAIL="${GIT_USER_EMAIL}" /tmp/configure-git-identity.sh
 RUN su - dev -c "/tmp/activate-nvim-config.sh"
 
 # Install user-level binaries/config after dotfiles

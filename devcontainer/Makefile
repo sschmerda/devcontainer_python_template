@@ -1,6 +1,10 @@
 JUPYTER_PORT ?= 8888
 COMPOSE_FILE=docker/docker-compose.yml
 COMPOSE_DATA_FILE=docker/docker-compose.data.yml
+COMPOSE_GIT_FILE=docker/docker-compose.git.yml
+COMPOSE_GIT_DESKTOP_FILE=docker/docker-compose.git-desktop.yml
+COMPOSE_GIT_SSH_CONFIG_FILE=docker/docker-compose.git-ssh-config.yml
+COMPOSE_GIT_KNOWN_HOSTS_FILE=docker/docker-compose.git-known-hosts.yml
 COMPOSE_SERVICES_FILE=docker/docker-compose.services.yml
 COMPOSE_SERVICES_LOCK_FILE=docker/docker-compose.services-lock.yml
 COMPOSE_ENV_FILES=--env-file env-vars/.env --env-file env-vars/.env.secrets
@@ -108,16 +112,7 @@ endef
 .PHONY: up-dev-env-latest
 up-dev-env-latest:
 	@set -e; \
-	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
-	compose_files="$(COMPOSE_BASE_FILES)"; \
-	if [ -n "$$HOST_DATA_DIR" ]; then \
-		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
-		if [ ! -d "$$HOST_DATA_DIR" ]; then \
-			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
-			exit 1; \
-		fi; \
-		compose_files="$(COMPOSE_DATA_FILES)"; \
-	fi; \
+	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d --build; \
 	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest
@@ -125,16 +120,7 @@ up-dev-env-latest:
 .PHONY: rebuild-dev-env-latest
 rebuild-dev-env-latest:
 	@set -e; \
-	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
-	compose_files="$(COMPOSE_BASE_FILES)"; \
-	if [ -n "$$HOST_DATA_DIR" ]; then \
-		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
-		if [ ! -d "$$HOST_DATA_DIR" ]; then \
-			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
-			exit 1; \
-		fi; \
-		compose_files="$(COMPOSE_DATA_FILES)"; \
-	fi; \
+	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files build --no-cache; \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d; \
@@ -148,16 +134,7 @@ up-dev-env-latest-os-lock:
 		exit 1; \
 	fi
 	@set -e; \
-	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
-	compose_files="$(COMPOSE_BASE_FILES)"; \
-	if [ -n "$$HOST_DATA_DIR" ]; then \
-		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
-		if [ ! -d "$$HOST_DATA_DIR" ]; then \
-			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
-			exit 1; \
-		fi; \
-		compose_files="$(COMPOSE_DATA_FILES)"; \
-	fi; \
+	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
@@ -171,16 +148,7 @@ rebuild-dev-env-latest-os-lock:
 		exit 1; \
 	fi
 	@set -e; \
-	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
-	compose_files="$(COMPOSE_BASE_FILES)"; \
-	if [ -n "$$HOST_DATA_DIR" ]; then \
-		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
-		if [ ! -d "$$HOST_DATA_DIR" ]; then \
-			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
-			exit 1; \
-		fi; \
-		compose_files="$(COMPOSE_DATA_FILES)"; \
-	fi; \
+	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
@@ -196,16 +164,7 @@ up-dev-env-lock:
 		exit 1; \
 	fi
 	@set -e; \
-	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
-	compose_files="$(COMPOSE_BASE_FILES)"; \
-	if [ -n "$$HOST_DATA_DIR" ]; then \
-		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
-		if [ ! -d "$$HOST_DATA_DIR" ]; then \
-			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
-			exit 1; \
-		fi; \
-		compose_files="$(COMPOSE_DATA_FILES)"; \
-	fi; \
+	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
@@ -219,16 +178,7 @@ rebuild-dev-env-lock:
 		exit 1; \
 	fi
 	@set -e; \
-	set -a; . env-vars/.env.secrets 2>/dev/null || true; set +a; \
-	compose_files="$(COMPOSE_BASE_FILES)"; \
-	if [ -n "$$HOST_DATA_DIR" ]; then \
-		case "$$HOST_DATA_DIR" in /*) ;; *) echo "HOST_DATA_DIR must be an absolute path: $$HOST_DATA_DIR"; exit 1;; esac; \
-		if [ ! -d "$$HOST_DATA_DIR" ]; then \
-			echo "HOST_DATA_DIR does not exist: $$HOST_DATA_DIR"; \
-			exit 1; \
-		fi; \
-		compose_files="$(COMPOSE_DATA_FILES)"; \
-	fi; \
+	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \

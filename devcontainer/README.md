@@ -123,6 +123,8 @@ Common variables:
 - `R_BASE_VERSION`: R major/minor used to render `r-environment.yml` for latest builds and lock generation.
 - `FLOWER_PYTHON_VERSION`: Python major/minor used to render `services-environment/flower/flower-environment.yml` for latest builds and lock generation.
 - `DOTFILES_REPO`: Dotfiles git repository URL used by `install-dotfiles.sh` (latest) and `lock-dotfiles-env.sh` (lock generation).
+- `GIT_USER_NAME`, `GIT_USER_EMAIL`: Optional default Git commit identity configured inside the dev container via `git config --global`.
+- `ENABLE_HOST_GIT_ACCESS`: When `true`, dev targets enable host SSH agent access in the dev container. On Docker Desktop they use `/run/host-services/ssh-auth.sock`; otherwise they use `HOST_SSH_AUTH_SOCK_PATH` (default: `false`).
 - `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
 - `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when it is set.
 - `HOST_DATA_SYMLINK_PATH`: Symlink created in the container pointing to `HOST_DATA_MOUNT_PATH`.
@@ -135,6 +137,7 @@ Secret configuration values live in `devcontainer/env-vars/.env.secrets`.
 This file is committed as a template (keys only, empty values).
 Set values locally on each machine.
 For `HOST_DATA_DIR`, use an absolute path without spaces and without quotation marks.
+For `HOST_SSH_AUTH_SOCK_PATH`, `HOST_SSH_CONFIG_PATH`, and `HOST_SSH_KNOWN_HOSTS_PATH`, also use absolute file paths without quotes.
 For service data paths (`*_DATA_DIR`), also use absolute paths without quotes.
 
 ## Environment variable loading model
@@ -189,6 +192,73 @@ External host data is optional and controlled by `HOST_DATA_DIR` in `devcontaine
   - must be an absolute path
   - must exist on host as a directory
   - otherwise target fails fast
+
+## Optional host Git/SSH access
+
+Git access from inside the dev container is optional and controlled by `ENABLE_HOST_GIT_ACCESS` in `devcontainer/env-vars/.env`.
+
+- If `ENABLE_HOST_GIT_ACCESS=false` (default), the dev container gets no host SSH integration.
+- If `ENABLE_HOST_GIT_ACCESS=true`, dev targets enable SSH agent access inside the container.
+- This lets Git/SSH inside the container use the SSH identities already loaded in the host `ssh-agent` without copying private keys into the container.
+- If Docker Desktop is detected, the feature uses Docker Desktop's SSH agent bridge at `/run/host-services/ssh-auth.sock`.
+- Otherwise, the feature uses `HOST_SSH_AUTH_SOCK_PATH` from `devcontainer/env-vars/.env.secrets`.
+- If `ENABLE_HOST_GIT_ACCESS=true` and `HOST_SSH_AUTH_SOCK_PATH` is required but empty, not absolute, or not a socket, the dev target fails before Docker Compose runs.
+
+Optional host SSH file mounts are configured in `devcontainer/env-vars/.env.secrets`:
+
+- `HOST_SSH_AUTH_SOCK_PATH`: Required only when Docker Desktop is not detected. This is the host path to the SSH agent socket that should be mounted into the dev container.
+- `HOST_SSH_CONFIG_PATH`: Optional read-only mount for host `~/.ssh/config`. Useful only if you rely on SSH aliases or host-specific SSH settings.
+- `HOST_SSH_KNOWN_HOSTS_PATH`: Optional read-only mount for host `~/.ssh/known_hosts`. Useful only if you want to avoid first-connect host verification prompts inside the container.
+- If either path is set, it must be an absolute path to an existing file.
+
+Requirements on the host machine:
+
+- `ssh` must be installed.
+- `ssh-agent` must be running.
+- At least one SSH key must be loaded into the agent.
+- GitHub/GitLab SSH access should already work on the host before enabling the feature.
+
+Useful host-side checks:
+
+- `echo $SSH_AUTH_SOCK`
+- `ssh-add -l`
+- `ssh -T git@github.com`
+
+Git commit identity:
+
+- SSH authentication and Git commit identity are separate concerns.
+- If `GIT_USER_NAME` and `GIT_USER_EMAIL` are both set in `devcontainer/env-vars/.env`, the image build configures:
+  - `git config --global user.name`
+  - `git config --global user.email`
+- If both are empty, Git identity setup is skipped.
+- If only one of the two is set, the image build fails fast because the configuration would be incomplete.
+
+Docker Desktop setup (macOS, and Linux when using Docker Desktop):
+
+- Docker Desktop provides an SSH agent bridge at `/run/host-services/ssh-auth.sock`.
+- When Docker Desktop is detected, the devcontainer uses that socket automatically.
+- No host symlink is needed in this mode.
+- In this mode, `HOST_SSH_AUTH_SOCK_PATH` can stay empty.
+- Docker Desktop exposes this socket as `root:root` with group write permissions, so the dev container adds `dev` to group `0` only in this mode when host Git access is enabled.
+
+Non-Docker-Desktop setup:
+
+- Set `HOST_SSH_AUTH_SOCK_PATH` to the real host SSH agent socket path.
+- This is the mode intended for native Linux Docker engines.
+- You can usually discover the correct host socket path with:
+  - `echo $SSH_AUTH_SOCK`
+
+Windows / WSL2:
+
+- The repo treats WSL2 Docker Desktop setups as Docker Desktop mode.
+- In that case it uses `/run/host-services/ssh-auth.sock`.
+- There is no separate Windows-specific SSH agent mount path in the repo.
+
+Typical setups:
+
+- Single GitHub account on one machine: set `ENABLE_HOST_GIT_ACCESS=true`; no extra SSH file mounts are usually needed.
+- Multiple Git accounts or GitHub/GitLab aliases on one machine: also set `HOST_SSH_CONFIG_PATH`.
+- Pre-seeded trusted host keys inside container: also set `HOST_SSH_KNOWN_HOSTS_PATH`.
 
 ## Python and R version pins
 

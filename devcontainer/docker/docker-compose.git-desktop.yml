@@ -1,0 +1,10 @@
+services:
+  dev:
+    group_add:
+      - "0"
+    environment:
+      SSH_AUTH_SOCK: /run/host-services/ssh-auth.sock
+    volumes:
+      - type: bind
+        source: /run/host-services/ssh-auth.sock
+        target: /run/host-services/ssh-auth.sock

@@ -17,6 +17,8 @@ services:
         R_BASE_VERSION: ${R_BASE_VERSION}
         FLOWER_PYTHON_VERSION: ${FLOWER_PYTHON_VERSION}
         DOTFILES_REPO: ${DOTFILES_REPO}
+        GIT_USER_NAME: ${GIT_USER_NAME}
+        GIT_USER_EMAIL: ${GIT_USER_EMAIL}
     volumes:
       - ../..:/home/dev/dev_container
     working_dir: /home/dev/dev_container
