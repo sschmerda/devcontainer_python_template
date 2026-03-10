@@ -93,36 +93,36 @@ RUN mkdir -p /home/dev/.ssh \
   && chown -R dev:dev /home/dev
 
 # Install dotfiles as the non-root user (correct HOME)
-RUN su - dev -c "DOTFILES_REPO=${DOTFILES_REPO} /tmp/install-dotfiles.sh"
+RUN runuser -u dev -- env DOTFILES_REPO="${DOTFILES_REPO}" /tmp/install-dotfiles.sh
 RUN runuser -u dev -- env GIT_USER_NAME="${GIT_USER_NAME}" GIT_USER_EMAIL="${GIT_USER_EMAIL}" /tmp/configure-git-identity.sh
-RUN su - dev -c "/tmp/activate-nvim-config.sh"
+RUN runuser -u dev -- /tmp/activate-nvim-config.sh
 
 # Install user-level binaries/config after dotfiles
-RUN su - dev -c "/tmp/install-tooling-config.sh"
-RUN su - dev -c "/tmp/restore-jupyterlab-settings.sh"
+RUN runuser -u dev -- /tmp/install-tooling-config.sh
+RUN runuser -u dev -- /tmp/restore-jupyterlab-settings.sh
 
 # install correct micromamba based on chip architecture (user-only install)
-RUN su - dev -c "/tmp/install-micromamba.sh"
+RUN runuser -u dev -- /tmp/install-micromamba.sh
 RUN chown -R dev:dev /tmp/python-environment
 RUN chown -R dev:dev /tmp/r-environment
 
 # Install python libraries
-RUN su - dev -c "PYTHON_VERSION=${PYTHON_VERSION} /tmp/install-python-packages.sh"
+RUN runuser -u dev -- env PYTHON_VERSION="${PYTHON_VERSION}" /tmp/install-python-packages.sh
 
 # Install R libraries
-RUN su - dev -c "R_BASE_VERSION=${R_BASE_VERSION} /tmp/install-r-packages.sh"
+RUN runuser -u dev -- env R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-r-packages.sh
 
 # Install Quarto (latest or locked) as user.
-RUN su - dev -c "/tmp/install-quarto.sh"
+RUN runuser -u dev -- /tmp/install-quarto.sh
 
 # Install TinyTeX via temporary r-environment
-RUN su - dev -c "R_BASE_VERSION=${R_BASE_VERSION} /tmp/install-tinytex.sh"
+RUN runuser -u dev -- env R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-tinytex.sh
 
 # Install additional LaTeX packages (tlmgr)
-RUN su - dev -c "/tmp/install-latex-packages.sh"
+RUN runuser -u dev -- /tmp/install-latex-packages.sh
 
 # Final micromamba cache cleanup to keep image size down.
-RUN su - dev -c "MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba /home/dev/.local/bin/micromamba clean --all --yes --force-pkgs-dirs"
+RUN runuser -u dev -- env MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba /home/dev/.local/bin/micromamba clean --all --yes --force-pkgs-dirs
 
 ENV MAMBA_DEFAULT_ENV=python-env
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba
