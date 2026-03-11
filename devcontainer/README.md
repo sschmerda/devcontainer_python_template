@@ -374,6 +374,20 @@ Current default:
 - All additional services are commented out by default in `devcontainer/docker/docker-compose.services.yml`.
 - Enable only the services required for your current project.
 
+Adding a new service:
+
+- Add the service definition to `devcontainer/docker/docker-compose.services.yml`. This is the primary file that joins the service to the same Compose project and network as the dev container and all other services.
+- If the service is pull-based, add the matching lock override to `devcontainer/docker/docker-compose.services-lock.yml` so lock mode can replace tags with digests.
+- If the service is build-based, add its Dockerfile and any service-specific environment files under `devcontainer/services-environment/<service>/`, then wire its build args in `devcontainer/docker/docker-compose.services.yml`.
+- Add required variables to the correct env files:
+  - `devcontainer/env-vars/.env.build` for build-time non-secret values
+  - `devcontainer/env-vars/.env.runtime` for runtime non-secret values such as ports, image tags, commands
+  - `devcontainer/env-vars/.env.secrets.build` for build-time secrets
+  - `devcontainer/env-vars/.env.secrets.runtime` for runtime secrets, host paths, and bind-mount sources
+- If the service is pull-based and should participate in lock mode, extend `devcontainer/shell-scripts/lock-services-env.sh` so `make lock-services` resolves and validates its digest variables.
+- If the service needs repo-managed config files, store them under `devcontainer/services-environment/<service>/` and bind-mount them from `devcontainer/docker/docker-compose.services.yml`.
+- If the service needs persistent host data, add the required `*_DATA_DIR` runtime secret variable and bind mount in `devcontainer/docker/docker-compose.services.yml`.
+
 Service overview:
 
 - `postgres`: Primary relational database service for local app development and SQL testing.
