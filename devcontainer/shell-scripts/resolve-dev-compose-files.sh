@@ -4,26 +4,15 @@ set -eu
 ROOT_DIR=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
 
-read_env_var() {
-  file=$1
-  key=$2
-  [ -f "$file" ] || return 0
-  awk -F= -v key="$key" '
-    $0 ~ "^[[:space:]]*" key "=" {
-      value = substr($0, index($0, "=") + 1)
-      found = value
-    }
-    END {
-      if (found != "") print found
-    }
-  ' "$file"
-}
+: "${ENV_UTILS:=$ROOT_DIR/shell-scripts/env-file-utils.sh}"
+# shellcheck disable=SC1090
+. "$ENV_UTILS"
 
-: "${ENABLE_HOST_GIT_ACCESS:=$(read_env_var "env-vars/.env" "ENABLE_HOST_GIT_ACCESS")}"
-: "${HOST_DATA_DIR:=$(read_env_var "env-vars/.env.secrets" "HOST_DATA_DIR")}"
-: "${HOST_SSH_AUTH_SOCK_PATH:=$(read_env_var "env-vars/.env.secrets" "HOST_SSH_AUTH_SOCK_PATH")}"
-: "${HOST_SSH_CONFIG_PATH:=$(read_env_var "env-vars/.env.secrets" "HOST_SSH_CONFIG_PATH")}"
-: "${HOST_SSH_KNOWN_HOSTS_PATH:=$(read_env_var "env-vars/.env.secrets" "HOST_SSH_KNOWN_HOSTS_PATH")}"
+: "${ENABLE_HOST_GIT_ACCESS:=$(read_env_var "env-vars/.env.runtime" "ENABLE_HOST_GIT_ACCESS")}"
+: "${HOST_DATA_DIR:=$(read_env_var "env-vars/.env.secrets.runtime" "HOST_DATA_DIR")}"
+: "${HOST_SSH_AUTH_SOCK_PATH:=$(read_env_var "env-vars/.env.secrets.runtime" "HOST_SSH_AUTH_SOCK_PATH")}"
+: "${HOST_SSH_CONFIG_PATH:=$(read_env_var "env-vars/.env.secrets.runtime" "HOST_SSH_CONFIG_PATH")}"
+: "${HOST_SSH_KNOWN_HOSTS_PATH:=$(read_env_var "env-vars/.env.secrets.runtime" "HOST_SSH_KNOWN_HOSTS_PATH")}"
 
 compose_files="-f docker/docker-compose.yml"
 
@@ -50,7 +39,7 @@ if [ "${ENABLE_HOST_GIT_ACCESS:-false}" = "true" ]; then
     compose_files="$compose_files -f docker/docker-compose.git-desktop.yml"
   else
     if [ -z "${HOST_SSH_AUTH_SOCK_PATH:-}" ]; then
-      echo "HOST_SSH_AUTH_SOCK_PATH is empty. Set it in devcontainer/env-vars/.env.secrets." >&2
+      echo "HOST_SSH_AUTH_SOCK_PATH is empty. Set it in devcontainer/env-vars/.env.secrets.runtime." >&2
       exit 1
     fi
     case "${HOST_SSH_AUTH_SOCK_PATH}" in

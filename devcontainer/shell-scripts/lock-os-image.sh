@@ -2,7 +2,7 @@
 set -eu
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-ENV_FILE="${ROOT_DIR}/env-vars/.env"
+ENV_FILE="${ROOT_DIR}/env-vars/.env.build"
 LOCK_DIR="${ROOT_DIR}/os-environment"
 LOCK_FILE="${LOCK_DIR}/os-lock.env"
 SNAPSHOT_TS="$(date -u '+%Y%m%dT%H%M%SZ')"

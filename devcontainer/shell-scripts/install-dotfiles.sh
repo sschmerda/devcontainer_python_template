@@ -27,7 +27,7 @@ if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
   cd "$DOTFILES_DIR"
   git checkout --detach "$DOTFILES_REF"
 else
-  : "${DOTFILES_REPO:?DOTFILES_REPO is not set. Set it in devcontainer/env-vars/.env.}"
+  : "${DOTFILES_REPO:?DOTFILES_REPO is not set. Set it in devcontainer/env-vars/.env.build.}"
   git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
   cd "$DOTFILES_DIR"
 fi

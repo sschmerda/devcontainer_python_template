@@ -38,7 +38,7 @@ cleanup() {
 trap cleanup EXIT
 
 render_env_file() {
-  : "${R_BASE_VERSION:?R_BASE_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
+  : "${R_BASE_VERSION:?R_BASE_VERSION is not set. Set it in devcontainer/env-vars/.env.build.}"
   sed "s|__R_BASE_VERSION__|${R_BASE_VERSION}|g" "$ENV_FILE" \
     | awk '
         /^platforms:[[:space:]]*$/ {skip=1; next}

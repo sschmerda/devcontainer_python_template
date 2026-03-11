@@ -10,8 +10,10 @@ MODE="${1:-lock}"
 export DEV_ENV_LOCKED
 compose_cmd() {
   docker compose \
-    --env-file "${ROOT_DIR}/env-vars/.env" \
-    --env-file "${ROOT_DIR}/env-vars/.env.secrets" \
+    --env-file "${ROOT_DIR}/env-vars/.env.build" \
+    --env-file "${ROOT_DIR}/env-vars/.env.runtime" \
+    --env-file "${ROOT_DIR}/env-vars/.env.secrets.build" \
+    --env-file "${ROOT_DIR}/env-vars/.env.secrets.runtime" \
     -f "${ROOT_DIR}/docker/docker-compose.yml" \
     -f "${ROOT_DIR}/docker/docker-compose.services.yml" \
     "$@"

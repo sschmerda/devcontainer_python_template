@@ -7,7 +7,7 @@ BIN_DIR="$HOME/.local/bin"
 ROOT_PREFIX="$HOME/.local/share/mamba"
 export PATH="$BIN_DIR:$PATH"
 export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
-: "${R_BASE_VERSION:?R_BASE_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
+: "${R_BASE_VERSION:?R_BASE_VERSION is not set. Set it in devcontainer/env-vars/.env.build.}"
 
 if ! command -v micromamba >/dev/null 2>&1; then
   echo "micromamba not found on PATH"

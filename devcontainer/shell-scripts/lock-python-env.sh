@@ -7,13 +7,19 @@ if [ ! -f /.dockerenv ]; then
 fi
 
 ENV_DIR="/home/dev/dev_container/devcontainer/python-environment"
+ROOT_DIR="/home/dev/dev_container/devcontainer"
+BUILD_ENV_FILE="${ROOT_DIR}/env-vars/.env.build"
 BIN_DIR="$HOME/.local/bin"
 ROOT_PREFIX="$HOME/.local/share/mamba"
 
+# shellcheck disable=SC1091
+. "${ROOT_DIR}/shell-scripts/env-file-utils.sh"
 export PATH="$BIN_DIR:$PATH"
 export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
-: "${CONDA_LOCK_VERSION:?CONDA_LOCK_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
-: "${PYTHON_VERSION:?PYTHON_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
+set_env_from_file_if_unset "$BUILD_ENV_FILE" CONDA_LOCK_VERSION
+set_env_from_file_if_unset "$BUILD_ENV_FILE" PYTHON_VERSION
+: "${CONDA_LOCK_VERSION:?CONDA_LOCK_VERSION is not set. Set it in devcontainer/env-vars/.env.build.}"
+: "${PYTHON_VERSION:?PYTHON_VERSION is not set. Set it in devcontainer/env-vars/.env.build.}"
 
 ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 cd "$ENV_DIR"

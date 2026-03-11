@@ -105,37 +105,43 @@ Captured fields include:
 - Services logs use plural keys: `SERVICE_NAMES`, `IMAGE_NAMES`, `IMAGE_SIZES`, `CONTAINER_NAMES`, `CONTAINER_SIZES`
 - Data mount flag (`DATA_MOUNT_USED`: `true` when a relevant bind mount is used, otherwise `false`)
 
-## .env configuration
+## Environment configuration
 
-Non-secret configuration values live in `devcontainer/env-vars/.env`.
+Non-secret configuration is split into:
 
-Common variables:
+- `devcontainer/env-vars/.env.build`
+- `devcontainer/env-vars/.env.runtime`
 
-- `JUPYTER_PORT`: Port to expose JupyterLab (default: `8888`).
-- `QUARTO_PORT`: Port to expose Quarto live preview (default: `4200`).
-- `TZ`: Container timezone (default: `UTC`).
-- `UID`: Host user id for file ownership (default: `1000`).
-- `GID`: Host group id for file ownership (default: `1000`).
-- `RETRY_ATTEMPTS`: Number of retry attempts for micromamba/conda-lock install commands during Python/R environment creation (default: `4`).
-- `RETRY_DELAY_SECONDS`: Base delay in seconds for retries; each retry sleeps `base_delay * attempt` (default: `10`).
-- `CONDA_LOCK_VERSION`: `conda-lock` version used by lock scripts (`lock-python-env`, `lock-r-env`, `lock-flower-env`).
-- `PYTHON_VERSION`: Python major/minor used to render `python-environment.yml` for latest builds and lock generation.
-- `R_BASE_VERSION`: R major/minor used to render `r-environment.yml` for latest builds and lock generation.
-- `FLOWER_PYTHON_VERSION`: Python major/minor used to render `services-environment/flower/flower-environment.yml` for latest builds and lock generation.
-- `DOTFILES_REPO`: Dotfiles git repository URL used by `install-dotfiles.sh` (latest) and `lock-dotfiles-env.sh` (lock generation).
-- `GIT_USER_NAME`, `GIT_USER_EMAIL`: Optional default Git commit identity configured inside the dev container via `git config --global`.
-- `ENABLE_HOST_GIT_ACCESS`: When `true`, dev targets enable host SSH agent access in the dev container. On Docker Desktop they use `/run/host-services/ssh-auth.sock`; otherwise they use `HOST_SSH_AUTH_SOCK_PATH` (default: `false`).
-- `HOST_DATA_READ_ONLY`: Host data mount mode when `HOST_DATA_DIR` is set (`true` = read-only, `false` = read-write; default: `true`).
-- `HOST_DATA_MOUNT_PATH`: Container mount path for `HOST_DATA_DIR` when it is set.
-- `HOST_DATA_SYMLINK_PATH`: Symlink created in the container pointing to `HOST_DATA_MOUNT_PATH`.
-- `POSTGRES_*`: Active default service settings for local PostgreSQL (image, container name, port, db, user).
-- `MYSQL_*`, `REDIS_*`, `NGINX_*`, `CELERY_*`, `FLOWER_*`: Optional service templates (commented by default).
+Secret configuration is split into:
 
-## .env.secrets
+- `devcontainer/env-vars/.env.secrets.build`
+- `devcontainer/env-vars/.env.secrets.runtime`
 
-Secret configuration values live in `devcontainer/env-vars/.env.secrets`.
-This file is committed as a template (keys only, empty values).
-Set values locally on each machine.
+Common build variables:
+
+- `DEVCONTAINER_OS_IMAGE`
+- `DOTFILES_REPO`
+- `GIT_USER_NAME`, `GIT_USER_EMAIL`
+- `PYTHON_VERSION`
+- `R_BASE_VERSION`
+- `FLOWER_PYTHON_VERSION`
+- `CONDA_LOCK_VERSION`
+- `UID`, `GID`
+- `RETRY_ATTEMPTS`, `RETRY_DELAY_SECONDS`
+
+Common runtime variables:
+
+- `TZ`
+- `ENABLE_HOST_GIT_ACCESS`
+- `HOST_DATA_READ_ONLY`
+- `HOST_DATA_MOUNT_PATH`
+- `HOST_DATA_SYMLINK_PATH`
+- `JUPYTER_PORT`
+- `QUARTO_PORT`
+- `WEB_APP_PORT`
+- `POSTGRES_*`, `MYSQL_*`, `REDIS_*`, `NGINX_*`, `CELERY_*`, `FLOWER_*`
+
+The secret files are committed as templates (keys only, empty values). Set values locally on each machine.
 For `HOST_DATA_DIR`, use an absolute path without spaces and without quotation marks.
 For `HOST_SSH_AUTH_SOCK_PATH`, `HOST_SSH_CONFIG_PATH`, and `HOST_SSH_KNOWN_HOSTS_PATH`, also use absolute file paths without quotes.
 For service data paths (`*_DATA_DIR`), also use absolute paths without quotes.
@@ -144,8 +150,10 @@ For service data paths (`*_DATA_DIR`), also use absolute paths without quotes.
 
 Environment variables are now loaded by Docker Compose directly from:
 
-- `devcontainer/env-vars/.env`
-- `devcontainer/env-vars/.env.secrets`
+- `devcontainer/env-vars/.env.build`
+- `devcontainer/env-vars/.env.runtime`
+- `devcontainer/env-vars/.env.secrets.build`
+- `devcontainer/env-vars/.env.secrets.runtime`
 
 The Makefile no longer acts as the primary env-variable source of truth.
 It calls Docker Compose with explicit `--env-file` flags, so variable resolution is consistent across:
@@ -160,13 +168,16 @@ Notes:
 - Commented variables are not loaded.
 - Unset variables resolve to empty values unless you enforce checks.
 - Service validation checks in `make up-services-latest` / `make rebuild-services-latest` still fail early for required paths/passwords.
-- `build.args` are available only at image build time; values from `env_file` are runtime environment variables inside running containers.
+- Build-only values are passed through `build.args`.
+- Runtime container variables come from `env_file`.
+- Lock scripts that need version values read them from `devcontainer/env-vars/.env.build`.
 
 ## Development vs production secrets
 
 Development (this repo):
 
-- Secrets are stored in `devcontainer/env-vars/.env.secrets` on the local machine.
+- Build secrets are stored in `devcontainer/env-vars/.env.secrets.build` on the local machine.
+- Runtime secrets are stored in `devcontainer/env-vars/.env.secrets.runtime` on the local machine.
 - Compose passes those values to containers as environment variables.
 - This is acceptable for local development and smoke tests.
 
@@ -178,13 +189,13 @@ Production (recommended):
 
 ## Host data mount
 
-External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/env-vars/.env.secrets`.
+External host data is optional and controlled by `HOST_DATA_DIR` in `devcontainer/env-vars/.env.secrets.runtime`.
 
 - `make up-dev-env-latest`, `make rebuild-dev-env-latest`, `make up-dev-env-lock`, and `make rebuild-dev-env-lock` automatically include the data-mount compose file when `HOST_DATA_DIR` is non-empty.
 - If `HOST_DATA_DIR` is set, Docker Compose adds a bind mount:
   - host: `HOST_DATA_DIR`
   - container: `HOST_DATA_MOUNT_PATH`
-  - mode: controlled by `HOST_DATA_READ_ONLY` in `devcontainer/env-vars/.env`
+  - mode: controlled by `HOST_DATA_READ_ONLY` in `devcontainer/env-vars/.env.runtime`
 - On container startup, a symlink is created:
   - `HOST_DATA_SYMLINK_PATH -> HOST_DATA_MOUNT_PATH`
 - If `HOST_DATA_DIR` is empty, data mount is skipped (no bind mount, no symlink).
@@ -195,16 +206,16 @@ External host data is optional and controlled by `HOST_DATA_DIR` in `devcontaine
 
 ## Optional host Git/SSH access
 
-Git access from inside the dev container is optional and controlled by `ENABLE_HOST_GIT_ACCESS` in `devcontainer/env-vars/.env`.
+Git access from inside the dev container is optional and controlled by `ENABLE_HOST_GIT_ACCESS` in `devcontainer/env-vars/.env.runtime`.
 
 - If `ENABLE_HOST_GIT_ACCESS=false` (default), the dev container gets no host SSH integration.
 - If `ENABLE_HOST_GIT_ACCESS=true`, dev targets enable SSH agent access inside the container.
 - This lets Git/SSH inside the container use the SSH identities already loaded in the host `ssh-agent` without copying private keys into the container.
 - If Docker Desktop is detected, the feature uses Docker Desktop's SSH agent bridge at `/run/host-services/ssh-auth.sock`.
-- Otherwise, the feature uses `HOST_SSH_AUTH_SOCK_PATH` from `devcontainer/env-vars/.env.secrets`.
+- Otherwise, the feature uses `HOST_SSH_AUTH_SOCK_PATH` from `devcontainer/env-vars/.env.secrets.runtime`.
 - If `ENABLE_HOST_GIT_ACCESS=true` and `HOST_SSH_AUTH_SOCK_PATH` is required but empty, not absolute, or not a socket, the dev target fails before Docker Compose runs.
 
-Optional host SSH file mounts are configured in `devcontainer/env-vars/.env.secrets`:
+Optional host SSH file mounts are configured in `devcontainer/env-vars/.env.secrets.runtime`:
 
 - `HOST_SSH_AUTH_SOCK_PATH`: Required only when Docker Desktop is not detected. This is the host path to the SSH agent socket that should be mounted into the dev container.
 - `HOST_SSH_CONFIG_PATH`: Optional read-only mount for host `~/.ssh/config`. Useful only if you rely on SSH aliases or host-specific SSH settings.
@@ -227,7 +238,7 @@ Useful host-side checks:
 Git commit identity:
 
 - SSH authentication and Git commit identity are separate concerns.
-- If `GIT_USER_NAME` and `GIT_USER_EMAIL` are both set in `devcontainer/env-vars/.env`, the image build configures:
+- If `GIT_USER_NAME` and `GIT_USER_EMAIL` are both set in `devcontainer/env-vars/.env.build`, the image build configures:
   - `git config --global user.name`
   - `git config --global user.email`
 - If both are empty, Git identity setup is skipped.
@@ -317,7 +328,7 @@ Micromamba is installed from GitHub releases (`mamba-org/micromamba-releases`):
 
 Base image locking is handled separately from in-container lock targets:
 
-- `make lock-os-image-host` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env`.
+- `make lock-os-image-host` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env.build`.
 - If it is a moving tag (for example `debian:13-slim`), it resolves linux platform child digests from the multi-arch manifest list and writes:
   - `devcontainer/os-environment/os-lock.env`
 - OS lockfile keys:
@@ -348,8 +359,10 @@ When adding or enabling a service, update these files in this order:
 
 - `devcontainer/docker/docker-compose.services.yml`: uncomment/enable the service here first (primary switch).
 - `devcontainer/docker/docker-compose.services-lock.yml`: for pull-based services, keep the same service uncommented here for lock mode.
-- `devcontainer/env-vars/.env`: set or uncomment non-secret variables (image, host, ports, container name, commands).
-- `devcontainer/env-vars/.env.secrets`: set secrets and absolute host paths (`*_PASSWORD`, `*_DATA_DIR`, config/code paths).
+- `devcontainer/env-vars/.env.build`: set build-time non-secret variables (image, versions, dotfiles repo, git identity, retry settings).
+- `devcontainer/env-vars/.env.runtime`: set runtime non-secret variables (timezone, ports, optional host Git/data settings, service image tags/commands).
+- `devcontainer/env-vars/.env.secrets.build`: set build-time secrets (`DEV_USER_PASSWORD`).
+- `devcontainer/env-vars/.env.secrets.runtime`: set runtime secrets and absolute host paths (`*_PASSWORD`, `*_DATA_DIR`, config/code paths).
 
 After enabling a service:
 
@@ -386,7 +399,7 @@ Celery image behavior:
 
 Locking behavior:
 
-- Non-lock service commands use the image tags from `devcontainer/env-vars/.env` (e.g. `postgres:latest`).
+- Non-lock service commands use the image tags from `devcontainer/env-vars/.env.runtime` (e.g. `postgres:latest`).
 - `make lock-services` resolves and stores linux platform child digests in `devcontainer/services-environment/services-lock.env` for both architectures (for example `POSTGRES_IMAGE_LOCK_AMD64` and `POSTGRES_IMAGE_LOCK_ARM64`).
 - Lock service commands use those stored digests.
 - Service commands automatically target all uncommented services in `devcontainer/docker/docker-compose.services.yml` (excluding the `dev` container).
@@ -399,16 +412,16 @@ Minimal enable workflow:
 
 1. Uncomment the service in `devcontainer/docker/docker-compose.services.yml`.
 2. For pull-based services, uncomment the matching lock override in `devcontainer/docker/docker-compose.services-lock.yml`.
-3. Set required non-secret vars in `devcontainer/env-vars/.env` and required secrets/paths in `devcontainer/env-vars/.env.secrets`.
+3. Set required build/runtime vars in `devcontainer/env-vars/.env.build` and `devcontainer/env-vars/.env.runtime`, plus any needed secrets/paths in `devcontainer/env-vars/.env.secrets.build` and `devcontainer/env-vars/.env.secrets.runtime`.
 4. Run `make lock-services` to refresh `devcontainer/services-environment/services-lock.env`.
 5. Run `make rebuild-services-latest` (latest mode) or `make rebuild-services-lock` (lock mode).
 
 Lock verification:
 
 - Render latest images:
-  - `docker compose --env-file env-vars/.env --env-file env-vars/.env.secrets -f docker/docker-compose.yml -f docker/docker-compose.services.yml config | rg 'image:'`
+  - `docker compose --env-file env-vars/.env.build --env-file env-vars/.env.runtime --env-file env-vars/.env.secrets.build --env-file env-vars/.env.secrets.runtime -f docker/docker-compose.yml -f docker/docker-compose.services.yml config | rg 'image:'`
 - Render lock images:
-  - `eval "$(sh shell-scripts/export-cross-platform-lock-vars.sh all)" && DEV_ENV_LOCKED=1 docker compose --env-file env-vars/.env --env-file env-vars/.env.secrets --env-file os-environment/os-lock.env --env-file services-environment/services-lock.env -f docker/docker-compose.yml -f docker/docker-compose.services.yml -f docker/docker-compose.services-lock.yml config | rg 'image:'`
+  - `eval "$(sh shell-scripts/export-cross-platform-lock-vars.sh all)" && DEV_ENV_LOCKED=1 docker compose --env-file env-vars/.env.build --env-file env-vars/.env.runtime --env-file env-vars/.env.secrets.build --env-file env-vars/.env.secrets.runtime --env-file os-environment/os-lock.env --env-file services-environment/services-lock.env -f docker/docker-compose.yml -f docker/docker-compose.services.yml -f docker/docker-compose.services-lock.yml config | rg 'image:'`
 - Verify running pull-based services use digest refs:
   - `docker inspect dev_postgres --format '{{.Config.Image}}'`
   - `docker inspect dev_redis --format '{{.Config.Image}}'`
@@ -417,7 +430,7 @@ Lock verification:
 Recommended config mount location:
 
 - `devcontainer/services-environment/nginx/` stores Nginx service config files.
-- Use absolute host paths in `devcontainer/env-vars/.env.secrets` for `*_CONFIG_DIR`.
+- Use absolute host paths in `devcontainer/env-vars/.env.secrets.runtime` for `*_CONFIG_DIR`.
 
 ## Web applications (FastAPI/Flask/Django)
 
@@ -560,5 +573,11 @@ All `clean-lock-*` targets can run on host or inside the container.
 
 ## Template repo setup
 
-When creating a new repo from this template, edit `devcontainer/env-vars/.env.secrets`
+When creating a new repo from this template, edit the env files you need:
+
+- `devcontainer/env-vars/.env.build`
+- `devcontainer/env-vars/.env.runtime`
+- `devcontainer/env-vars/.env.secrets.build`
+- `devcontainer/env-vars/.env.secrets.runtime`
+
 and set local values for the keys you need (for example `HOST_DATA_DIR`).

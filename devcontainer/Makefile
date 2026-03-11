@@ -7,7 +7,7 @@ COMPOSE_GIT_SSH_CONFIG_FILE=docker/docker-compose.git-ssh-config.yml
 COMPOSE_GIT_KNOWN_HOSTS_FILE=docker/docker-compose.git-known-hosts.yml
 COMPOSE_SERVICES_FILE=docker/docker-compose.services.yml
 COMPOSE_SERVICES_LOCK_FILE=docker/docker-compose.services-lock.yml
-COMPOSE_ENV_FILES=--env-file env-vars/.env --env-file env-vars/.env.secrets
+COMPOSE_ENV_FILES=--env-file env-vars/.env.build --env-file env-vars/.env.runtime --env-file env-vars/.env.secrets.build --env-file env-vars/.env.secrets.runtime
 OS_LOCK_ENV_FILE=os-environment/os-lock.env
 OS_LOCK_ENV_FILE_ARG=$(if $(wildcard $(OS_LOCK_ENV_FILE)),--env-file $(OS_LOCK_ENV_FILE),)
 LOCK_ENV_FILE_ARG=$(if $(wildcard services-environment/services-lock.env),--env-file services-environment/services-lock.env,)
@@ -33,7 +33,7 @@ COMPOSE_CMD_SERVICES_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_F
 
 define check_service_vars
 	@set -a; \
-	. env-vars/.env.secrets; \
+	. env-vars/.env.secrets.runtime; \
 	set +a; \
 	services="$$(DEV_ENV_LOCKED=$(1) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -z "$$services" ]; then \
@@ -44,59 +44,59 @@ define check_service_vars
 		case "$$svc" in \
 			postgres) \
 				if [ -z "$$POSTGRES_DATA_DIR" ]; then \
-					echo "POSTGRES_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "POSTGRES_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				if [ -z "$$POSTGRES_PASSWORD" ]; then \
-					echo "POSTGRES_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "POSTGRES_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				;; \
 			mysql) \
 				if [ -z "$$MYSQL_DATA_DIR" ]; then \
-					echo "MYSQL_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "MYSQL_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				if [ -z "$$MYSQL_ROOT_PASSWORD" ]; then \
-					echo "MYSQL_ROOT_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "MYSQL_ROOT_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				;; \
 			elasticsearch) \
 				if [ -z "$$ELASTICSEARCH_DATA_DIR" ]; then \
-					echo "ELASTICSEARCH_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "ELASTICSEARCH_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				;; \
 			redis) \
 				if [ -z "$$REDIS_DATA_DIR" ]; then \
-					echo "REDIS_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "REDIS_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				;; \
 			minio) \
 				if [ -z "$$MINIO_DATA_DIR" ]; then \
-					echo "MINIO_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "MINIO_DATA_DIR is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				if [ -z "$$MINIO_ROOT_USER" ]; then \
-					echo "MINIO_ROOT_USER is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "MINIO_ROOT_USER is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				if [ -z "$$MINIO_ROOT_PASSWORD" ]; then \
-					echo "MINIO_ROOT_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "MINIO_ROOT_PASSWORD is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				;; \
 			nginx) \
 				if [ -z "$$NGINX_CONF_DIR" ]; then \
-					echo "NGINX_CONF_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "NGINX_CONF_DIR is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				;; \
 			celery-worker|celery-beat|flower) \
 				if [ -z "$$CELERY_CODE_DIR" ]; then \
-					echo "CELERY_CODE_DIR is empty. Set it in devcontainer/env-vars/.env.secrets."; \
+					echo "CELERY_CODE_DIR is empty. Set it in devcontainer/env-vars/.env.secrets.runtime."; \
 					exit 1; \
 				fi; \
 				;; \

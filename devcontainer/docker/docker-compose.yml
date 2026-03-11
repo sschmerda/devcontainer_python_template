@@ -1,8 +1,8 @@
 services:
   dev:
     env_file:
-      - ../env-vars/.env
-      - ../env-vars/.env.secrets
+      - ../env-vars/.env.runtime
+      - ../env-vars/.env.secrets.runtime
     image: dev_env
     build:
       context: ..

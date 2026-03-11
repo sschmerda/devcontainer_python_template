@@ -37,7 +37,7 @@ cleanup() {
 trap cleanup EXIT
 
 render_env_file() {
-  : "${PYTHON_VERSION:?PYTHON_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
+  : "${PYTHON_VERSION:?PYTHON_VERSION is not set. Set it in devcontainer/env-vars/.env.build.}"
   sed "s|__PYTHON_VERSION__|${PYTHON_VERSION}|g" "$ENV_FILE" \
     | awk '
         /^platforms:[[:space:]]*$/ {skip=1; next}

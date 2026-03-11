@@ -7,5 +7,5 @@ service container at:
 
 Set this directory as the host config source in:
 
-- `devcontainer/env-vars/.env.secrets`
+- `devcontainer/env-vars/.env.secrets.runtime`
 - `NGINX_CONF_DIR=/absolute/path/to/repo/devcontainer/services-environment/nginx`

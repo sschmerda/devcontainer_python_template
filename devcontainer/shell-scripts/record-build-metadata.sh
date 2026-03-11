@@ -29,13 +29,15 @@ mkdir -p "${ROOT_DIR}/build-metadata"
 
 docker_compose_cmd() {
   docker compose \
-    --env-file "${ROOT_DIR}/env-vars/.env" \
-    --env-file "${ROOT_DIR}/env-vars/.env.secrets" \
+    --env-file "${ROOT_DIR}/env-vars/.env.build" \
+    --env-file "${ROOT_DIR}/env-vars/.env.runtime" \
+    --env-file "${ROOT_DIR}/env-vars/.env.secrets.build" \
+    --env-file "${ROOT_DIR}/env-vars/.env.secrets.runtime" \
     "$@"
 }
 
 host_data_dir_from_secrets() {
-  secrets_file="${ROOT_DIR}/env-vars/.env.secrets"
+  secrets_file="${ROOT_DIR}/env-vars/.env.secrets.runtime"
   if [ ! -f "$secrets_file" ]; then
     return
   fi

@@ -37,7 +37,7 @@ cleanup() {
 trap cleanup EXIT
 
 render_env_file() {
-  : "${FLOWER_PYTHON_VERSION:?FLOWER_PYTHON_VERSION is not set. Set it in devcontainer/env-vars/.env.}"
+  : "${FLOWER_PYTHON_VERSION:?FLOWER_PYTHON_VERSION is not set. Set it in devcontainer/env-vars/.env.build.}"
   sed "s|__FLOWER_PYTHON_VERSION__|${FLOWER_PYTHON_VERSION}|g" "$ENV_FILE" >"$RENDERED_ENV_FILE"
 }
 

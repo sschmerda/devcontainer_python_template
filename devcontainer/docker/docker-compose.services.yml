@@ -3,8 +3,8 @@ services:
   ## Use this for persistent transactional storage and SQL features.
   # postgres:
   #   env_file:
-  #     - ../env-vars/.env
-  #     - ../env-vars/.env.secrets
+  #     - ../env-vars/.env.runtime
+  #     - ../env-vars/.env.secrets.runtime
   #   image: ${POSTGRES_IMAGE}
   #   container_name: ${POSTGRES_CONTAINER_NAME}
   #   restart: unless-stopped
@@ -44,8 +44,8 @@ services:
   ## Use for full-text search and document indexing.
   # elasticsearch:
   #   env_file:
-  #     - ../env-vars/.env
-  #     - ../env-vars/.env.secrets
+  #     - ../env-vars/.env.runtime
+  #     - ../env-vars/.env.secrets.runtime
   #   image: ${ELASTICSEARCH_IMAGE}
   #   container_name: ${ELASTICSEARCH_CONTAINER_NAME}
   #   restart: unless-stopped
@@ -66,8 +66,8 @@ services:
   ## Use as cache, broker, or lightweight key-value store.
   # redis:
   #   env_file:
-  #     - ../env-vars/.env
-  #     - ../env-vars/.env.secrets
+  #     - ../env-vars/.env.runtime
+  #     - ../env-vars/.env.secrets.runtime
   #   image: ${REDIS_IMAGE}
   #   container_name: ${REDIS_CONTAINER_NAME}
   #   restart: unless-stopped
@@ -85,8 +85,8 @@ services:
   ## Use for S3-compatible local object storage.
   # minio:
   #   env_file:
-  #     - ../env-vars/.env
-  #     - ../env-vars/.env.secrets
+  #     - ../env-vars/.env.runtime
+  #     - ../env-vars/.env.secrets.runtime
   #   image: ${MINIO_IMAGE}
   #   container_name: ${MINIO_CONTAINER_NAME}
   #   restart: unless-stopped
@@ -125,8 +125,8 @@ services:
   ## Use for asynchronous/background tasks in Python web applications.
   # celery-worker:
   #   env_file:
-  #     - ../env-vars/.env
-  #     - ../env-vars/.env.secrets
+  #     - ../env-vars/.env.runtime
+  #     - ../env-vars/.env.secrets.runtime
   #   image: ${CELERY_WORKER_IMAGE}
   #   build:
   #     context: ../..
@@ -160,8 +160,8 @@ services:
   ## Use for periodic task scheduling.
   # celery-beat:
   #   env_file:
-  #     - ../env-vars/.env
-  #     - ../env-vars/.env.secrets
+  #     - ../env-vars/.env.runtime
+  #     - ../env-vars/.env.secrets.runtime
   #   image: ${CELERY_BEAT_IMAGE}
   #   build:
   #     context: ../..
@@ -195,8 +195,8 @@ services:
   ## Use for Celery task/worker monitoring via web UI.
   # flower:
   #   env_file:
-  #     - ../env-vars/.env
-  #     - ../env-vars/.env.secrets
+  #     - ../env-vars/.env.runtime
+  #     - ../env-vars/.env.secrets.runtime
   #   image: ${FLOWER_IMAGE}
   #   build:
   #     context: ../..
