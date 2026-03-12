@@ -11,6 +11,9 @@ LIST_FILE="${ENV_DIR}/additional-binaries.list"
 CONFIG_DIR="${ENV_DIR}/additional-binaries"
 LOCK_FILE="${ENV_DIR}/additional-binaries-lock.env"
 TMP_DIR="$(mktemp -d)"
+GITHUB_API_BASE_URL="https://api.github.com"
+GITHUB_RELEASES_LATEST_URL_TEMPLATE="${GITHUB_API_BASE_URL}/repos/%s/releases/latest"
+GITHUB_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/%s/releases/download/%s/%s"
 
 cleanup() {
   rm -rf "$TMP_DIR"
@@ -78,7 +81,7 @@ load_binary_config() {
 fetch_tag() {
   local repo
   repo="$1"
-  curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
+  curl -fsSL "$(printf "$GITHUB_RELEASES_LATEST_URL_TEMPLATE" "$repo")" \
     | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' \
     | head -n 1
 }
@@ -99,7 +102,7 @@ build_url() {
   version="$4"
   asset="${template//\{VERSION\}/$version}"
   asset="${asset//\{TAG\}/$tag}"
-  printf '%s' "https://github.com/${repo}/releases/download/${tag}/${asset}"
+  printf "$GITHUB_RELEASE_DOWNLOAD_URL_TEMPLATE" "$repo" "$tag" "$asset"
 }
 
 mkdir -p "$ENV_DIR"

@@ -6,6 +6,9 @@ WORKDIR="$(mktemp -d)"
 BIN_DIR="$HOME/.local/bin"
 ROOT_PREFIX="$HOME/.local/share/mamba"
 LOCK_FILE="/tmp/micromamba-environment/micromamba-lock.env"
+MICROMAMBA_REPO="mamba-org/micromamba-releases"
+MICROMAMBA_RELEASES_LATEST_DOWNLOAD_URL_TEMPLATE="https://github.com/${MICROMAMBA_REPO}/releases/latest/download/%s.tar.bz2"
+MAMBA_CHANNEL_ALIAS_URL="https://conda.anaconda.org"
 
 asset_basename_for_arch() {
   case "$ARCH" in
@@ -25,7 +28,7 @@ asset_basename_for_arch() {
 resolve_latest_url() {
   local base
   base="$(asset_basename_for_arch)"
-  URL="https://github.com/mamba-org/micromamba-releases/releases/latest/download/${base}.tar.bz2"
+  URL="$(printf "$MICROMAMBA_RELEASES_LATEST_DOWNLOAD_URL_TEMPLATE" "$base")"
   VERSION="latest"
   echo ">>> Selected micromamba release: latest (${base})"
 }
@@ -67,7 +70,7 @@ install_from_download() {
   mkdir -p "$BIN_DIR"
   export PATH="$BIN_DIR:$PATH"
   export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
-  export MAMBA_CHANNEL_ALIAS="https://conda.anaconda.org"
+  export MAMBA_CHANNEL_ALIAS="$MAMBA_CHANNEL_ALIAS_URL"
   mv "$src" "$BIN_DIR/micromamba"
 }
 

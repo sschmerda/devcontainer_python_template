@@ -8,8 +8,10 @@ fi
 
 ENV_DIR="/home/dev/dev_container/devcontainer/quarto-environment"
 LOCK_FILE="${ENV_DIR}/quarto-lock.env"
-LATEST_API="https://api.github.com/repos/quarto-dev/quarto-cli/releases/latest"
-RELEASE_JSON="$(curl -fsSL "$LATEST_API")"
+QUARTO_REPO="quarto-dev/quarto-cli"
+QUARTO_RELEASES_LATEST_API_URL="https://api.github.com/repos/${QUARTO_REPO}/releases/latest"
+QUARTO_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/${QUARTO_REPO}/releases/download/%s/%s"
+RELEASE_JSON="$(curl -fsSL "$QUARTO_RELEASES_LATEST_API_URL")"
 TAG="$(printf '%s\n' "$RELEASE_JSON" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
 if [ -z "$TAG" ]; then
   echo "Unable to determine latest Quarto release tag from GitHub."
@@ -18,8 +20,8 @@ fi
 VERSION="${TAG#v}"
 AMD64_ASSET="quarto-${VERSION}-linux-amd64.tar.gz"
 ARM64_ASSET="quarto-${VERSION}-linux-arm64.tar.gz"
-AMD64_URL="https://github.com/quarto-dev/quarto-cli/releases/download/${TAG}/${AMD64_ASSET}"
-ARM64_URL="https://github.com/quarto-dev/quarto-cli/releases/download/${TAG}/${ARM64_ASSET}"
+AMD64_URL="$(printf "$QUARTO_RELEASE_DOWNLOAD_URL_TEMPLATE" "$TAG" "$AMD64_ASSET")"
+ARM64_URL="$(printf "$QUARTO_RELEASE_DOWNLOAD_URL_TEMPLATE" "$TAG" "$ARM64_ASSET")"
 TMP_DIR="$(mktemp -d)"
 AMD64_FILE="${TMP_DIR}/${AMD64_ASSET}"
 ARM64_FILE="${TMP_DIR}/${ARM64_ASSET}"

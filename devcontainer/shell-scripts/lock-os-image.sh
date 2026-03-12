@@ -7,6 +7,10 @@ LOCK_DIR="${ROOT_DIR}/os-environment"
 LOCK_FILE="${LOCK_DIR}/os-lock.env"
 SNAPSHOT_TS="$(date -u '+%Y%m%dT%H%M%SZ')"
 TMP_DIR="$(mktemp -d)"
+DEBIAN_SNAPSHOT_MAIN_URL="http://snapshot.debian.org/archive/debian"
+DEBIAN_SNAPSHOT_SECURITY_URL="http://snapshot.debian.org/archive/debian-security"
+UBUNTU_SNAPSHOT_MAIN_URL="http://snapshot.ubuntu.com/ubuntu"
+UBUNTU_SNAPSHOT_SECURITY_URL="http://snapshot.ubuntu.com/ubuntu"
 
 cleanup() {
   rm -rf "$TMP_DIR"
@@ -79,12 +83,12 @@ fi
 
 case "$DIST_ID" in
   debian)
-    MAIN_BASE_URL="http://snapshot.debian.org/archive/debian"
-    SECURITY_BASE_URL="http://snapshot.debian.org/archive/debian-security"
+    MAIN_BASE_URL="$DEBIAN_SNAPSHOT_MAIN_URL"
+    SECURITY_BASE_URL="$DEBIAN_SNAPSHOT_SECURITY_URL"
     ;;
   ubuntu)
-    MAIN_BASE_URL="http://snapshot.ubuntu.com/ubuntu"
-    SECURITY_BASE_URL="http://snapshot.ubuntu.com/ubuntu"
+    MAIN_BASE_URL="$UBUNTU_SNAPSHOT_MAIN_URL"
+    SECURITY_BASE_URL="$UBUNTU_SNAPSHOT_SECURITY_URL"
     ;;
   *)
     echo "Unsupported distro id for apt snapshot locking: $DIST_ID"

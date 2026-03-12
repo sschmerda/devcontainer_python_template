@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+QUARTO_REPO="quarto-dev/quarto-cli"
+QUARTO_RELEASES_LATEST_API_URL="https://api.github.com/repos/${QUARTO_REPO}/releases/latest"
+QUARTO_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/${QUARTO_REPO}/releases/download/%s/%s"
+
 write_quarto_runtime_env() {
   local start="# >>> quarto-runtime managed >>>"
   local end="# <<< quarto-runtime managed <<<"
@@ -37,7 +41,7 @@ resolve_latest_url() {
       ;;
   esac
 
-  LATEST_TAG="$(curl -fsSL https://api.github.com/repos/quarto-dev/quarto-cli/releases/latest | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p' | head -n 1)"
+  LATEST_TAG="$(curl -fsSL "$QUARTO_RELEASES_LATEST_API_URL" | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p' | head -n 1)"
   if [ -z "$LATEST_TAG" ]; then
     echo "Unable to determine latest Quarto release tag from GitHub."
     exit 1
@@ -45,7 +49,7 @@ resolve_latest_url() {
 
   VERSION="${LATEST_TAG#v}"
   ASSET="quarto-${VERSION}-${ARCH_SUFFIX}.tar.gz"
-  URL="https://github.com/quarto-dev/quarto-cli/releases/download/${LATEST_TAG}/${ASSET}"
+  URL="$(printf "$QUARTO_RELEASE_DOWNLOAD_URL_TEMPLATE" "$LATEST_TAG" "$ASSET")"
   echo ">>> Selected Quarto release: ${LATEST_TAG}"
 }
 

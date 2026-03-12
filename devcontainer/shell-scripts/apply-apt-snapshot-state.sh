@@ -2,6 +2,10 @@
 set -eu
 
 LOCK_FILE="/tmp/os-environment/os-lock.env"
+DEBIAN_SNAPSHOT_MAIN_URL="http://snapshot.debian.org/archive/debian"
+DEBIAN_SNAPSHOT_SECURITY_URL="http://snapshot.debian.org/archive/debian-security"
+UBUNTU_SNAPSHOT_MAIN_URL="http://snapshot.ubuntu.com/ubuntu"
+UBUNTU_SNAPSHOT_SECURITY_URL="http://snapshot.ubuntu.com/ubuntu"
 
 if [ "${DEV_ENV_LOCKED:-0}" != "1" ]; then
   exit 0
@@ -52,12 +56,12 @@ SECURITY_BASE_URL="${APT_SECURITY_BASE_URL:-}"
 if [ -z "$MAIN_BASE_URL" ] || [ -z "$SECURITY_BASE_URL" ]; then
   case "$DIST_ID" in
     debian)
-      MAIN_BASE_URL="http://snapshot.debian.org/archive/debian"
-      SECURITY_BASE_URL="http://snapshot.debian.org/archive/debian-security"
+      MAIN_BASE_URL="$DEBIAN_SNAPSHOT_MAIN_URL"
+      SECURITY_BASE_URL="$DEBIAN_SNAPSHOT_SECURITY_URL"
       ;;
     ubuntu)
-      MAIN_BASE_URL="http://snapshot.ubuntu.com/ubuntu"
-      SECURITY_BASE_URL="http://snapshot.ubuntu.com/ubuntu"
+      MAIN_BASE_URL="$UBUNTU_SNAPSHOT_MAIN_URL"
+      SECURITY_BASE_URL="$UBUNTU_SNAPSHOT_SECURITY_URL"
       ;;
     *)
       echo "Unsupported distro id for apt snapshot configuration: $DIST_ID"

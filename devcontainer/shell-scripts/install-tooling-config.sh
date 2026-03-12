@@ -5,11 +5,11 @@ echo ">>> Configuring tooling..."
 
 LOCK_FILE="/tmp/tooling-config-environment/tooling-config-lock.env"
 
-OH_MY_ZSH_REPO_DEFAULT="https://github.com/ohmyzsh/ohmyzsh.git"
-ZSH_AUTOSUGGESTIONS_REPO_DEFAULT="https://github.com/zsh-users/zsh-autosuggestions.git"
-ZSH_SYNTAX_HIGHLIGHTING_REPO_DEFAULT="https://github.com/zsh-users/zsh-syntax-highlighting.git"
-POWERLEVEL10K_REPO_DEFAULT="https://github.com/romkatv/powerlevel10k.git"
-TPM_REPO_DEFAULT="https://github.com/tmux-plugins/tpm.git"
+OH_MY_ZSH_REPO_URL="https://github.com/ohmyzsh/ohmyzsh.git"
+ZSH_AUTOSUGGESTIONS_REPO_URL="https://github.com/zsh-users/zsh-autosuggestions.git"
+ZSH_SYNTAX_HIGHLIGHTING_REPO_URL="https://github.com/zsh-users/zsh-syntax-highlighting.git"
+POWERLEVEL10K_REPO_URL="https://github.com/romkatv/powerlevel10k.git"
+TPM_REPO_URL="https://github.com/tmux-plugins/tpm.git"
 
 require_var() {
   local name value
@@ -58,11 +58,11 @@ resolve_repo_and_ref() {
   printf '%s|%s\n' "$repo" "$ref"
 }
 
-ohmyzsh_spec="$(resolve_repo_and_ref OH_MY_ZSH "$OH_MY_ZSH_REPO_DEFAULT")"
-zsh_autosuggestions_spec="$(resolve_repo_and_ref ZSH_AUTOSUGGESTIONS "$ZSH_AUTOSUGGESTIONS_REPO_DEFAULT")"
-zsh_syntax_highlighting_spec="$(resolve_repo_and_ref ZSH_SYNTAX_HIGHLIGHTING "$ZSH_SYNTAX_HIGHLIGHTING_REPO_DEFAULT")"
-powerlevel10k_spec="$(resolve_repo_and_ref POWERLEVEL10K "$POWERLEVEL10K_REPO_DEFAULT")"
-tpm_spec="$(resolve_repo_and_ref TPM "$TPM_REPO_DEFAULT")"
+ohmyzsh_spec="$(resolve_repo_and_ref OH_MY_ZSH "$OH_MY_ZSH_REPO_URL")"
+zsh_autosuggestions_spec="$(resolve_repo_and_ref ZSH_AUTOSUGGESTIONS "$ZSH_AUTOSUGGESTIONS_REPO_URL")"
+zsh_syntax_highlighting_spec="$(resolve_repo_and_ref ZSH_SYNTAX_HIGHLIGHTING "$ZSH_SYNTAX_HIGHLIGHTING_REPO_URL")"
+powerlevel10k_spec="$(resolve_repo_and_ref POWERLEVEL10K "$POWERLEVEL10K_REPO_URL")"
+tpm_spec="$(resolve_repo_and_ref TPM "$TPM_REPO_URL")"
 
 clone_repo "${ohmyzsh_spec%%|*}" "$HOME/.oh-my-zsh" "${ohmyzsh_spec#*|}"
 

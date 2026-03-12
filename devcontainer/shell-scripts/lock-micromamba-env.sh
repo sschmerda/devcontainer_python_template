@@ -8,8 +8,9 @@ fi
 
 ENV_DIR="/home/dev/dev_container/devcontainer/micromamba-environment"
 LOCK_FILE="${ENV_DIR}/micromamba-lock.env"
-LATEST_API="https://api.github.com/repos/mamba-org/micromamba-releases/releases/latest"
-RELEASE_JSON="$(curl -fsSL "$LATEST_API")"
+MICROMAMBA_REPO="mamba-org/micromamba-releases"
+MICROMAMBA_RELEASES_LATEST_API_URL="https://api.github.com/repos/${MICROMAMBA_REPO}/releases/latest"
+RELEASE_JSON="$(curl -fsSL "$MICROMAMBA_RELEASES_LATEST_API_URL")"
 TAG="$(printf '%s\n' "$RELEASE_JSON" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
 if [ -z "$TAG" ]; then
   echo "Unable to determine latest micromamba release tag from GitHub."

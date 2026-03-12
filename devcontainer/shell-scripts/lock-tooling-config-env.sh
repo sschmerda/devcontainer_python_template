@@ -9,11 +9,11 @@ fi
 LOCK_FILE="/home/dev/dev_container/devcontainer/tooling-config-environment/tooling-config-lock.env"
 mkdir -p "$(dirname "$LOCK_FILE")"
 
-OH_MY_ZSH_REPO="https://github.com/ohmyzsh/ohmyzsh.git"
-ZSH_AUTOSUGGESTIONS_REPO="https://github.com/zsh-users/zsh-autosuggestions.git"
-ZSH_SYNTAX_HIGHLIGHTING_REPO="https://github.com/zsh-users/zsh-syntax-highlighting.git"
-POWERLEVEL10K_REPO="https://github.com/romkatv/powerlevel10k.git"
-TPM_REPO="https://github.com/tmux-plugins/tpm.git"
+OH_MY_ZSH_REPO_URL="https://github.com/ohmyzsh/ohmyzsh.git"
+ZSH_AUTOSUGGESTIONS_REPO_URL="https://github.com/zsh-users/zsh-autosuggestions.git"
+ZSH_SYNTAX_HIGHLIGHTING_REPO_URL="https://github.com/zsh-users/zsh-syntax-highlighting.git"
+POWERLEVEL10K_REPO_URL="https://github.com/romkatv/powerlevel10k.git"
+TPM_REPO_URL="https://github.com/tmux-plugins/tpm.git"
 
 resolve_head_ref() {
   local repo
@@ -21,11 +21,11 @@ resolve_head_ref() {
   git ls-remote "$repo" HEAD | awk '{print $1}'
 }
 
-OH_MY_ZSH_REF="$(resolve_head_ref "$OH_MY_ZSH_REPO")"
-ZSH_AUTOSUGGESTIONS_REF="$(resolve_head_ref "$ZSH_AUTOSUGGESTIONS_REPO")"
-ZSH_SYNTAX_HIGHLIGHTING_REF="$(resolve_head_ref "$ZSH_SYNTAX_HIGHLIGHTING_REPO")"
-POWERLEVEL10K_REF="$(resolve_head_ref "$POWERLEVEL10K_REPO")"
-TPM_REF="$(resolve_head_ref "$TPM_REPO")"
+OH_MY_ZSH_REF="$(resolve_head_ref "$OH_MY_ZSH_REPO_URL")"
+ZSH_AUTOSUGGESTIONS_REF="$(resolve_head_ref "$ZSH_AUTOSUGGESTIONS_REPO_URL")"
+ZSH_SYNTAX_HIGHLIGHTING_REF="$(resolve_head_ref "$ZSH_SYNTAX_HIGHLIGHTING_REPO_URL")"
+POWERLEVEL10K_REF="$(resolve_head_ref "$POWERLEVEL10K_REPO_URL")"
+TPM_REF="$(resolve_head_ref "$TPM_REPO_URL")"
 
 for ref_name in \
   OH_MY_ZSH_REF \
@@ -42,15 +42,15 @@ done
 tmp_file="$(mktemp)"
 {
   printf '# Created: %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-  printf 'OH_MY_ZSH_REPO=%s\n' "$OH_MY_ZSH_REPO"
+  printf 'OH_MY_ZSH_REPO=%s\n' "$OH_MY_ZSH_REPO_URL"
   printf 'OH_MY_ZSH_REF=%s\n' "$OH_MY_ZSH_REF"
-  printf 'ZSH_AUTOSUGGESTIONS_REPO=%s\n' "$ZSH_AUTOSUGGESTIONS_REPO"
+  printf 'ZSH_AUTOSUGGESTIONS_REPO=%s\n' "$ZSH_AUTOSUGGESTIONS_REPO_URL"
   printf 'ZSH_AUTOSUGGESTIONS_REF=%s\n' "$ZSH_AUTOSUGGESTIONS_REF"
-  printf 'ZSH_SYNTAX_HIGHLIGHTING_REPO=%s\n' "$ZSH_SYNTAX_HIGHLIGHTING_REPO"
+  printf 'ZSH_SYNTAX_HIGHLIGHTING_REPO=%s\n' "$ZSH_SYNTAX_HIGHLIGHTING_REPO_URL"
   printf 'ZSH_SYNTAX_HIGHLIGHTING_REF=%s\n' "$ZSH_SYNTAX_HIGHLIGHTING_REF"
-  printf 'POWERLEVEL10K_REPO=%s\n' "$POWERLEVEL10K_REPO"
+  printf 'POWERLEVEL10K_REPO=%s\n' "$POWERLEVEL10K_REPO_URL"
   printf 'POWERLEVEL10K_REF=%s\n' "$POWERLEVEL10K_REF"
-  printf 'TPM_REPO=%s\n' "$TPM_REPO"
+  printf 'TPM_REPO=%s\n' "$TPM_REPO_URL"
   printf 'TPM_REF=%s\n' "$TPM_REF"
 } >"$tmp_file"
 mv "$tmp_file" "$LOCK_FILE"

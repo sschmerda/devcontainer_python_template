@@ -5,6 +5,9 @@ ARCH="$(uname -m)"
 LIST_FILE="/tmp/additional-binaries-environment/additional-binaries.list"
 CONFIG_DIR="/tmp/additional-binaries-environment/additional-binaries"
 LOCK_FILE="/tmp/additional-binaries-environment/additional-binaries-lock.env"
+GITHUB_API_BASE_URL="https://api.github.com"
+GITHUB_RELEASES_LATEST_URL_TEMPLATE="${GITHUB_API_BASE_URL}/repos/%s/releases/latest"
+GITHUB_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/%s/releases/download/%s/%s"
 RETRY_ATTEMPTS="${RETRY_ATTEMPTS:?RETRY_ATTEMPTS is not set. Set it in devcontainer/env-vars/.env.build.}"
 RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS:?RETRY_DELAY_SECONDS is not set. Set it in devcontainer/env-vars/.env.build.}"
 
@@ -60,7 +63,7 @@ retry_run() {
 fetch_latest_tag() {
   local repo
   repo="$1"
-  retry_run curl -fsSL "https://api.github.com/repos/${repo}/releases/latest" \
+  retry_run curl -fsSL "$(printf "$GITHUB_RELEASES_LATEST_URL_TEMPLATE" "$repo")" \
     | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' \
     | head -n 1
 }
@@ -172,7 +175,7 @@ resolve_latest_url_for_binary() {
   asset="${asset_template//\{VERSION\}/$version}"
   asset="${asset//\{TAG\}/$tag}"
 
-  printf '%s\n' "https://github.com/${repo}/releases/download/${tag}/${asset}"
+  printf "$GITHUB_RELEASE_DOWNLOAD_URL_TEMPLATE\\n" "$repo" "$tag" "$asset"
 }
 
 install_tar_binary() {

@@ -8,8 +8,9 @@ fi
 
 OUT_FILE="/home/dev/dev_container/devcontainer/latex-environment/latex-environment-lock.txt"
 STAMP="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+TEXLIVE_DEFAULT_REPO_URL="https://mirror.ctan.org/systems/texlive/tlnet"
 
-REPO_URL="${TEXLIVE_REPO_URL:-https://mirror.ctan.org/systems/texlive/tlnet}"
+REPO_URL="${TEXLIVE_REPO_URL:-$TEXLIVE_DEFAULT_REPO_URL}"
 TMP_DIR="$(mktemp -d)"
 
 case "$REPO_URL" in
