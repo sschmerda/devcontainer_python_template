@@ -4,6 +4,8 @@ FROM ${DEVCONTAINER_OS_IMAGE}
 
 ARG DEV_ENV_LOCKED=0
 ARG FLOWER_PYTHON_VERSION
+ARG RETRY_ATTEMPTS
+ARG RETRY_DELAY_SECONDS
 
 ENV HOME=/root
 ENV PATH=/root/.local/bin:$PATH
@@ -29,6 +31,6 @@ RUN apt-get update && /tmp/verify-apt-snapshot-state.sh && apt-get install -y --
 
 RUN chmod +x /tmp/install-micromamba.sh /tmp/install-flower-packages.sh && /tmp/install-micromamba.sh
 
-RUN /tmp/install-flower-packages.sh
+RUN RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" /tmp/install-flower-packages.sh
 
 WORKDIR /app/workspace

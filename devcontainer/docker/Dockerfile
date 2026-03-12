@@ -5,6 +5,8 @@ FROM ${DEVCONTAINER_OS_IMAGE}
 USER root
 ARG DEV_ENV_LOCKED=0
 ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
+ARG RETRY_ATTEMPTS
+ARG RETRY_DELAY_SECONDS
 ARG PYTHON_VERSION
 ARG R_BASE_VERSION
 ARG FLOWER_PYTHON_VERSION
@@ -52,7 +54,7 @@ RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp
 RUN /tmp/apply-apt-snapshot-state.sh
 RUN /tmp/install-base-binaries.sh  
 # Install additional software
-RUN /tmp/install-additional-binaries.sh
+RUN RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" /tmp/install-additional-binaries.sh
 
 # locale
 ENV LANG=C.UTF-8
@@ -102,10 +104,10 @@ RUN chown -R dev:dev /tmp/python-environment
 RUN chown -R dev:dev /tmp/r-environment
 
 # Install python libraries
-RUN runuser -u dev -- env PYTHON_VERSION="${PYTHON_VERSION}" /tmp/install-python-packages.sh
+RUN runuser -u dev -- env RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" PYTHON_VERSION="${PYTHON_VERSION}" /tmp/install-python-packages.sh
 
 # Install R libraries
-RUN runuser -u dev -- env R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-r-packages.sh
+RUN runuser -u dev -- env RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-r-packages.sh
 
 # Install Quarto (latest or locked) as user.
 RUN runuser -u dev -- /tmp/install-quarto.sh

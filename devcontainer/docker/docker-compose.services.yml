@@ -133,6 +133,8 @@ services:
   #     dockerfile: devcontainer/services-environment/celery/Dockerfile
   #     args:
   #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
+  #       RETRY_ATTEMPTS: ${RETRY_ATTEMPTS}
+  #       RETRY_DELAY_SECONDS: ${RETRY_DELAY_SECONDS}
   #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
   #       PYTHON_VERSION: ${PYTHON_VERSION}
   #   container_name: ${CELERY_WORKER_CONTAINER_NAME}
@@ -168,6 +170,8 @@ services:
   #     dockerfile: devcontainer/services-environment/celery/Dockerfile
   #     args:
   #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
+  #       RETRY_ATTEMPTS: ${RETRY_ATTEMPTS}
+  #       RETRY_DELAY_SECONDS: ${RETRY_DELAY_SECONDS}
   #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
   #       PYTHON_VERSION: ${PYTHON_VERSION}
   #   container_name: ${CELERY_BEAT_CONTAINER_NAME}
@@ -203,6 +207,8 @@ services:
   #     dockerfile: devcontainer/services-environment/flower/Dockerfile
   #     args:
   #       DEVCONTAINER_OS_IMAGE: ${DEVCONTAINER_OS_IMAGE}
+  #       RETRY_ATTEMPTS: ${RETRY_ATTEMPTS}
+  #       RETRY_DELAY_SECONDS: ${RETRY_DELAY_SECONDS}
   #       DEV_ENV_LOCKED: ${DEV_ENV_LOCKED}
   #       FLOWER_PYTHON_VERSION: ${FLOWER_PYTHON_VERSION}
   #   container_name: ${FLOWER_CONTAINER_NAME}
