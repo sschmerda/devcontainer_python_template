@@ -158,7 +158,7 @@ if [ -z "${docker_server_version:-}" ]; then
 fi
 docker_context_name="$(docker context show 2>/dev/null || echo unavailable)"
 make_version="$(make --version 2>/dev/null | head -n 1 || echo unavailable)"
-build_duration_seconds="${BUILD_DURATION_SECONDS:-unknown}"
+build_duration_seconds="${BUILD_DURATION_SECONDS:?BUILD_DURATION_SECONDS is not set.}"
 
 duration_human() {
   val="$1"

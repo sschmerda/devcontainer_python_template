@@ -102,7 +102,11 @@ if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
     echo "Missing locked micromamba SHA256 for architecture: $ARCH"
     exit 1
   fi
-  echo ">>> Installing locked micromamba: ${MICROMAMBA_TAG:-${MICROMAMBA_VERSION:-unknown}}"
+  if [ -z "${MICROMAMBA_TAG:-}" ] && [ -z "${MICROMAMBA_VERSION:-}" ]; then
+    echo "Missing MICROMAMBA_TAG or MICROMAMBA_VERSION in $LOCK_FILE"
+    exit 1
+  fi
+  echo ">>> Installing locked micromamba: ${MICROMAMBA_TAG:-$MICROMAMBA_VERSION}"
   install_from_download "$URL" "$SHA256"
 else
   resolve_latest_url

@@ -3,7 +3,7 @@ set -eu
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 LOCK_FILE="${ROOT_DIR}/services-environment/services-lock.env"
-SERVICES_RAW="${ACTIVE_SERVICES:-postgres}"
+SERVICES_RAW="${ACTIVE_SERVICES:?ACTIVE_SERVICES is not set.}"
 MODE="${1:-lock}"
 # Compose files contain DEV_ENV_LOCKED build args; default prevents warning noise.
 : "${DEV_ENV_LOCKED:=0}"

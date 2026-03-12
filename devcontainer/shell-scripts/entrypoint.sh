@@ -2,11 +2,11 @@
 set -euo pipefail
 
 HOST_DATA_DIR_VALUE="${HOST_DATA_DIR:-}"
-MOUNT_PATH="${HOST_DATA_MOUNT_PATH:-/home/dev/data_external}"
-LINK_PATH="${HOST_DATA_SYMLINK_PATH:-/home/dev/dev_container/workspace/data_external}"
-LINK_PARENT="$(dirname "$LINK_PATH")"
 
 if [ -n "$HOST_DATA_DIR_VALUE" ]; then
+  MOUNT_PATH="${HOST_DATA_MOUNT_PATH:?HOST_DATA_MOUNT_PATH is not set. Set it in devcontainer/env-vars/.env.runtime.}"
+  LINK_PATH="${HOST_DATA_SYMLINK_PATH:?HOST_DATA_SYMLINK_PATH is not set. Set it in devcontainer/env-vars/.env.runtime.}"
+  LINK_PARENT="$(dirname "$LINK_PATH")"
   mkdir -p "$LINK_PARENT"
   if [ -d "$MOUNT_PATH" ]; then
     rm -rf "$LINK_PATH"
@@ -16,7 +16,9 @@ if [ -n "$HOST_DATA_DIR_VALUE" ]; then
     rm -rf "$LINK_PATH"
   fi
 else
-  rm -rf "$LINK_PATH"
+  if [ -n "${HOST_DATA_SYMLINK_PATH:-}" ]; then
+    rm -rf "$HOST_DATA_SYMLINK_PATH"
+  fi
 fi
 
 exec "$@"

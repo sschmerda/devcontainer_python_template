@@ -8,8 +8,8 @@ export PATH="$BIN_DIR:$PATH"
 export MAMBA_ROOT_PREFIX="$ROOT_PREFIX"
 
 run_with_retries() {
-  local max_attempts="${RETRY_ATTEMPTS:-4}"
-  local base_delay="${RETRY_DELAY_SECONDS:-10}"
+  local max_attempts="${RETRY_ATTEMPTS:?RETRY_ATTEMPTS is not set. Set it in devcontainer/env-vars/.env.build.}"
+  local base_delay="${RETRY_DELAY_SECONDS:?RETRY_DELAY_SECONDS is not set. Set it in devcontainer/env-vars/.env.build.}"
   local attempt=1
 
   while true; do

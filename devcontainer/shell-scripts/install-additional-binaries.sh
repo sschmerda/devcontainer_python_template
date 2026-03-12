@@ -5,8 +5,8 @@ ARCH="$(uname -m)"
 LIST_FILE="/tmp/additional-binaries-environment/additional-binaries.list"
 CONFIG_DIR="/tmp/additional-binaries-environment/additional-binaries"
 LOCK_FILE="/tmp/additional-binaries-environment/additional-binaries-lock.env"
-RETRY_ATTEMPTS="${RETRY_ATTEMPTS:-4}"
-RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS:-10}"
+RETRY_ATTEMPTS="${RETRY_ATTEMPTS:?RETRY_ATTEMPTS is not set. Set it in devcontainer/env-vars/.env.build.}"
+RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS:?RETRY_DELAY_SECONDS is not set. Set it in devcontainer/env-vars/.env.build.}"
 
 echo ">>> Installing additional system packages..."
 
@@ -278,7 +278,7 @@ while IFS= read -r binary; do
 
   case "$install_method" in
     tar)
-      tar_install_mode="${TAR_INSTALL_MODE:-binary}"
+      tar_install_mode="${TAR_INSTALL_MODE:?TAR_INSTALL_MODE is not set in the binary config.}"
       case "$tar_install_mode" in
         binary)
           tar_bin_path="$(require_var TAR_BIN_PATH)"

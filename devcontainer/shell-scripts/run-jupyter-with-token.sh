@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -e
 
-PORT="${JUPYTER_PORT:-8888}"
+PORT="${JUPYTER_PORT:?JUPYTER_PORT is not set. Set it in devcontainer/env-vars/.env.runtime.}"
 TOKEN="$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')"
 
 URL="http://127.0.0.1:${PORT}/lab?token=${TOKEN}"

@@ -52,7 +52,7 @@ Run these from the `devcontainer` directory:
 - `make tmux`: Open tmux in the container.
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
-- Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT:-4200}`.
+- Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT}`.
 - `make lock-dev-env-container`: Generate lockfiles for micromamba, additional binaries, user tooling repos, dotfiles repo ref, Python, R, LaTeX, and Quarto (run inside the container).
 - `make lock-tooling-config-env`: Generate `devcontainer/tooling-config-environment/tooling-config-lock.env` for oh-my-zsh, zsh plugins/theme, and tmux TPM repos.
 - `make lock-dotfiles-env`: Generate `devcontainer/dotfiles-environment/dotfiles-lock.env` with a pinned dotfiles commit.
