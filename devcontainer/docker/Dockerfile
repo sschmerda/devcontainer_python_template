@@ -89,7 +89,7 @@ RUN mkdir -p /home/dev/.ssh \
   && chmod 700 /home/dev/.ssh \
   && chown -R dev:dev /home/dev
 
-# Install dotfiles as the non-root user (correct HOME)
+# Install dotfiles and other configs as the non-root user (correct HOME)
 RUN runuser -u dev -- env DOTFILES_REPO="${DOTFILES_REPO}" /tmp/install-dotfiles.sh
 RUN runuser -u dev -- env GIT_USER_NAME="${GIT_USER_NAME}" GIT_USER_EMAIL="${GIT_USER_EMAIL}" /tmp/configure-git-identity.sh
 RUN runuser -u dev -- /tmp/activate-nvim-config.sh
