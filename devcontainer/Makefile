@@ -228,7 +228,6 @@ lock-dev-env-container:
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-dotfiles-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
@@ -407,7 +406,6 @@ lock-flower-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 
 # Remove all lockfiles
 .PHONY: clean-lock-all
@@ -616,10 +614,16 @@ lock-services:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	@if ! DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) true >/dev/null 2>&1; then \
+		echo "The dev container must be running to lock services because Flower lock generation runs inside it."; \
+		echo "Start it first with make up-dev-env-latest or make up-dev-env-lock."; \
+		exit 1; \
+	fi
 	@services="$$(DEV_ENV_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh"; \
 	fi
+	@DEV_ENV_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc "cd /home/dev/dev_container/devcontainer && make lock-flower-env FORCE=1"
 
 .PHONY: clean-lock-services
 clean-lock-services:

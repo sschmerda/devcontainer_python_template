@@ -65,7 +65,7 @@ Run these from the `devcontainer` directory:
 - `make rebuild-services-lock`: Re-pull and recreate configured additional services using locked image digests.
 - `make stop-services`: Stop configured additional services without removing them.
 - `make down-services`: Stop and remove configured additional services.
-- `make lock-services`: Generate `devcontainer/services-environment/services-lock.env` from current service images.
+- `make lock-services`: Generate `devcontainer/services-environment/services-lock.env` from current service images and refresh the Flower environment lock (requires the dev container to be running).
 - `make clean-build-metadata`: Remove all metadata log files from `devcontainer/build-metadata/`.
 - `make jupyter-settings-export`: Export JupyterLab user settings to `devcontainer/build-assets/` (run inside the container).
 - `make jupyter-settings-restore`: Restore JupyterLab user settings from `devcontainer/build-assets/` (run inside the container).
@@ -418,6 +418,8 @@ Locking behavior:
 - Lock service commands use those stored digests.
 - Service commands automatically target all uncommented services in `devcontainer/docker/docker-compose.services.yml` (excluding the `dev` container).
 - Build-based services (`celery-worker`, `celery-beat`, `flower`) are not digest-locked by `make lock-services`.
+- `make lock-services` still updates `devcontainer/services-environment/flower/flower-environment-lock.yml` by invoking `make lock-flower-env` inside the running dev container.
+- Because of that Flower step, `make lock-services` requires the dev container to be running first.
 - Keep `devcontainer/docker/docker-compose.services-lock.yml` aligned with `devcontainer/docker/docker-compose.services.yml` for pull-based services:
   - If a service is commented in `docker-compose.services.yml`, keep it commented in `docker-compose.services-lock.yml`.
   - If a lock entry is enabled but its `*_IMAGE_LOCK_AMD64` / `*_IMAGE_LOCK_ARM64` keys are absent in `services-lock.env`, lock rebuilds fail.
