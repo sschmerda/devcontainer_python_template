@@ -72,18 +72,4 @@ else
   micromamba clean --all --yes --force-pkgs-dirs
 fi
 
-ZSHRC="$HOME/.zshrc"
-if [ -f "$ZSHRC" ]; then
-  if ! grep -q "micromamba shell hook" "$ZSHRC"; then
-    {
-      echo ""
-      echo "# Micromamba init (auto activation)"
-      echo "if command -v micromamba >/dev/null 2>&1; then"
-      echo "  eval \"\$(micromamba shell hook --shell zsh)\""
-      echo "  micromamba activate python-env"
-      echo "fi"
-    } >>"$ZSHRC"
-  fi
-fi
-
 echo ">>> Micromamba environment installation completed."
