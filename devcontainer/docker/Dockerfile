@@ -7,6 +7,10 @@ ARG DEV_ENV_LOCKED=0
 ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 ARG RETRY_ATTEMPTS
 ARG RETRY_DELAY_SECONDS
+ARG ENABLE_PYTHON_ENV
+ARG ENABLE_R_ENV
+ARG ENABLE_TEXLIVE
+ARG ENABLE_QUARTO
 ARG PYTHON_VERSION
 ARG R_BASE_VERSION
 ARG FLOWER_PYTHON_VERSION
@@ -104,19 +108,39 @@ RUN chown -R dev:dev /tmp/python-environment
 RUN chown -R dev:dev /tmp/r-environment
 
 # Install python libraries
-RUN runuser -u dev -- env RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" PYTHON_VERSION="${PYTHON_VERSION}" /tmp/install-python-packages.sh
+RUN if [ "${ENABLE_PYTHON_ENV}" = "true" ]; then \
+  runuser -u dev -- env RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" PYTHON_VERSION="${PYTHON_VERSION}" /tmp/install-python-packages.sh; \
+  else \
+  echo ">>> Skipping Python environment installation (ENABLE_PYTHON_ENV=${ENABLE_PYTHON_ENV})"; \
+  fi
 
 # Install R libraries
-RUN runuser -u dev -- env RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-r-packages.sh
+RUN if [ "${ENABLE_R_ENV}" = "true" ]; then \
+  runuser -u dev -- env RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-r-packages.sh; \
+  else \
+  echo ">>> Skipping R environment installation (ENABLE_R_ENV=${ENABLE_R_ENV})"; \
+  fi
 
 # Install Quarto (latest or locked) as user.
-RUN runuser -u dev -- /tmp/install-quarto.sh
+RUN if [ "${ENABLE_QUARTO}" = "true" ]; then \
+  runuser -u dev -- /tmp/install-quarto.sh; \
+  else \
+  echo ">>> Skipping Quarto installation (ENABLE_QUARTO=${ENABLE_QUARTO})"; \
+  fi
 
 # Install TinyTeX via temporary r-environment
-RUN runuser -u dev -- env R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-tinytex.sh
+RUN if [ "${ENABLE_TEXLIVE}" = "true" ]; then \
+  runuser -u dev -- env R_BASE_VERSION="${R_BASE_VERSION}" /tmp/install-tinytex.sh; \
+  else \
+  echo ">>> Skipping TinyTeX installation (ENABLE_TEXLIVE=${ENABLE_TEXLIVE})"; \
+  fi
 
 # Install additional LaTeX packages (tlmgr)
-RUN runuser -u dev -- /tmp/install-latex-packages.sh
+RUN if [ "${ENABLE_TEXLIVE}" = "true" ]; then \
+  runuser -u dev -- /tmp/install-latex-packages.sh; \
+  else \
+  echo ">>> Skipping LaTeX package installation (ENABLE_TEXLIVE=${ENABLE_TEXLIVE})"; \
+  fi
 
 # Final micromamba cache cleanup to keep image size down.
 RUN runuser -u dev -- env MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba /home/dev/.local/bin/micromamba clean --all --yes --force-pkgs-dirs

@@ -44,6 +44,15 @@ host_data_dir_from_secrets() {
   awk -F= '/^HOST_DATA_DIR=/{print substr($0, index($0, "=")+1); exit}' "$secrets_file"
 }
 
+build_flag_from_env() {
+  key="$1"
+  build_file="${ROOT_DIR}/env-vars/.env.build"
+  if [ ! -f "$build_file" ]; then
+    return
+  fi
+  awk -F= -v key="$key" '$1 == key {print substr($0, index($0, "=")+1); exit}' "$build_file"
+}
+
 compose_files_for_scope() {
   case "$SCOPE" in
     dev)
@@ -301,6 +310,27 @@ elif [ "$SCOPE" = "services" ] && [ "$(services_have_volume_mounts)" = "true" ];
   data_mount_used="true"
 fi
 
+enable_python_env="$(build_flag_from_env ENABLE_PYTHON_ENV)"
+enable_r_env="$(build_flag_from_env ENABLE_R_ENV)"
+enable_texlive="$(build_flag_from_env ENABLE_TEXLIVE)"
+enable_quarto="$(build_flag_from_env ENABLE_QUARTO)"
+
+enabled_components=""
+append_enabled_component() {
+  component_name="$1"
+  if [ -n "$enabled_components" ]; then
+    enabled_components="${enabled_components},${component_name}"
+  else
+    enabled_components="${component_name}"
+  fi
+}
+
+[ "${enable_python_env:-}" = "true" ] && append_enabled_component "python"
+[ "${enable_r_env:-}" = "true" ] && append_enabled_component "r"
+[ "${enable_texlive:-}" = "true" ] && append_enabled_component "texlive"
+[ "${enable_quarto:-}" = "true" ] && append_enabled_component "quarto"
+[ -n "$enabled_components" ] || enabled_components="none"
+
 if [ "$SCOPE" = "dev" ]; then
   cat > "$LOG_FILE" <<EOF
 TIMESTAMP_UTC=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
@@ -323,6 +353,11 @@ IMAGE_SIZE=${image_sizes_inline}
 CONTAINER_NAME=${containers_inline}
 CONTAINER_SIZE=${container_sizes_inline}
 DATA_MOUNT_USED=${data_mount_used}
+ENABLE_PYTHON_ENV=${enable_python_env}
+ENABLE_R_ENV=${enable_r_env}
+ENABLE_TEXLIVE=${enable_texlive}
+ENABLE_QUARTO=${enable_quarto}
+ENABLED_COMPONENTS=${enabled_components}
 EOF
 else
   cat > "$LOG_FILE" <<EOF

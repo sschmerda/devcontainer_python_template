@@ -108,6 +108,10 @@ define check_service_vars
 	done
 endef
 
+define component_enabled
+$$(awk -F= '/^$(1)=/{print $$2; exit}' env-vars/.env.build)
+endef
+
 # Unified dev-env commands (latest)
 .PHONY: up-dev-env-latest
 up-dev-env-latest:
@@ -227,10 +231,26 @@ lock-dev-env-container:
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-env.sh"
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-dotfiles-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
-	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
+	@if [ "$(call component_enabled,ENABLE_PYTHON_ENV)" = "true" ]; then \
+		sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"; \
+	else \
+		echo "Skipping Python lockfile generation (ENABLE_PYTHON_ENV=false)."; \
+	fi
+	@if [ "$(call component_enabled,ENABLE_R_ENV)" = "true" ]; then \
+		sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"; \
+	else \
+		echo "Skipping R lockfile generation (ENABLE_R_ENV=false)."; \
+	fi
+	@if [ "$(call component_enabled,ENABLE_TEXLIVE)" = "true" ]; then \
+		sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"; \
+	else \
+		echo "Skipping LaTeX lockfile generation (ENABLE_TEXLIVE=false)."; \
+	fi
+	@if [ "$(call component_enabled,ENABLE_QUARTO)" = "true" ]; then \
+		sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"; \
+	else \
+		echo "Skipping Quarto lockfile generation (ENABLE_QUARTO=false)."; \
+	fi
 
 # Lock base OS image digest used for Dockerfile FROM (run on host).
 .PHONY: lock-os-image-host
@@ -350,6 +370,10 @@ lock-python-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	@if [ "$(call component_enabled,ENABLE_PYTHON_ENV)" != "true" ]; then \
+		echo "Skipping Python lockfile generation (ENABLE_PYTHON_ENV=false)."; \
+		exit 0; \
+	fi
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"
 
 # Generate R lockfile (run inside container only)
@@ -364,6 +388,10 @@ lock-r-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	@if [ "$(call component_enabled,ENABLE_R_ENV)" != "true" ]; then \
+		echo "Skipping R lockfile generation (ENABLE_R_ENV=false)."; \
+		exit 0; \
+	fi
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-r-env.sh"
 
 # Generate LaTeX lockfile (run inside container only)
@@ -378,6 +406,10 @@ lock-latex-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	@if [ "$(call component_enabled,ENABLE_TEXLIVE)" != "true" ]; then \
+		echo "Skipping LaTeX lockfile generation (ENABLE_TEXLIVE=false)."; \
+		exit 0; \
+	fi
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-latex-env.sh"
 
 # Generate Quarto lockfile (run inside container only)
@@ -392,6 +424,10 @@ lock-quarto-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	@if [ "$(call component_enabled,ENABLE_QUARTO)" != "true" ]; then \
+		echo "Skipping Quarto lockfile generation (ENABLE_QUARTO=false)."; \
+		exit 0; \
+	fi
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-quarto-env.sh"
 
 # Generate Flower lockfile from Python lockfile (run inside container only)
@@ -406,6 +442,7 @@ lock-flower-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-flower-env.sh"
 
 # Remove all lockfiles
 .PHONY: clean-lock-all

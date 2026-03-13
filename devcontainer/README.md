@@ -104,6 +104,7 @@ Captured fields include:
 - Dev logs use singular keys: `SERVICE_NAME`, `IMAGE_NAME`, `IMAGE_SIZE`, `CONTAINER_NAME`, `CONTAINER_SIZE`
 - Services logs use plural keys: `SERVICE_NAMES`, `IMAGE_NAMES`, `IMAGE_SIZES`, `CONTAINER_NAMES`, `CONTAINER_SIZES`
 - Data mount flag (`DATA_MOUNT_USED`: `true` when a relevant bind mount is used, otherwise `false`)
+- Dev logs also include component flags: `ENABLE_PYTHON_ENV`, `ENABLE_R_ENV`, `ENABLE_TEXLIVE`, `ENABLE_QUARTO`, and the summary field `ENABLED_COMPONENTS`
 
 ## Environment configuration
 
@@ -122,12 +123,35 @@ Common build variables:
 - `DEVCONTAINER_OS_IMAGE`
 - `DOTFILES_REPO`
 - `GIT_USER_NAME`, `GIT_USER_EMAIL`
+- `ENABLE_PYTHON_ENV`, `ENABLE_R_ENV`, `ENABLE_TEXLIVE`, `ENABLE_QUARTO`
 - `PYTHON_VERSION`
 - `R_BASE_VERSION`
 - `FLOWER_PYTHON_VERSION`
 - `CONDA_LOCK_VERSION`
 - `UID`, `GID`
 - `RETRY_ATTEMPTS`, `RETRY_DELAY_SECONDS`
+
+Optional heavyweight dev components are controlled in `devcontainer/env-vars/.env.build`:
+
+- `ENABLE_PYTHON_ENV=true|false`
+- `ENABLE_R_ENV=true|false`
+- `ENABLE_TEXLIVE=true|false`
+- `ENABLE_QUARTO=true|false`
+
+The enable flag governs the whole component lifecycle:
+
+- latest build: install it
+- `make lock-dev-env-container`: lock it
+- lock rebuild: require its lockfile and install from it
+
+If a component is disabled, all three stages skip it. If a component is enabled in lock mode and its lockfile is missing, the build fails.
+
+Capability notes:
+
+- `ENABLE_TEXLIVE=false` disables TinyTeX and extra LaTeX packages, so PDF rendering is unavailable.
+- `ENABLE_PYTHON_ENV=false` disables the Python micromamba environment, so Jupyter/Python-backed workflows are unavailable.
+- `ENABLE_R_ENV=false` disables the R micromamba environment, so R-backed workflows are unavailable.
+- `ENABLE_QUARTO=false` skips Quarto installation entirely.
 
 Common runtime variables:
 
