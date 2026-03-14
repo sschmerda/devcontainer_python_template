@@ -230,8 +230,7 @@ lock-dev-env-container:
 	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-micromamba-env.sh"
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-additional-binaries-env.sh"
-	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"
-	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-dotfiles-env.sh"
+	@if [ "$(call component_enabled,ENABLE_USER_CONFIG)" = "true" ]; then 		sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"; 		sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-dotfiles-env.sh"; 	else 		echo "Skipping user configuration lockfile generation (ENABLE_USER_CONFIG=false)."; 	fi
 	@if [ "$(call component_enabled,ENABLE_PYTHON_ENV)" = "true" ]; then \
 		sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/lock-python-env.sh"; \
 	else \
@@ -374,6 +373,7 @@ lock-tooling-config-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	@if [ "$(call component_enabled,ENABLE_USER_CONFIG)" != "true" ]; then 		echo "Skipping tooling config lockfile generation (ENABLE_USER_CONFIG=false)."; 		exit 0; 	fi
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-tooling-config-env.sh"
 
 # Generate dotfiles lockfile (run inside container only)
@@ -388,6 +388,7 @@ lock-dotfiles-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
+	@if [ "$(call component_enabled,ENABLE_USER_CONFIG)" != "true" ]; then 		echo "Skipping dotfiles lockfile generation (ENABLE_USER_CONFIG=false)."; 		exit 0; 	fi
 	sh -lc "bash /home/dev/dev_container/devcontainer/shell-scripts/lock-dotfiles-env.sh"
 
 # Generate Python lockfile (run inside container only)

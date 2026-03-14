@@ -9,6 +9,7 @@ ARG BASE_BINARIES_LOCKED=0
 ENV BASE_BINARIES_LOCKED=${BASE_BINARIES_LOCKED}
 ARG RETRY_ATTEMPTS
 ARG RETRY_DELAY_SECONDS
+ARG ENABLE_USER_CONFIG
 ARG ENABLE_PYTHON_ENV
 ARG ENABLE_R_ENV
 ARG ENABLE_TEXLIVE
@@ -96,13 +97,13 @@ RUN mkdir -p /home/dev/.ssh \
   && chmod 700 /home/dev/.ssh \
   && chown -R dev:dev /home/dev
 
-# Install dotfiles and other configs as the non-root user (correct HOME)
-RUN runuser -u dev -- env DOTFILES_REPO="${DOTFILES_REPO}" /tmp/install-dotfiles.sh
-RUN runuser -u dev -- env GIT_USER_NAME="${GIT_USER_NAME}" GIT_USER_EMAIL="${GIT_USER_EMAIL}" /tmp/configure-git-identity.sh
-RUN runuser -u dev -- /tmp/activate-nvim-config.sh
+# Install user configuration layer as the non-root user.
+RUN if [ "${ENABLE_USER_CONFIG}" = "true" ]; then   runuser -u dev -- env DOTFILES_REPO="${DOTFILES_REPO}" /tmp/install-dotfiles.sh &&   runuser -u dev -- /tmp/install-tooling-config.sh &&   runuser -u dev -- /tmp/activate-nvim-config.sh;   else   echo ">>> Skipping user configuration installation (ENABLE_USER_CONFIG=${ENABLE_USER_CONFIG})";   fi
 
-# Install user-level binaries/config after dotfiles
-RUN runuser -u dev -- /tmp/install-tooling-config.sh
+# Configure git
+RUN runuser -u dev -- env GIT_USER_NAME="${GIT_USER_NAME}" GIT_USER_EMAIL="${GIT_USER_EMAIL}" /tmp/configure-git-identity.sh
+
+# Configure jupyter lab
 RUN runuser -u dev -- /tmp/restore-jupyterlab-settings.sh
 
 # install correct micromamba based on chip architecture (user-only install)
