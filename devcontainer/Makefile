@@ -562,6 +562,15 @@ clean-build-metadata:
 # Export JupyterLab user settings to build-assets (run inside container only)
 .PHONY: jupyter-settings-export
 jupyter-settings-export:
+	@if [ ! -f /.dockerenv ]; then \
+		echo "This target must be run inside the container."; \
+		exit 1; \
+	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Export JupyterLab settings now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/export-jupyterlab-settings.sh"
 
 # Restore JupyterLab user settings from build-assets (run inside container only)
@@ -571,6 +580,11 @@ jupyter-settings-restore:
 		echo "This target must be run inside the container."; \
 		exit 1; \
 	fi
+	@sh -lc 'if [ "$(FORCE)" != "1" ]; then \
+		printf "Restore JupyterLab settings now? [y/N] "; \
+		read -r ans; \
+		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
+	fi'
 	sh -lc "sh /home/dev/dev_container/devcontainer/shell-scripts/restore-jupyterlab-settings.sh"
 
 # Enter container in Zsh
