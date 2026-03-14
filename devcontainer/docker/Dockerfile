@@ -55,14 +55,49 @@ COPY base-binaries-environment/ /tmp/base-binaries-environment/
 COPY additional-binaries-environment/ /tmp/additional-binaries-environment/
 COPY tooling-config-environment/ /tmp/tooling-config-environment/
 COPY python-environment/ /tmp/python-environment/
-RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/configure-git-identity.sh /tmp/install-additional-binaries.sh /tmp/install-tooling-config.sh /tmp/activate-nvim-config.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh \
-  && find /tmp/dotfiles-environment /tmp/tooling-config-environment /tmp/latex-environment /tmp/r-environment /tmp/quarto-environment /tmp/micromamba-environment /tmp/os-environment /tmp/base-binaries-environment /tmp/additional-binaries-environment /tmp/python-environment -type f -exec chmod 644 {} +
+RUN chmod +x \
+  /tmp/install-base-binaries.sh \
+  /tmp/apply-apt-snapshot-state.sh \
+  /tmp/verify-apt-snapshot-state.sh \
+  /tmp/install-dotfiles.sh \
+  /tmp/configure-git-identity.sh \
+  /tmp/install-additional-binaries.sh \
+  /tmp/install-tooling-config.sh \
+  /tmp/activate-nvim-config.sh \
+  /tmp/install-quarto.sh \
+  /tmp/install-tinytex.sh \
+  /tmp/install-micromamba.sh \
+  /tmp/restore-jupyterlab-settings.sh \
+  /tmp/install-latex-packages.sh \
+  /tmp/install-r-packages.sh \
+  /tmp/install-python-packages.sh \
+  /tmp/lock-additional-binaries-env.sh \
+  /tmp/lock-micromamba-env.sh \
+  /tmp/lock-python-env.sh \
+  /tmp/lock-r-env.sh \
+  /tmp/lock-latex-env.sh \
+  /tmp/lock-quarto-env.sh \
+  /usr/local/bin/entrypoint.sh \
+  && find \
+    /tmp/dotfiles-environment \
+    /tmp/tooling-config-environment \
+    /tmp/latex-environment \
+    /tmp/r-environment \
+    /tmp/quarto-environment \
+    /tmp/micromamba-environment \
+    /tmp/os-environment \
+    /tmp/base-binaries-environment \
+    /tmp/additional-binaries-environment \
+    /tmp/python-environment \
+    -type f -exec chmod 644 {} +
 
 # Install base software
 RUN /tmp/apply-apt-snapshot-state.sh
-RUN /tmp/install-base-binaries.sh  
+RUN /tmp/install-base-binaries.sh
 # Install additional software
-RUN RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" /tmp/install-additional-binaries.sh
+RUN RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" \
+  RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" \
+  /tmp/install-additional-binaries.sh
 
 # locale
 ENV LANG=C.UTF-8
@@ -98,10 +133,19 @@ RUN mkdir -p /home/dev/.ssh \
   && chown -R dev:dev /home/dev
 
 # Install user configuration layer as the non-root user.
-RUN if [ "${ENABLE_USER_CONFIG}" = "true" ]; then   runuser -u dev -- env DOTFILES_REPO="${DOTFILES_REPO}" /tmp/install-dotfiles.sh &&   runuser -u dev -- /tmp/install-tooling-config.sh &&   runuser -u dev -- /tmp/activate-nvim-config.sh;   else   echo ">>> Skipping user configuration installation (ENABLE_USER_CONFIG=${ENABLE_USER_CONFIG})";   fi
+RUN if [ "${ENABLE_USER_CONFIG}" = "true" ]; then \
+  runuser -u dev -- env DOTFILES_REPO="${DOTFILES_REPO}" /tmp/install-dotfiles.sh && \
+  runuser -u dev -- /tmp/install-tooling-config.sh && \
+  runuser -u dev -- /tmp/activate-nvim-config.sh; \
+  else \
+  echo ">>> Skipping user configuration installation (ENABLE_USER_CONFIG=${ENABLE_USER_CONFIG})"; \
+  fi
 
 # Configure git
-RUN runuser -u dev -- env GIT_USER_NAME="${GIT_USER_NAME}" GIT_USER_EMAIL="${GIT_USER_EMAIL}" /tmp/configure-git-identity.sh
+RUN runuser -u dev -- env \
+  GIT_USER_NAME="${GIT_USER_NAME}" \
+  GIT_USER_EMAIL="${GIT_USER_EMAIL}" \
+  /tmp/configure-git-identity.sh
 
 # Configure jupyter lab
 RUN runuser -u dev -- /tmp/restore-jupyterlab-settings.sh
@@ -147,7 +191,9 @@ RUN if [ "${ENABLE_TEXLIVE}" = "true" ]; then \
   fi
 
 # Final micromamba cache cleanup to keep image size down.
-RUN runuser -u dev -- env MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba /home/dev/.local/bin/micromamba clean --all --yes --force-pkgs-dirs
+RUN runuser -u dev -- env \
+  MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba \
+  /home/dev/.local/bin/micromamba clean --all --yes --force-pkgs-dirs
 
 ENV MAMBA_DEFAULT_ENV=python-env
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba
