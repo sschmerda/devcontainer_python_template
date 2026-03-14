@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 set -eu
 
-LOCK_FILE="/tmp/os-environment/os-lock.env"
+LOCK_FILE="/tmp/base-binaries-environment/base-binaries-lock.env"
 
-if [ "${DEV_ENV_LOCKED:-0}" != "1" ]; then
+if [ "${BASE_BINARIES_LOCKED:-${DEV_ENV_LOCKED:-0}}" != "1" ]; then
   exit 0
 fi
 

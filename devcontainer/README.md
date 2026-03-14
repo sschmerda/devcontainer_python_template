@@ -42,8 +42,8 @@ Run these from the `devcontainer` directory:
 
 - `make up-dev-env-latest`: Build and start using latest package definitions.
 - `make rebuild-dev-env-latest`: Rebuild using latest package definitions.
-- `make up-dev-env-latest-os-lock`: Build/start with latest package definitions but locked OS image (`os-lock.env` required, host).
-- `make rebuild-dev-env-latest-os-lock`: Rebuild/start with latest package definitions but locked OS image (`os-lock.env` required, host).
+- `make up-dev-env-latest-os-lock`: Build/start with latest package definitions but locked OS image and locked base binaries (host lockfiles required).
+- `make rebuild-dev-env-latest-os-lock`: Rebuild/start with latest package definitions but locked OS image and locked base binaries (host lockfiles required).
 - `make up-dev-env-lock`: Build and start using lockfiles when present.
 - `make rebuild-dev-env-lock`: Rebuild using lockfiles when present.
 - `make stop-dev-env`: Stop the main dev container service without removing it.
@@ -57,7 +57,9 @@ Run these from the `devcontainer` directory:
 - `make lock-tooling-config-env`: Generate `devcontainer/tooling-config-environment/tooling-config-lock.env` for oh-my-zsh, zsh plugins/theme, and tmux TPM repos.
 - `make lock-dotfiles-env`: Generate `devcontainer/dotfiles-environment/dotfiles-lock.env` with a pinned dotfiles commit.
 - `make lock-os-image-host`: Generate `devcontainer/os-environment/os-lock.env` from `DEVCONTAINER_OS_IMAGE` (run on host).
-- `make lock-dev-env`: Host lock pipeline (os lock + latest rebuild with OS lock + in-container dev lock + cleanup).
+- `make lock-base-binaries-host`: Generate `devcontainer/base-binaries-environment/base-binaries-lock.env` from the locked OS image (run on host).
+- `make lock-dev-env-host`: Host lock step for OS image + base binaries.
+- `make lock-dev-env`: Host lock pipeline (`lock-dev-env-host` + latest rebuild with host locks + in-container dev lock + cleanup).
 - `make lock-dev-env-and-rebuild`: Host lock pipeline plus rebuild from lockfiles.
 - `make up-services-latest`: Pull and start configured additional services (latest mode).
 - `make rebuild-services-latest`: Re-pull and recreate configured additional services (latest mode).
@@ -72,7 +74,7 @@ Run these from the `devcontainer` directory:
 
 Where to run lock commands:
 
-- Host: `make lock-os-image-host`, `make lock-dev-env`, `make lock-dev-env-and-rebuild`, `make lock-services`
+- Host: `make lock-os-image-host`, `make lock-base-binaries-host`, `make lock-dev-env-host`, `make lock-dev-env`, `make lock-dev-env-and-rebuild`, `make lock-services`
 - Container: `make lock-dev-env-container` and individual env lock targets (`lock-python-env`, `lock-r-env`, `lock-latex-env`, `lock-quarto-env`, `lock-micromamba-env`, `lock-additional-binaries-env`, `lock-tooling-config-env`, `lock-dotfiles-env`, `lock-flower-env`)
 
 Data-mount behavior for dev targets:
@@ -350,22 +352,25 @@ Micromamba is installed from GitHub releases (`mamba-org/micromamba-releases`):
 
 ## OS base image lock
 
-Base image locking is handled separately from in-container lock targets:
+Host-side OS and base-binaries locking are handled separately from in-container lock targets:
 
 - `make lock-os-image-host` (host) reads `DEVCONTAINER_OS_IMAGE` from `devcontainer/env-vars/.env.build`.
 - If it is a moving tag (for example `debian:13-slim`), it resolves linux platform child digests from the multi-arch manifest list and writes:
   - `devcontainer/os-environment/os-lock.env`
+- `make lock-base-binaries-host` (host) reads `devcontainer/os-environment/os-lock.env`, inspects the locked host-arch image, and writes:
+  - `devcontainer/base-binaries-environment/base-binaries-lock.env`
 - OS lockfile keys:
   - `DEVCONTAINER_OS_IMAGE_AMD64`
   - `DEVCONTAINER_OS_IMAGE_ARM64`
-- The same lockfile also stores:
+- Base-binaries lockfile keys:
   - `APT_SNAPSHOT_TIMESTAMP`
   - `APT_DIST_ID`
   - `APT_DIST_CODENAME`
   - `APT_MAIN_BASE_URL`, `APT_SECURITY_BASE_URL`
   - `APT_MAIN_RELEASE_SHA256`, `APT_UPDATES_RELEASE_SHA256`, `APT_SECURITY_RELEASE_SHA256`
 - Lock-mode builds pin apt to distro-aware snapshot sources (Debian/Ubuntu) and verify these `Release` file hashes after `apt-get update`.
-- Lock-mode dev builds (`up/rebuild-*-lock`) require this file and use it automatically.
+- `make up-dev-env-latest-os-lock` / `make rebuild-dev-env-latest-os-lock` use both host lockfiles while keeping package-resolution mode at `DEV_ENV_LOCKED=0`.
+- Lock-mode dev builds (`up/rebuild-*-lock`) also require both host lockfiles and use them automatically.
 
 ## JupyterLab settings
 
@@ -517,7 +522,7 @@ Note:
 Use the unified targets for reproducible builds:
 
 - `make up-dev-env-latest` / `make rebuild-dev-env-latest` installs the latest Python/R/LaTeX packages (selected by `DEV_ENV_LOCKED=0`).
-- `make up-dev-env-latest-os-lock` / `make rebuild-dev-env-latest-os-lock` uses latest package resolution (`DEV_ENV_LOCKED=0`) while pinning the OS base image via `os-lock.env`.
+- `make up-dev-env-latest-os-lock` / `make rebuild-dev-env-latest-os-lock` uses latest package resolution (`DEV_ENV_LOCKED=0`) while pinning both the OS base image and apt/base-binaries snapshot via the host lockfiles.
 - `make up-dev-env-lock` / `make rebuild-dev-env-lock` installs from lockfiles (`DEV_ENV_LOCKED=1`).
 - `make lock-dev-env-container` generates/updates lockfiles for micromamba (GitHub release assets), additional binaries (GitHub release assets), user tooling repos (git commit refs), dotfiles repo (git commit ref), Python (conda-lock), R (conda-lock), LaTeX (TeX Live repository), and Quarto (GitHub release URLs).
 - `make lock-additional-binaries-env` generates/updates `devcontainer/additional-binaries-environment/additional-binaries-lock.env` for additional binaries (`fzf`, `neovim`, `lsd`) with amd64/arm64 URLs and SHA256 checksums.
@@ -525,7 +530,9 @@ Use the unified targets for reproducible builds:
   - Binary metadata is read from one file per binary in `devcontainer/additional-binaries-environment/additional-binaries/` (no hardcoded defaults in install script).
 - `make lock-tooling-config-env` generates/updates `devcontainer/tooling-config-environment/tooling-config-lock.env` with pinned git commit refs for oh-my-zsh and tmux/zsh plugin repos.
 - `make lock-dotfiles-env` generates/updates `devcontainer/dotfiles-environment/dotfiles-lock.env` with pinned `DOTFILES_REPO` and `DOTFILES_REF`.
-- `make lock-os-image-host` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution in lock mode.
+- `make lock-os-image-host` generates/updates `devcontainer/os-environment/os-lock.env` for deterministic base-image resolution.
+- `make lock-base-binaries-host` generates/updates `devcontainer/base-binaries-environment/base-binaries-lock.env` for apt/base-binaries snapshot locking.
+- `make lock-dev-env-host` runs both host-side lock steps together.
 - Lock-mode targets auto-select the right digest for host architecture (`amd64` or `arm64`) via `devcontainer/shell-scripts/export-cross-platform-lock-vars.sh`.
 - OS/service lock generation requires multi-arch images with `linux/amd64` and `linux/arm64` entries; otherwise locking fails fast.
 - All `lock-*` targets capture current upstream/latest state at lock time, then `*-lock` builds use those pinned lockfiles for deterministic rebuilds.
@@ -534,6 +541,7 @@ Fallback behavior:
 
 - In lock mode, missing lockfiles now fail fast:
   - Base OS image: `os-environment/os-lock.env`
+  - Base binaries / apt snapshot: `base-binaries-environment/base-binaries-lock.env`
   - Additional binaries: `additional-binaries-environment/additional-binaries-lock.env`
   - Additional tooling repos: `tooling-config-environment/tooling-config-lock.env`
   - Dotfiles repo: `dotfiles-environment/dotfiles-lock.env`
@@ -554,14 +562,16 @@ Fallback behavior:
 - Enabled additional binaries and their install order are defined in `additional-binaries-environment/additional-binaries.list`; empty lines and lines starting with `#` are ignored, so binaries can be disabled by commenting them out.
 - Additional tooling (oh-my-zsh, zsh plugins/theme, tmux TPM) uses latest git HEAD in latest and `tooling-config-environment/tooling-config-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
 - Dotfiles (`zsh`, `tmux`, `nvim` stow source) uses latest default branch HEAD in latest and `dotfiles-environment/dotfiles-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
-- Apt repositories use live distro mirrors in latest mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` in lock mode.
+- Base binaries are defined in `base-binaries-environment/base-binaries.list`.
+- Empty lines and lines starting with `#` are ignored, so binaries can be disabled by commenting them out.
+- Apt repositories use live distro mirrors in latest mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` from `base-binaries-environment/base-binaries-lock.env` in lock mode.
 
 Locking guidance:
 
 - For reproducibility, run `make lock-dev-env-and-rebuild` from host for a full deterministic refresh.
 - After locking, prefer `make up-dev-env-lock` / `make rebuild-dev-env-lock` for consistent rebuilds.
 - Run `make lock-dev-env-container` and language-specific `make lock-<env>` targets inside the dev container.
-- Run `make lock-os-image-host` from the host in the `devcontainer/` directory.
+- Run `make lock-dev-env-host` from the host in the `devcontainer/` directory for host-side locks only.
 - Run `make lock-services` from the host in the `devcontainer/` directory.
 - Recommended host pipeline: `make lock-dev-env` (lock only) or `make lock-dev-env-and-rebuild` (lock + rebuild from lockfiles).
 - All `lock-*` targets ask for confirmation before writing lockfiles.
@@ -581,6 +591,7 @@ Individual lock targets:
 - `make lock-tooling-config-env` updates `devcontainer/tooling-config-environment/tooling-config-lock.env`
 - `make lock-dotfiles-env` updates `devcontainer/dotfiles-environment/dotfiles-lock.env`
 - `make lock-os-image-host` updates `devcontainer/os-environment/os-lock.env`
+- `make lock-base-binaries-host` updates `devcontainer/base-binaries-environment/base-binaries-lock.env`
 
 Locked installs are handled by:
 
@@ -608,9 +619,12 @@ Clean lock targets:
 - `make clean-lock-tooling-config`
 - `make clean-lock-dotfiles`
 - `make clean-lock-os-image`
+- `make clean-lock-base-binaries`
 - `make clean-lock-services`
 
 All `clean-lock-*` targets can run on host or inside the container.
+`make clean-lock-os-image` removes only `os-environment/os-lock.env`.
+`make clean-lock-base-binaries` removes only `base-binaries-environment/base-binaries-lock.env`.
 
 ## Template repo setup
 

@@ -5,6 +5,8 @@ FROM ${DEVCONTAINER_OS_IMAGE}
 USER root
 ARG DEV_ENV_LOCKED=0
 ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
+ARG BASE_BINARIES_LOCKED=0
+ENV BASE_BINARIES_LOCKED=${BASE_BINARIES_LOCKED}
 ARG RETRY_ATTEMPTS
 ARG RETRY_DELAY_SECONDS
 ARG ENABLE_PYTHON_ENV
@@ -48,11 +50,12 @@ COPY r-environment/ /tmp/r-environment/
 COPY quarto-environment/ /tmp/quarto-environment/
 COPY micromamba-environment/ /tmp/micromamba-environment/
 COPY os-environment/ /tmp/os-environment/
+COPY base-binaries-environment/ /tmp/base-binaries-environment/
 COPY additional-binaries-environment/ /tmp/additional-binaries-environment/
 COPY tooling-config-environment/ /tmp/tooling-config-environment/
 COPY python-environment/ /tmp/python-environment/
 RUN chmod +x /tmp/install-base-binaries.sh /tmp/apply-apt-snapshot-state.sh /tmp/verify-apt-snapshot-state.sh /tmp/install-dotfiles.sh /tmp/configure-git-identity.sh /tmp/install-additional-binaries.sh /tmp/install-tooling-config.sh /tmp/activate-nvim-config.sh /tmp/install-quarto.sh /tmp/install-tinytex.sh /tmp/install-micromamba.sh /tmp/restore-jupyterlab-settings.sh /tmp/install-latex-packages.sh /tmp/install-r-packages.sh /tmp/install-python-packages.sh /tmp/lock-additional-binaries-env.sh /tmp/lock-micromamba-env.sh /tmp/lock-python-env.sh /tmp/lock-r-env.sh /tmp/lock-latex-env.sh /tmp/lock-quarto-env.sh /usr/local/bin/entrypoint.sh \
-  && find /tmp/dotfiles-environment /tmp/tooling-config-environment /tmp/latex-environment /tmp/r-environment /tmp/quarto-environment /tmp/micromamba-environment /tmp/os-environment /tmp/additional-binaries-environment /tmp/python-environment -type f -exec chmod 644 {} +
+  && find /tmp/dotfiles-environment /tmp/tooling-config-environment /tmp/latex-environment /tmp/r-environment /tmp/quarto-environment /tmp/micromamba-environment /tmp/os-environment /tmp/base-binaries-environment /tmp/additional-binaries-environment /tmp/python-environment -type f -exec chmod 644 {} +
 
 # Install base software
 RUN /tmp/apply-apt-snapshot-state.sh

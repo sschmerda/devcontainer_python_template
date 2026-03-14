@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
-LOCK_FILE="/tmp/os-environment/os-lock.env"
+LOCK_FILE="/tmp/base-binaries-environment/base-binaries-lock.env"
 DEBIAN_SNAPSHOT_MAIN_URL="http://snapshot.debian.org/archive/debian"
 DEBIAN_SNAPSHOT_SECURITY_URL="http://snapshot.debian.org/archive/debian-security"
 UBUNTU_SNAPSHOT_MAIN_URL="http://snapshot.ubuntu.com/ubuntu"
 UBUNTU_SNAPSHOT_SECURITY_URL="http://snapshot.ubuntu.com/ubuntu"
 
-if [ "${DEV_ENV_LOCKED:-0}" != "1" ]; then
+if [ "${BASE_BINARIES_LOCKED:-${DEV_ENV_LOCKED:-0}}" != "1" ]; then
   exit 0
 fi
 
