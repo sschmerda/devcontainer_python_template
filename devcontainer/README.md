@@ -551,6 +551,7 @@ Fallback behavior:
 - Quarto uses GitHub latest for latest and `quarto-environment/quarto-lock.env` for lock; lock mode is strict (no fallback).
 - Micromamba uses GitHub release latest for latest and `micromamba-environment/micromamba-lock.env` for lock; lock mode is strict (no fallback).
 - Additional binaries (`fzf`, `neovim`, `lsd`) use GitHub latest in latest and `additional-binaries-environment/additional-binaries-lock.env` in lock mode; lock mode verifies SHA256 and is strict (no fallback).
+- Enabled additional binaries and their install order are defined in `additional-binaries-environment/additional-binaries.list`; empty lines and lines starting with `#` are ignored, so binaries can be disabled by commenting them out.
 - Additional tooling (oh-my-zsh, zsh plugins/theme, tmux TPM) uses latest git HEAD in latest and `tooling-config-environment/tooling-config-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
 - Dotfiles (`zsh`, `tmux`, `nvim` stow source) uses latest default branch HEAD in latest and `dotfiles-environment/dotfiles-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
 - Apt repositories use live distro mirrors in latest mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` in lock mode.
