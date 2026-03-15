@@ -311,6 +311,7 @@ elif [ "$SCOPE" = "services" ] && [ "$(services_have_volume_mounts)" = "true" ];
 fi
 
 enable_user_config="$(build_flag_from_env ENABLE_USER_CONFIG)"
+enable_jupyter_settings="$(build_flag_from_env ENABLE_JUPYTER_SETTINGS)"
 enable_python_env="$(build_flag_from_env ENABLE_PYTHON_ENV)"
 enable_r_env="$(build_flag_from_env ENABLE_R_ENV)"
 enable_texlive="$(build_flag_from_env ENABLE_TEXLIVE)"
@@ -327,6 +328,7 @@ append_enabled_component() {
 }
 
 [ "${enable_user_config:-}" = "true" ] && append_enabled_component "user-config"
+[ "${enable_jupyter_settings:-}" = "true" ] && append_enabled_component "jupyter-settings"
 [ "${enable_python_env:-}" = "true" ] && append_enabled_component "python"
 [ "${enable_r_env:-}" = "true" ] && append_enabled_component "r"
 [ "${enable_texlive:-}" = "true" ] && append_enabled_component "texlive"
@@ -356,6 +358,7 @@ CONTAINER_NAME=${containers_inline}
 CONTAINER_SIZE=${container_sizes_inline}
 DATA_MOUNT_USED=${data_mount_used}
 ENABLE_USER_CONFIG=${enable_user_config}
+ENABLE_JUPYTER_SETTINGS=${enable_jupyter_settings}
 ENABLE_PYTHON_ENV=${enable_python_env}
 ENABLE_R_ENV=${enable_r_env}
 ENABLE_TEXLIVE=${enable_texlive}

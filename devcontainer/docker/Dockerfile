@@ -10,6 +10,7 @@ ENV BASE_BINARIES_LOCKED=${BASE_BINARIES_LOCKED}
 ARG RETRY_ATTEMPTS
 ARG RETRY_DELAY_SECONDS
 ARG ENABLE_USER_CONFIG
+ARG ENABLE_JUPYTER_SETTINGS
 ARG ENABLE_PYTHON_ENV
 ARG ENABLE_R_ENV
 ARG ENABLE_TEXLIVE
@@ -79,17 +80,17 @@ RUN chmod +x \
   /tmp/lock-quarto-env.sh \
   /usr/local/bin/entrypoint.sh \
   && find \
-    /tmp/dotfiles-environment \
-    /tmp/tooling-config-environment \
-    /tmp/latex-environment \
-    /tmp/r-environment \
-    /tmp/quarto-environment \
-    /tmp/micromamba-environment \
-    /tmp/os-environment \
-    /tmp/base-binaries-environment \
-    /tmp/additional-binaries-environment \
-    /tmp/python-environment \
-    -type f -exec chmod 644 {} +
+  /tmp/dotfiles-environment \
+  /tmp/tooling-config-environment \
+  /tmp/latex-environment \
+  /tmp/r-environment \
+  /tmp/quarto-environment \
+  /tmp/micromamba-environment \
+  /tmp/os-environment \
+  /tmp/base-binaries-environment \
+  /tmp/additional-binaries-environment \
+  /tmp/python-environment \
+  -type f -exec chmod 644 {} +
 
 # Install base software
 RUN /tmp/apply-apt-snapshot-state.sh
@@ -147,8 +148,12 @@ RUN runuser -u dev -- env \
   GIT_USER_EMAIL="${GIT_USER_EMAIL}" \
   /tmp/configure-git-identity.sh
 
-# Configure jupyter lab
-RUN runuser -u dev -- /tmp/restore-jupyterlab-settings.sh
+# Restore JupyterLab settings if enabled.
+RUN if [ "${ENABLE_JUPYTER_SETTINGS}" = "true" ]; then \
+  runuser -u dev -- /tmp/restore-jupyterlab-settings.sh; \
+  else \
+  echo ">>> Skipping JupyterLab settings restore (ENABLE_JUPYTER_SETTINGS=${ENABLE_JUPYTER_SETTINGS})"; \
+  fi
 
 # install correct micromamba based on chip architecture (user-only install)
 RUN runuser -u dev -- /tmp/install-micromamba.sh
