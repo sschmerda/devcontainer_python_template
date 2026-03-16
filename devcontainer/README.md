@@ -178,6 +178,21 @@ For `HOST_DATA_DIR`, use an absolute path without spaces and without quotation m
 For `HOST_SSH_AUTH_SOCK_PATH`, `HOST_SSH_CONFIG_PATH`, and `HOST_SSH_KNOWN_HOSTS_PATH`, also use absolute file paths without quotes.
 For service data paths (`*_DATA_DIR`), also use absolute paths without quotes.
 
+Primary user-editable configuration files:
+
+- `devcontainer/env-vars/.env.build`
+- `devcontainer/env-vars/.env.runtime`
+- `devcontainer/env-vars/.env.secrets.build`
+- `devcontainer/env-vars/.env.secrets.runtime`
+- `devcontainer/python-environment/python-environment.yml`
+- `devcontainer/r-environment/r-environment.yml`
+- `devcontainer/services-environment/flower/flower-environment.yml`
+- `devcontainer/latex-environment/latex-packages.txt`
+- `devcontainer/build-assets/jupyterlab-user-settings.tar.gz`
+- `devcontainer/additional-binaries-environment/additional-binaries.list`
+- `devcontainer/dotfiles-environment/dotfiles.list`
+- `devcontainer/base-binaries-environment/base-binaries.list`
+
 ## Environment variable loading model
 
 Environment variables are now loaded by Docker Compose directly from:
