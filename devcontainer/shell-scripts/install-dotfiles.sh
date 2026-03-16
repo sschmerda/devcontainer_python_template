@@ -5,9 +5,15 @@ echo ">>> Installing dotfiles..."
 
 DOTFILES_DIR="$HOME/dotfiles"
 LOCK_FILE="/tmp/dotfiles-environment/dotfiles-lock.env"
+DOTFILES_LIST_FILE="/tmp/dotfiles-environment/dotfiles.list"
 
 if [ -d "$DOTFILES_DIR" ]; then
   rm -rf "$DOTFILES_DIR"
+fi
+
+if [ ! -f "$DOTFILES_LIST_FILE" ]; then
+  echo "Dotfiles list file does not exist: $DOTFILES_LIST_FILE"
+  exit 1
 fi
 
 if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
@@ -32,8 +38,20 @@ else
   cd "$DOTFILES_DIR"
 fi
 
-# Deploy dotfiles using stow
-stow zsh tmux nvim
+# Deploy configured dotfiles using stow.
+stow_packages="$(awk '
+  /^[[:space:]]*#/ {next}
+  /^[[:space:]]*$/ {next}
+  {gsub(/^[[:space:]]+|[[:space:]]+$/, "", $0); print $0}
+' "$DOTFILES_LIST_FILE" | tr '\n' ' ')"
+
+if [ -z "$stow_packages" ]; then
+  echo "No dotfiles packages enabled in: $DOTFILES_LIST_FILE"
+  exit 1
+fi
+
+# shellcheck disable=SC2086
+stow $stow_packages
 
 # Remove Git metadata so the stow source stays available but cannot be committed/pulled.
 rm -rf "$DOTFILES_DIR/.git"

@@ -568,6 +568,7 @@ Fallback behavior:
 - Enabled additional binaries and their install order are defined in `additional-binaries-environment/additional-binaries.list`; empty lines and lines starting with `#` are ignored, so binaries can be disabled by commenting them out.
 - Additional tooling (oh-my-zsh, zsh plugins/theme, tmux TPM) uses latest git HEAD in latest and `tooling-config-environment/tooling-config-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
 - Dotfiles (`zsh`, `tmux`, `nvim` stow source) uses latest default branch HEAD in latest and `dotfiles-environment/dotfiles-lock.env` in lock mode; lock mode is strict (missing lockfile/refs fails).
+- Enabled dotfiles stow packages and their install order are defined in `dotfiles-environment/dotfiles.list`; empty lines and lines starting with `#` are ignored, so packages can be disabled by commenting them out.
 - Base binaries are defined in `base-binaries-environment/base-binaries.list`.
 - Empty lines and lines starting with `#` are ignored, so binaries can be disabled by commenting them out.
 - Apt repositories use live distro mirrors in latest mode and distro-aware snapshot sources (Debian/Ubuntu) with `APT_SNAPSHOT_TIMESTAMP` from `base-binaries-environment/base-binaries-lock.env` in lock mode.

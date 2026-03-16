@@ -1,0 +1,5 @@
+## Dotfiles stow package install order.
+## Empty lines and lines starting with `#` are ignored.
+zsh
+tmux
+nvim
