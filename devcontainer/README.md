@@ -106,7 +106,7 @@ Captured fields include:
 - Dev logs use singular keys: `SERVICE_NAME`, `IMAGE_NAME`, `IMAGE_SIZE`, `CONTAINER_NAME`, `CONTAINER_SIZE`
 - Services logs use plural keys: `SERVICE_NAMES`, `IMAGE_NAMES`, `IMAGE_SIZES`, `CONTAINER_NAMES`, `CONTAINER_SIZES`
 - Data mount flag (`DATA_MOUNT_USED`: `true` when a relevant bind mount is used, otherwise `false`)
-- Dev logs also include component flags: `ENABLE_USER_CONFIG`, `ENABLE_JUPYTER_SETTINGS`, `ENABLE_PYTHON_ENV`, `ENABLE_R_ENV`, `ENABLE_TEXLIVE`, `ENABLE_QUARTO`, and the summary field `ENABLED_COMPONENTS`
+- Dev logs also include component flags: `ENABLE_USER_CONFIG`, `ENABLE_JUPYTER_SETTINGS`, `ENABLE_GIT_IDENTITY`, `ENABLE_PYTHON_ENV`, `ENABLE_R_ENV`, `ENABLE_TEXLIVE`, `ENABLE_QUARTO`, and the summary field `ENABLED_COMPONENTS`
 
 ## Environment configuration
 
@@ -124,8 +124,8 @@ Common build variables:
 
 - `DEVCONTAINER_OS_IMAGE`
 - `DOTFILES_REPO`
-- `GIT_USER_NAME`, `GIT_USER_EMAIL`
-- `ENABLE_USER_CONFIG`, `ENABLE_JUPYTER_SETTINGS`, `ENABLE_PYTHON_ENV`, `ENABLE_R_ENV`, `ENABLE_TEXLIVE`, `ENABLE_QUARTO`
+- `ENABLE_GIT_IDENTITY`, `GIT_USER_NAME`, `GIT_USER_EMAIL`
+- `ENABLE_USER_CONFIG`, `ENABLE_JUPYTER_SETTINGS`, `ENABLE_GIT_IDENTITY`, `ENABLE_PYTHON_ENV`, `ENABLE_R_ENV`, `ENABLE_TEXLIVE`, `ENABLE_QUARTO`
 - `PYTHON_VERSION`
 - `R_BASE_VERSION`
 - `FLOWER_PYTHON_VERSION`
@@ -137,6 +137,7 @@ Optional heavyweight dev components are controlled in `devcontainer/env-vars/.en
 
 - `ENABLE_USER_CONFIG=true|false`
 - `ENABLE_JUPYTER_SETTINGS=true|false`
+- `ENABLE_GIT_IDENTITY=true|false`
 - `ENABLE_PYTHON_ENV=true|false`
 - `ENABLE_R_ENV=true|false`
 - `ENABLE_TEXLIVE=true|false`
@@ -154,6 +155,7 @@ Capability notes:
 
 - `ENABLE_USER_CONFIG=false` skips dotfiles, shell/tmux tooling setup, and Neovim config activation.
 - `ENABLE_JUPYTER_SETTINGS=false` skips restoring the committed JupyterLab user settings during image build.
+- `ENABLE_GIT_IDENTITY=false` skips build-time `git config --global` identity setup.
 - `ENABLE_TEXLIVE=false` disables TinyTeX and extra LaTeX packages, so PDF rendering is unavailable.
 - `ENABLE_PYTHON_ENV=false` disables the Python micromamba environment, so Jupyter/Python-backed workflows are unavailable.
 - `ENABLE_R_ENV=false` disables the R micromamba environment, so R-backed workflows are unavailable.
