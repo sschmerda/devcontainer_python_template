@@ -93,14 +93,6 @@ RUN chmod +x \
   /tmp/python-environment \
   -type f -exec chmod 644 {} +
 
-# Install base software
-RUN /tmp/apply-apt-snapshot-state.sh
-RUN /tmp/install-base-binaries.sh
-# Install additional software
-RUN RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" \
-  RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" \
-  /tmp/install-additional-binaries.sh
-
 # locale
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
@@ -111,12 +103,27 @@ ARG USER_GID
 ARG DEV_USER_PASSWORD=
 
 RUN groupadd --gid ${USER_GID} dev \
-  && useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /usr/bin/zsh dev
+  && useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /bin/sh dev
 
 # Optional local dev password for sudo/auth flows.
 RUN if [ -n "${DEV_USER_PASSWORD}" ]; then \
   echo "dev:${DEV_USER_PASSWORD}" | chpasswd; \
   fi
+
+# Ensure home ownership and create a standard SSH config directory for optional
+# host SSH config/known_hosts mounts.
+RUN mkdir -p /home/dev/.ssh \
+  && chmod 700 /home/dev/.ssh \
+  && chown -R dev:dev /home/dev
+
+# Install base software
+RUN /tmp/apply-apt-snapshot-state.sh
+RUN /tmp/install-base-binaries.sh
+
+# Install additional software
+RUN RETRY_ATTEMPTS="${RETRY_ATTEMPTS}" \
+  RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS}" \
+  /tmp/install-additional-binaries.sh
 
 # Grant sudo privileges to dev user.
 RUN getent group sudo >/dev/null || groupadd sudo \
@@ -127,12 +134,6 @@ RUN getent group sudo >/dev/null || groupadd sudo \
 # Set Zsh as default shell for the non-root user
 RUN chsh -s /usr/bin/zsh dev
 ENV SHELL=/usr/bin/zsh
-
-# Ensure home ownership and create a standard SSH config directory for optional
-# host SSH config/known_hosts mounts.
-RUN mkdir -p /home/dev/.ssh \
-  && chmod 700 /home/dev/.ssh \
-  && chown -R dev:dev /home/dev
 
 # Install user configuration layer as the non-root user.
 RUN if [ "${ENABLE_USER_CONFIG}" = "true" ]; then \
