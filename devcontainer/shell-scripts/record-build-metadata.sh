@@ -17,12 +17,12 @@ else
 fi
 
 case "$SCOPE" in
-  dev) LOG_FILE="${ROOT_DIR}/build-metadata/dev-env-builds-${MODE}.log" ;;
-  services) LOG_FILE="${ROOT_DIR}/build-metadata/services-builds-${MODE}.log" ;;
-  *)
-    echo "Unsupported scope: ${SCOPE}" >&2
-    exit 1
-    ;;
+dev) LOG_FILE="${ROOT_DIR}/build-metadata/dev-env-builds-${MODE}.log" ;;
+services) LOG_FILE="${ROOT_DIR}/build-metadata/services-builds-${MODE}.log" ;;
+*)
+  echo "Unsupported scope: ${SCOPE}" >&2
+  exit 1
+  ;;
 esac
 
 mkdir -p "${ROOT_DIR}/build-metadata"
@@ -55,22 +55,22 @@ build_flag_from_env() {
 
 compose_files_for_scope() {
   case "$SCOPE" in
-    dev)
-      printf '%s' "-f ${ROOT_DIR}/docker/docker-compose.yml"
-      host_data_dir="$(host_data_dir_from_secrets)"
-      if [ -n "${host_data_dir:-}" ]; then
-        printf ' %s' "-f ${ROOT_DIR}/docker/docker-compose.data.yml"
+  dev)
+    printf '%s' "-f ${ROOT_DIR}/docker/docker-compose.yml"
+    host_data_dir="$(host_data_dir_from_secrets)"
+    if [ -n "${host_data_dir:-}" ]; then
+      printf ' %s' "-f ${ROOT_DIR}/docker/docker-compose.data.yml"
+    fi
+    ;;
+  services)
+    printf '%s %s' "-f ${ROOT_DIR}/docker/docker-compose.yml" "-f ${ROOT_DIR}/docker/docker-compose.services.yml"
+    if printf '%s' "$COMMAND_NAME" | grep -q "services-lock"; then
+      if [ -f "${ROOT_DIR}/services-environment/services-lock.env" ]; then
+        printf ' %s' "--env-file ${ROOT_DIR}/services-environment/services-lock.env"
       fi
-      ;;
-    services)
-      printf '%s %s' "-f ${ROOT_DIR}/docker/docker-compose.yml" "-f ${ROOT_DIR}/docker/docker-compose.services.yml"
-      if printf '%s' "$COMMAND_NAME" | grep -q "services-lock"; then
-        if [ -f "${ROOT_DIR}/services-environment/services-lock.env" ]; then
-          printf ' %s' "--env-file ${ROOT_DIR}/services-environment/services-lock.env"
-        fi
-        printf ' %s' "-f ${ROOT_DIR}/docker/docker-compose.services-lock.yml"
-      fi
-      ;;
+      printf ' %s' "-f ${ROOT_DIR}/docker/docker-compose.services-lock.yml"
+    fi
+    ;;
   esac
 }
 
@@ -172,10 +172,10 @@ build_duration_seconds="${BUILD_DURATION_SECONDS:?BUILD_DURATION_SECONDS is not 
 duration_human() {
   val="$1"
   case "$val" in
-    ''|*[!0-9]*)
-      echo "unknown"
-      return
-      ;;
+  '' | *[!0-9]*)
+    echo "unknown"
+    return
+    ;;
   esac
   h=$((val / 3600))
   m=$(((val % 3600) / 60))
@@ -281,8 +281,8 @@ if [ -n "${services_to_log:-}" ]; then
     image_docker_ls_size="unknown"
     if [ -n "${image_id:-}" ]; then
       image_docker_ls_size="$(
-        docker image ls --no-trunc --format '{{.ID}} {{.Size}}' 2>/dev/null \
-          | awk -v id="$image_id" '$1 == id {print $2; exit}'
+        docker image ls --no-trunc --format '{{.ID}} {{.Size}}' 2>/dev/null |
+          awk -v id="$image_id" '$1 == id {print $2; exit}'
       )"
       [ -n "$image_docker_ls_size" ] || image_docker_ls_size="unknown"
     fi
@@ -311,8 +311,8 @@ elif [ "$SCOPE" = "services" ] && [ "$(services_have_volume_mounts)" = "true" ];
 fi
 
 enable_user_config="$(build_flag_from_env ENABLE_USER_CONFIG)"
-enable_jupyter_settings="$(build_flag_from_env ENABLE_JUPYTER_SETTINGS)"
 enable_git_identity="$(build_flag_from_env ENABLE_GIT_IDENTITY)"
+enable_jupyter_settings="$(build_flag_from_env ENABLE_JUPYTER_SETTINGS)"
 enable_python_env="$(build_flag_from_env ENABLE_PYTHON_ENV)"
 enable_r_env="$(build_flag_from_env ENABLE_R_ENV)"
 enable_texlive="$(build_flag_from_env ENABLE_TEXLIVE)"
@@ -329,8 +329,8 @@ append_enabled_component() {
 }
 
 [ "${enable_user_config:-}" = "true" ] && append_enabled_component "user-config"
-[ "${enable_jupyter_settings:-}" = "true" ] && append_enabled_component "jupyter-settings"
 [ "${enable_git_identity:-}" = "true" ] && append_enabled_component "git-identity"
+[ "${enable_jupyter_settings:-}" = "true" ] && append_enabled_component "jupyter-settings"
 [ "${enable_python_env:-}" = "true" ] && append_enabled_component "python"
 [ "${enable_r_env:-}" = "true" ] && append_enabled_component "r"
 [ "${enable_texlive:-}" = "true" ] && append_enabled_component "texlive"
@@ -338,7 +338,7 @@ append_enabled_component() {
 [ -n "$enabled_components" ] || enabled_components="none"
 
 if [ "$SCOPE" = "dev" ]; then
-  cat > "$LOG_FILE" <<EOF
+  cat >"$LOG_FILE" <<EOF
 TIMESTAMP_UTC=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 COMMAND=${COMMAND_NAME}
 BUILD_DURATION_SECONDS=${build_duration_seconds}
@@ -360,8 +360,8 @@ CONTAINER_NAME=${containers_inline}
 CONTAINER_SIZE=${container_sizes_inline}
 DATA_MOUNT_USED=${data_mount_used}
 ENABLE_USER_CONFIG=${enable_user_config}
-ENABLE_JUPYTER_SETTINGS=${enable_jupyter_settings}
 ENABLE_GIT_IDENTITY=${enable_git_identity}
+ENABLE_JUPYTER_SETTINGS=${enable_jupyter_settings}
 ENABLE_PYTHON_ENV=${enable_python_env}
 ENABLE_R_ENV=${enable_r_env}
 ENABLE_TEXLIVE=${enable_texlive}
@@ -369,7 +369,7 @@ ENABLE_QUARTO=${enable_quarto}
 ENABLED_COMPONENTS=${enabled_components}
 EOF
 else
-  cat > "$LOG_FILE" <<EOF
+  cat >"$LOG_FILE" <<EOF
 TIMESTAMP_UTC=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 COMMAND=${COMMAND_NAME}
 BUILD_DURATION_SECONDS=${build_duration_seconds}
