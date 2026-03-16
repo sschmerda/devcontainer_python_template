@@ -64,19 +64,27 @@ zsh_syntax_highlighting_spec="$(resolve_repo_and_ref ZSH_SYNTAX_HIGHLIGHTING "$Z
 powerlevel10k_spec="$(resolve_repo_and_ref POWERLEVEL10K "$POWERLEVEL10K_REPO_URL")"
 tpm_spec="$(resolve_repo_and_ref TPM "$TPM_REPO_URL")"
 
-clone_repo "${ohmyzsh_spec%%|*}" "$HOME/.oh-my-zsh" "${ohmyzsh_spec#*|}"
+if command -v zsh >/dev/null 2>&1; then
+  clone_repo "${ohmyzsh_spec%%|*}" "$HOME/.oh-my-zsh" "${ohmyzsh_spec#*|}"
 
-zsh_custom_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-clone_repo "${zsh_autosuggestions_spec%%|*}" "$zsh_custom_dir/plugins/zsh-autosuggestions" "${zsh_autosuggestions_spec#*|}"
-clone_repo "${zsh_syntax_highlighting_spec%%|*}" "$zsh_custom_dir/plugins/zsh-syntax-highlighting" "${zsh_syntax_highlighting_spec#*|}"
-clone_repo "${powerlevel10k_spec%%|*}" "$zsh_custom_dir/themes/powerlevel10k" "${powerlevel10k_spec#*|}"
+  zsh_custom_dir="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+  clone_repo "${zsh_autosuggestions_spec%%|*}" "$zsh_custom_dir/plugins/zsh-autosuggestions" "${zsh_autosuggestions_spec#*|}"
+  clone_repo "${zsh_syntax_highlighting_spec%%|*}" "$zsh_custom_dir/plugins/zsh-syntax-highlighting" "${zsh_syntax_highlighting_spec#*|}"
+  clone_repo "${powerlevel10k_spec%%|*}" "$zsh_custom_dir/themes/powerlevel10k" "${powerlevel10k_spec#*|}"
+else
+  echo ">>> Skipping zsh tooling installation because zsh is not installed."
+fi
 
 # -------------------------
 # tmux
 # -------------------------
-export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
-clone_repo "${tpm_spec%%|*}" "$TMUX_PLUGIN_MANAGER_PATH/tpm" "${tpm_spec#*|}"
-chmod +x "$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
-"$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
+if command -v tmux >/dev/null 2>&1; then
+  export TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins"
+  clone_repo "${tpm_spec%%|*}" "$TMUX_PLUGIN_MANAGER_PATH/tpm" "${tpm_spec#*|}"
+  chmod +x "$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
+  "$TMUX_PLUGIN_MANAGER_PATH/tpm/bin/install_plugins"
+else
+  echo ">>> Skipping tmux plugin installation because tmux is not installed."
+fi
 
 echo ">>> Tooling configuration completed."
