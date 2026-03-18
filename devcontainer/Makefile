@@ -7,7 +7,11 @@ COMPOSE_GIT_SSH_CONFIG_FILE=docker/docker-compose.git-ssh-config.yml
 COMPOSE_GIT_KNOWN_HOSTS_FILE=docker/docker-compose.git-known-hosts.yml
 COMPOSE_SERVICES_FILE=docker/docker-compose.services.yml
 COMPOSE_SERVICES_LOCK_FILE=docker/docker-compose.services-lock.yml
-COMPOSE_ENV_FILES=--env-file env-vars/.env.build --env-file env-vars/.env.runtime --env-file env-vars/.env.secrets.build --env-file env-vars/.env.secrets.runtime
+COMPOSE_BUILD_ENV_FILES=--env-file env-vars/.env.build --env-file env-vars/.env.secrets.build
+COMPOSE_RUNTIME_ENV_FILES=--env-file env-vars/.env.runtime --env-file env-vars/.env.secrets.runtime
+# Compose still needs both groups for file interpolation because the same
+# compose file contains both build args and runtime configuration.
+COMPOSE_INTERPOLATION_ENV_FILES=$(COMPOSE_BUILD_ENV_FILES) $(COMPOSE_RUNTIME_ENV_FILES)
 OS_LOCK_ENV_FILE=os-environment/os-lock.env
 BASE_BINARIES_LOCK_ENV_FILE=base-binaries-environment/base-binaries-lock.env
 OS_LOCK_ENV_FILE_ARG=$(if $(wildcard $(OS_LOCK_ENV_FILE)),--env-file $(OS_LOCK_ENV_FILE),)
@@ -27,16 +31,16 @@ COMPOSE_DATA_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_DATA_FILE)
 COMPOSE_SERVICES_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_SERVICES_FILE)
 COMPOSE_SERVICES_LOCK_FILES = -f $(COMPOSE_FILE) -f $(COMPOSE_SERVICES_FILE) -f $(COMPOSE_SERVICES_LOCK_FILE)
 
-COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES)
-COMPOSE_CMD_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(COMPOSE_BASE_FILES)
-COMPOSE_CMD_SERVICES = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES)
-COMPOSE_CMD_SERVICES_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(LOCK_ENV_FILE_ARG) $(COMPOSE_SERVICES_LOCK_FILES)
+COMPOSE_CMD = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_BASE_FILES)
+COMPOSE_CMD_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(COMPOSE_BASE_FILES)
+COMPOSE_CMD_SERVICES = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES)
+COMPOSE_CMD_SERVICES_LOCK = $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $(LOCK_ENV_FILE_ARG) $(COMPOSE_SERVICES_LOCK_FILES)
 
 define check_service_vars
 	@set -a; \
 	. env-vars/.env.secrets.runtime; \
 	set +a; \
-	services="$$(DEV_ENV_LOCKED=$(1) docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	services="$$(DEV_ENV_LOCKED=$(1) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -z "$$services" ]; then \
 		echo "No additional services are enabled in $(COMPOSE_SERVICES_FILE)."; \
 		exit 0; \
@@ -119,7 +123,7 @@ up-dev-env-latest:
 	@set -e; \
 	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d --build; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $$compose_files up -d --build; \
 	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest
 
 .PHONY: rebuild-dev-env-latest
@@ -127,8 +131,8 @@ rebuild-dev-env-latest:
 	@set -e; \
 	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files build --no-cache; \
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $$compose_files up -d; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $$compose_files build --no-cache; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $$compose_files up -d; \
 	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest
 
 # Unified dev-env commands (latest package resolution + locked OS base image)
@@ -142,7 +146,7 @@ up-dev-env-latest-os-lock:
 	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-latest-os-lock
 
@@ -156,8 +160,8 @@ rebuild-dev-env-latest-os-lock:
 	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-latest-os-lock
 
@@ -172,7 +176,7 @@ up-dev-env-lock:
 	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
+	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d --build; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev up-dev-env-lock
 
@@ -186,8 +190,8 @@ rebuild-dev-env-lock:
 	compose_files="$$(sh shell-scripts/resolve-dev-compose-files.sh)"; \
 	started=$$(date +%s); \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
-	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
-	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
+	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files build --no-cache; \
+	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 $(UID_ARG) $(GID_ARG) docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(OS_LOCK_ENV_FILE_ARG) $$compose_files up -d; \
 	eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh os)"; \
 	DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 BUILD_DURATION_SECONDS=$$(( $$(date +%s) - $$started )) sh shell-scripts/record-build-metadata.sh dev rebuild-dev-env-lock
 
@@ -198,7 +202,7 @@ down-dev-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
-	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
+	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) stop $$services; \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) rm -f $$services; \
@@ -211,7 +215,7 @@ stop-dev-env:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
-	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
+	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_BASE_FILES) config --services | grep '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) stop $$services; \
 	fi
@@ -315,7 +319,7 @@ lock-dev-env:
 	@set -e; \
 	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) stop $(SERVICE) >/dev/null 2>&1 || true; \
 	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) rm -f $(SERVICE) >/dev/null 2>&1 || true; \
-	image_id="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_BASE_FILES) images -q $(SERVICE) | head -n 1)"; \
+	image_id="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_BASE_FILES) images -q $(SERVICE) | head -n 1)"; \
 	if [ -n "$$image_id" ]; then docker image rm "$$image_id" >/dev/null 2>&1 || true; fi
 
 # Lock dev env from host and rebuild from lockfiles.
@@ -613,7 +617,7 @@ up-services-latest:
 	$(call check_service_vars,0)
 	@set -e; \
 	started=$$(date +%s); \
-	services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build $$services; \
@@ -625,7 +629,7 @@ rebuild-services-latest:
 	$(call check_service_vars,0)
 	@set -e; \
 	started=$$(date +%s); \
-	services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD_SERVICES) pull --ignore-buildable $$services; \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD_SERVICES) up -d --build --force-recreate $$services; \
@@ -642,7 +646,7 @@ up-services-lock:
 	$(call check_service_vars,1)
 	@set -e; \
 	started=$$(date +%s); \
-	services="$$(DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	services="$$(DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
 		eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
@@ -661,7 +665,7 @@ rebuild-services-lock:
 	$(call check_service_vars,1)
 	@set -e; \
 	started=$$(date +%s); \
-	services="$$(DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	services="$$(DEV_ENV_LOCKED=1 BASE_BINARIES_LOCKED=1 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh validate"; \
 		eval "$$(sh shell-scripts/export-cross-platform-lock-vars.sh all)"; \
@@ -678,7 +682,7 @@ down-services:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
-	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD_SERVICES) stop $$services; \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD_SERVICES) rm -f $$services; \
@@ -691,7 +695,7 @@ stop-services:
 		read -r ans; \
 		case "$$ans" in y|Y) ;; *) echo "Aborted."; exit 1;; esac; \
 	fi'
-	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD_SERVICES) stop $$services; \
 	fi
@@ -708,7 +712,7 @@ lock-services:
 		echo "Start it first with make up-dev-env-latest or make up-dev-env-lock."; \
 		exit 1; \
 	fi
-	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
+	@services="$$(DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 docker compose $(COMPOSE_INTERPOLATION_ENV_FILES) $(COMPOSE_SERVICES_FILES) config --services | grep -v '^$(SERVICE)$$')"; \
 	if [ -n "$$services" ]; then \
 		ACTIVE_SERVICES="$$services" sh -lc "sh shell-scripts/lock-services-env.sh"; \
 	fi
