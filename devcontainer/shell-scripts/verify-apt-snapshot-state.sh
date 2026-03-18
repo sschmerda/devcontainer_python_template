@@ -41,6 +41,18 @@ if [ -n "${LOCK_CODENAME:-}" ] && [ "$LOCK_CODENAME" != "$CODENAME" ]; then
   exit 1
 fi
 
+sha256_file() {
+  file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 find_release_file() {
   pattern="$1"
   find /var/lib/apt/lists -type f -name "$pattern" | head -n 1
@@ -72,7 +84,7 @@ verify_file_hash() {
     exit 1
   fi
 
-  actual_sha="$(sha256sum "$file_path" | awk '{print $1}')"
+  actual_sha="$(sha256_file "$file_path")"
   if [ "$actual_sha" != "$expected_sha" ]; then
     echo "Apt snapshot hash mismatch for ${label}"
     echo "Expected: $expected_sha"

@@ -12,6 +12,18 @@ fi
 # Ensure TinyTeX bin is on PATH for non-interactive shells
 export PATH="/home/dev/bin:$PATH"
 
+sha256_file() {
+  file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 if ! command -v tlmgr >/dev/null 2>&1; then
   echo "tlmgr not found on PATH"
   exit 1
@@ -74,7 +86,7 @@ else
   exit 1
 fi
 
-CURRENT_SHA256="$(sha256sum "$TMP_DIR/texlive.tlpdb" | awk '{print $1}')"
+    CURRENT_SHA256="$(sha256_file "$TMP_DIR/texlive.tlpdb")"
 if [ "$CURRENT_SHA256" != "$TLPDB_SHA256" ]; then
   echo "TeX Live repository has changed since lock was created."
   echo "Expected: $TLPDB_SHA256"

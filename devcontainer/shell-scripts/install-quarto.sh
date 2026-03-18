@@ -5,6 +5,18 @@ QUARTO_REPO="quarto-dev/quarto-cli"
 QUARTO_RELEASES_LATEST_API_URL="https://api.github.com/repos/${QUARTO_REPO}/releases/latest"
 QUARTO_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/${QUARTO_REPO}/releases/download/%s/%s"
 
+sha256_file() {
+  local file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 resolve_latest_url() {
   ARCH="$(uname -m)"
   case "$ARCH" in
@@ -86,7 +98,7 @@ fi
 
 curl -fL "$URL" -o /tmp/quarto.tar.gz
 if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
-  ACTUAL_SHA256="$(sha256sum /tmp/quarto.tar.gz | awk '{print $1}')"
+  ACTUAL_SHA256="$(sha256_file /tmp/quarto.tar.gz)"
   if [ "$ACTUAL_SHA256" != "$SHA256" ]; then
     echo "Quarto checksum mismatch for locked asset."
     echo "Expected: $SHA256"

@@ -30,6 +30,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+sha256_file() {
+  file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 # Validate both assets exist so the lockfile is cross-arch reproducible.
 if ! curl -fsI "$AMD64_URL" >/dev/null; then
   echo "Missing Quarto asset: $AMD64_URL"
@@ -42,8 +54,8 @@ fi
 
 curl -fsSL "$AMD64_URL" -o "$AMD64_FILE"
 curl -fsSL "$ARM64_URL" -o "$ARM64_FILE"
-AMD64_SHA256="$(sha256sum "$AMD64_FILE" | awk '{print $1}')"
-ARM64_SHA256="$(sha256sum "$ARM64_FILE" | awk '{print $1}')"
+AMD64_SHA256="$(sha256_file "$AMD64_FILE")"
+ARM64_SHA256="$(sha256_file "$ARM64_FILE")"
 if [ -z "$AMD64_SHA256" ] || [ -z "$ARM64_SHA256" ]; then
   echo "Failed to compute Quarto asset checksums."
   exit 1

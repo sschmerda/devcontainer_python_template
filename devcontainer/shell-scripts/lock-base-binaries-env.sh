@@ -17,6 +17,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+sha256_file() {
+  file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 if [ ! -f "$OS_LOCK_FILE" ]; then
   echo "Missing OS lockfile: $OS_LOCK_FILE"
   echo "Run make lock-os-image-host first."
@@ -82,9 +94,9 @@ fetch_index_file "$MAIN_BASE_URL" "$CODENAME" "$TMP_DIR/main-index"
 fetch_index_file "$MAIN_BASE_URL" "${CODENAME}-updates" "$TMP_DIR/updates-index"
 fetch_index_file "$SECURITY_BASE_URL" "${CODENAME}-security" "$TMP_DIR/security-index"
 
-MAIN_RELEASE_SHA256="$(sha256sum "$TMP_DIR/main-index" | awk '{print $1}')"
-UPDATES_RELEASE_SHA256="$(sha256sum "$TMP_DIR/updates-index" | awk '{print $1}')"
-SECURITY_RELEASE_SHA256="$(sha256sum "$TMP_DIR/security-index" | awk '{print $1}')"
+MAIN_RELEASE_SHA256="$(sha256_file "$TMP_DIR/main-index")"
+UPDATES_RELEASE_SHA256="$(sha256_file "$TMP_DIR/updates-index")"
+SECURITY_RELEASE_SHA256="$(sha256_file "$TMP_DIR/security-index")"
 
 mkdir -p "$LOCK_DIR"
 {

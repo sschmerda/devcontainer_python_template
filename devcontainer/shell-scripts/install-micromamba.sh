@@ -10,6 +10,18 @@ MICROMAMBA_REPO="mamba-org/micromamba-releases"
 MICROMAMBA_RELEASES_LATEST_DOWNLOAD_URL_TEMPLATE="https://github.com/${MICROMAMBA_REPO}/releases/latest/download/%s.tar.bz2"
 MAMBA_CHANNEL_ALIAS_URL="https://conda.anaconda.org"
 
+sha256_file() {
+  local file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 asset_basename_for_arch() {
   case "$ARCH" in
     x86_64|amd64)
@@ -42,7 +54,7 @@ install_from_download() {
   curl -fL --retry 4 --retry-delay 3 --retry-all-errors "$url" -o "$archive_path"
 
   if [ -n "$expected_sha256" ]; then
-    actual_sha256="$(sha256sum "$archive_path" | awk '{print $1}')"
+    actual_sha256="$(sha256_file "$archive_path")"
     if [ "$actual_sha256" != "$expected_sha256" ]; then
       echo "Micromamba checksum mismatch for locked asset."
       echo "Expected: $expected_sha256"

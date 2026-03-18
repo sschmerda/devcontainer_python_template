@@ -11,6 +11,18 @@ GITHUB_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/%s/releases/download/%s
 RETRY_ATTEMPTS="${RETRY_ATTEMPTS:?RETRY_ATTEMPTS is not set. Set it in devcontainer/env-vars/.env.build.}"
 RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS:?RETRY_DELAY_SECONDS is not set. Set it in devcontainer/env-vars/.env.build.}"
 
+sha256_file() {
+  local file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 echo ">>> Installing additional system packages..."
 
 if [ ! -f "$LIST_FILE" ]; then
@@ -79,7 +91,7 @@ verify_sha256() {
   local file expected actual
   file="$1"
   expected="$2"
-  actual="$(sha256sum "$file" | awk '{print $1}')"
+  actual="$(sha256_file "$file")"
   if [ "$actual" != "$expected" ]; then
     echo "Checksum mismatch for $file"
     echo "Expected: $expected"

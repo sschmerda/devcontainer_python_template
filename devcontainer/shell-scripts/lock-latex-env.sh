@@ -35,6 +35,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+sha256_file() {
+  file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 TLPDB_FILE=""
 if curl -fsSL -w '%{url_effective}' "$TLPDB_URL" -o "$TMP_DIR/texlive.tlpdb" >"$TMP_DIR/effective_url"; then
   EFFECTIVE_URL="$(cat "$TMP_DIR/effective_url")"
@@ -50,7 +62,7 @@ else
   exit 1
 fi
 
-TLPDB_SHA256="$(sha256sum "$TLPDB_FILE" | awk '{print $1}')"
+TLPDB_SHA256="$(sha256_file "$TLPDB_FILE")"
 
 {
   printf '# Created: %s\n' "$STAMP"

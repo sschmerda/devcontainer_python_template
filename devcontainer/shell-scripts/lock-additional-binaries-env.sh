@@ -15,6 +15,18 @@ GITHUB_API_BASE_URL="https://api.github.com"
 GITHUB_RELEASES_LATEST_URL_TEMPLATE="${GITHUB_API_BASE_URL}/repos/%s/releases/latest"
 GITHUB_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/%s/releases/download/%s/%s"
 
+sha256_file() {
+  local file="$1"
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$file" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$file" | awk '{print $1}'
+  else
+    echo "Neither sha256sum nor shasum is available." >&2
+    exit 1
+  fi
+}
+
 cleanup() {
   rm -rf "$TMP_DIR"
 }
@@ -91,7 +103,7 @@ download_and_sha() {
   url="$1"
   out="$2"
   curl -fL --retry 4 --retry-delay 3 --retry-all-errors "$url" -o "$out"
-  sha256sum "$out" | awk '{print $1}'
+  sha256_file "$out"
 }
 
 build_url() {
