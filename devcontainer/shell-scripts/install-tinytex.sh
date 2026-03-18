@@ -37,18 +37,10 @@ if [ "${DEV_ENV_LOCKED:-0}" = "1" ]; then
     exit 1
   fi
   echo ">>> Installing TinyTeX from locked repository: ${LOCKED_REPO_URL}"
-  micromamba run -n "$INSTALLER_ENV" Rscript -e "tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', repo = '${LOCKED_REPO_URL}', add_path = TRUE)"
+  micromamba run -n "$INSTALLER_ENV" Rscript -e "tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', repo = '${LOCKED_REPO_URL}', add_path = FALSE)"
 else
   echo ">>> Installing TinyTeX from default upstream repository (unpinned)."
-  micromamba run -n "$INSTALLER_ENV" Rscript -e "tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', add_path = TRUE)"
-fi
-
-# Ensure TinyTeX binaries are on PATH for common shells.
-if ! grep -q '/home/dev/bin' "$HOME/.profile" 2>/dev/null; then
-  echo 'export PATH="$HOME/bin:$PATH"' >>"$HOME/.profile"
-fi
-if ! grep -q '/home/dev/bin' "$HOME/.zshrc" 2>/dev/null; then
-  echo 'export PATH="$HOME/bin:$PATH"' >>"$HOME/.zshrc"
+  micromamba run -n "$INSTALLER_ENV" Rscript -e "tinytex::install_tinytex(force = TRUE, dir = '${HOME}/.TinyTeX', version = '', bundle = 'TinyTeX-1', add_path = FALSE)"
 fi
 
 # Remove legacy user-library tinytex package from earlier builds.

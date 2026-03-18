@@ -5,27 +5,6 @@ QUARTO_REPO="quarto-dev/quarto-cli"
 QUARTO_RELEASES_LATEST_API_URL="https://api.github.com/repos/${QUARTO_REPO}/releases/latest"
 QUARTO_RELEASE_DOWNLOAD_URL_TEMPLATE="https://github.com/${QUARTO_REPO}/releases/download/%s/%s"
 
-write_quarto_runtime_env() {
-  local start="# >>> quarto-runtime managed >>>"
-  local end="# <<< quarto-runtime managed <<<"
-  local zshrc="$HOME/.zshrc"
-  local profile="$HOME/.profile"
-
-  for target in "$zshrc" "$profile"; do
-    touch "$target"
-    sed -i "/${start}/,/${end}/d" "$target"
-    cat >>"$target" <<'EOF'
-# >>> quarto-runtime managed >>>
-export QUARTO_PYTHON="/home/dev/.local/share/mamba/envs/python-env/bin/python"
-export QUARTO_JUPYTER="/home/dev/.local/share/mamba/envs/python-env/bin/jupyter"
-export QUARTO_R="/home/dev/.local/share/mamba/envs/r-env/bin/R"
-export RETICULATE_PYTHON="/home/dev/.local/share/mamba/envs/python-env/bin/python"
-export PATH="/home/dev/.local/bin:$PATH"
-# <<< quarto-runtime managed <<<
-EOF
-  done
-}
-
 resolve_latest_url() {
   ARCH="$(uname -m)"
   case "$ARCH" in
@@ -135,6 +114,5 @@ mv "$SRC_DIR" "$INSTALL_DIR"
 ln -sfn "$INSTALL_DIR/bin/quarto" "$BIN_DIR/quarto"
 
 rm -rf /tmp/quarto-extract /tmp/quarto.tar.gz
-write_quarto_runtime_env
 
 "$BIN_DIR/quarto" --version

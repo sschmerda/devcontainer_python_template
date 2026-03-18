@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+. /usr/local/bin/export-runtime-env.sh
+
 HOST_DATA_DIR_VALUE="${HOST_DATA_DIR:-}"
 
 if [ -n "$HOST_DATA_DIR_VALUE" ]; then

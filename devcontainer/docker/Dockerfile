@@ -4,9 +4,7 @@ FROM ${DEVCONTAINER_OS_IMAGE}
 
 USER root
 ARG DEV_ENV_LOCKED=0
-ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
 ARG BASE_BINARIES_LOCKED=0
-ENV BASE_BINARIES_LOCKED=${BASE_BINARIES_LOCKED}
 ARG RETRY_ATTEMPTS
 ARG RETRY_DELAY_SECONDS
 ARG ENABLE_USER_CONFIG
@@ -41,6 +39,7 @@ COPY shell-scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
 COPY shell-scripts/install-r-packages.sh /tmp/install-r-packages.sh
 COPY shell-scripts/install-python-packages.sh /tmp/install-python-packages.sh
 COPY shell-scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY shell-scripts/export-runtime-env.sh /usr/local/bin/export-runtime-env.sh
 COPY shell-scripts/lock-micromamba-env.sh /tmp/lock-micromamba-env.sh
 COPY shell-scripts/lock-python-env.sh /tmp/lock-python-env.sh
 COPY shell-scripts/lock-r-env.sh /tmp/lock-r-env.sh
@@ -80,6 +79,7 @@ RUN chmod +x \
   /tmp/lock-latex-env.sh \
   /tmp/lock-quarto-env.sh \
   /usr/local/bin/entrypoint.sh \
+  /usr/local/bin/export-runtime-env.sh \
   && find \
   /tmp/dotfiles-environment \
   /tmp/tooling-config-environment \
@@ -92,10 +92,6 @@ RUN chmod +x \
   /tmp/additional-binaries-environment \
   /tmp/python-environment \
   -type f -exec chmod 644 {} +
-
-# locale
-ENV LANG=C.UTF-8
-ENV LC_ALL=C.UTF-8
 
 # Create default non-root user
 ARG USER_UID
@@ -237,12 +233,14 @@ RUN rm -rf \
   /tmp/lock-latex-env.sh \
   /tmp/lock-quarto-env.sh
 
-ENV MAMBA_DEFAULT_ENV=python-env
+# Runtime image defaults and runtime tool environment are defined here. Dynamic
+# tool-path variables for optional components are added by
+# /usr/local/bin/export-runtime-env.sh, sourced by the entrypoint.
+ENV DEV_ENV_LOCKED=${DEV_ENV_LOCKED}
+ENV BASE_BINARIES_LOCKED=${BASE_BINARIES_LOCKED}
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 ENV MAMBA_ROOT_PREFIX=/home/dev/.local/share/mamba
-ENV QUARTO_PYTHON=/home/dev/.local/share/mamba/envs/python-env/bin/python
-ENV QUARTO_JUPYTER=/home/dev/.local/share/mamba/envs/python-env/bin/jupyter
-ENV QUARTO_R=/home/dev/.local/share/mamba/envs/r-env/bin/R
-ENV RETICULATE_PYTHON=/home/dev/.local/share/mamba/envs/python-env/bin/python
 ENV PATH=/home/dev/.local/bin:$PATH
 
 # Set working directory
