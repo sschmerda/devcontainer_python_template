@@ -3,7 +3,7 @@ services:
     env_file:
       - ../env-vars/.env.runtime
       - ../env-vars/.env.secrets.runtime
-    image: dev_env
+    image: ${DEV_CONTAINER_IMAGE_NAME}
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -38,4 +38,4 @@ services:
       - "${JUPYTER_PORT}:${JUPYTER_PORT}" # Expose JupyterLab port (host:container)
       - "${QUARTO_PORT}:${QUARTO_PORT}" # Expose Quarto preview port (host:container)
       - "${WEB_APP_PORT}:${WEB_APP_PORT}" # Expose web application dev server port (host:container)
-    container_name: dev_env_container
+    container_name: ${DEV_CONTAINER_NAME}
