@@ -180,18 +180,19 @@ For service data paths (`*_DATA_DIR`), also use absolute paths without quotes.
 
 Primary user-editable configuration files:
 
-- `devcontainer/env-vars/.env.build`
-- `devcontainer/env-vars/.env.runtime`
-- `devcontainer/env-vars/.env.secrets.build`
-- `devcontainer/env-vars/.env.secrets.runtime`
-- `devcontainer/python-environment/python-environment.yml`
-- `devcontainer/r-environment/r-environment.yml`
-- `devcontainer/services-environment/flower/flower-environment.yml`
-- `devcontainer/latex-environment/latex-packages.txt`
-- `devcontainer/build-assets/jupyterlab-user-settings.tar.gz`
-- `devcontainer/additional-binaries-environment/additional-binaries.list`
-- `devcontainer/dotfiles-environment/dotfiles.list`
-- `devcontainer/base-binaries-environment/base-binaries.list`
+- `devcontainer/env-vars/.env.build` - build-time inputs such as base image, feature flags, runtime versions, retry settings, and dev image name.
+- `devcontainer/env-vars/.env.runtime` - runtime inputs such as ports, timezone, host mount behavior, and dev container name.
+- `devcontainer/env-vars/.env.secrets.build` - build-time secret values and local machine-specific build inputs.
+- `devcontainer/env-vars/.env.secrets.runtime` - runtime secret values and local machine-specific runtime paths, credentials, and service data directories.
+- `devcontainer/python-environment/python-environment.yml` - latest-mode Python environment definition for the dev container and Celery service images.
+- `devcontainer/r-environment/r-environment.yml` - latest-mode R environment definition for the dev container.
+- `devcontainer/services-environment/flower/flower-environment.yml` - latest-mode Python environment definition for the Flower service image.
+- `devcontainer/latex-environment/latex-packages.txt` - selected TeX Live packages to install in latest mode.
+- `devcontainer/build-assets/jupyterlab-user-settings.tar.gz` - archived JupyterLab user settings restored into the dev container when enabled.
+- `devcontainer/additional-binaries-environment/additional-binaries.list` - enabled additional binaries and their install order; per-binary install metadata is defined in `devcontainer/additional-binaries-environment/additional-binaries/*.env`.
+- `devcontainer/dotfiles-environment/dotfiles.list` - enabled dotfiles stow packages and their activation order.
+- `devcontainer/base-binaries-environment/base-binaries.list` - enabled apt-installed base binaries.
+- `devcontainer/.devcontainer/devcontainer.json` - VS Code Dev Containers metadata for attaching to the `dev` service, setting the remote user/workspace, and installing editor extensions.
 
 ## Environment variable loading model
 
