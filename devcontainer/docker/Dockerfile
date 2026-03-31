@@ -39,6 +39,7 @@ COPY shell-scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
 COPY shell-scripts/install-r-packages.sh /tmp/install-r-packages.sh
 COPY shell-scripts/install-python-packages.sh /tmp/install-python-packages.sh
 COPY shell-scripts/configure-micromamba-shell.sh /tmp/configure-micromamba-shell.sh
+COPY shell-scripts/configure-runtime-shell-env.sh /tmp/configure-runtime-shell-env.sh
 COPY shell-scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY shell-scripts/export-runtime-env.sh /usr/local/bin/export-runtime-env.sh
 COPY shell-scripts/lock-micromamba-env.sh /tmp/lock-micromamba-env.sh
@@ -74,6 +75,7 @@ RUN chmod +x \
   /tmp/install-r-packages.sh \
   /tmp/install-python-packages.sh \
   /tmp/configure-micromamba-shell.sh \
+  /tmp/configure-runtime-shell-env.sh \
   /tmp/lock-additional-binaries-env.sh \
   /tmp/lock-micromamba-env.sh \
   /tmp/lock-python-env.sh \
@@ -181,6 +183,9 @@ RUN if [ "${ENABLE_PYTHON_ENV}" = "true" ] || [ "${ENABLE_R_ENV}" = "true" ]; th
   echo ">>> Skipping micromamba shell initialization (ENABLE_PYTHON_ENV=${ENABLE_PYTHON_ENV}, ENABLE_R_ENV=${ENABLE_R_ENV})"; \
   fi
 
+# Initialize runtime-derived shell environment for interactive sessions.
+RUN runuser -u dev -- /tmp/configure-runtime-shell-env.sh
+
 # Install Quarto (latest or locked) as user.
 RUN if [ "${ENABLE_QUARTO}" = "true" ]; then \
   runuser -u dev -- /tmp/install-quarto.sh; \
@@ -237,6 +242,7 @@ RUN rm -rf \
   /tmp/install-r-packages.sh \
   /tmp/install-python-packages.sh \
   /tmp/configure-micromamba-shell.sh \
+  /tmp/configure-runtime-shell-env.sh \
   /tmp/lock-micromamba-env.sh \
   /tmp/lock-python-env.sh \
   /tmp/lock-r-env.sh \

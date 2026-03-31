@@ -219,7 +219,7 @@ Notes:
 - Service validation checks in `make up-services-latest` / `make rebuild-services-latest` still fail early for required paths/passwords.
 - Build-only values come from `devcontainer/env-vars/.env.build` and `devcontainer/env-vars/.env.secrets.build`, then flow through `build.args`.
 - Runtime container variables come from `devcontainer/env-vars/.env.runtime` and `devcontainer/env-vars/.env.secrets.runtime` via `env_file`.
-- Runtime tool-path variables inside the dev container are initialized in `devcontainer/shell-scripts/export-runtime-env.sh`, sourced by `devcontainer/shell-scripts/entrypoint.sh`.
+- Runtime tool-path variables inside the dev container are initialized in `devcontainer/shell-scripts/export-runtime-env.sh`, sourced by `devcontainer/shell-scripts/entrypoint.sh` and by interactive zsh shells through a managed `~/.zshrc` block.
 - Lock scripts that need version values read them from `devcontainer/env-vars/.env.build`.
 
 ## Development vs production secrets
