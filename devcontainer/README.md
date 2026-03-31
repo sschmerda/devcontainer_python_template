@@ -160,6 +160,7 @@ Capability notes:
 - `ENABLE_PYTHON_ENV=false` disables the Python micromamba environment, so Jupyter/Python-backed workflows are unavailable.
 - `ENABLE_R_ENV=false` disables the R micromamba environment, so R-backed workflows are unavailable.
 - `ENABLE_QUARTO=false` skips Quarto installation entirely.
+- When `ENABLE_PYTHON_ENV=true` or `ENABLE_R_ENV=true`, micromamba shell initialization is added to `~/.zshrc` so `micromamba activate <env>` works in interactive shells; no environment is auto-activated by default.
 
 Common runtime variables:
 

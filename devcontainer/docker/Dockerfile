@@ -38,6 +38,7 @@ COPY shell-scripts/restore-jupyterlab-settings.sh /tmp/restore-jupyterlab-settin
 COPY shell-scripts/install-latex-packages.sh /tmp/install-latex-packages.sh
 COPY shell-scripts/install-r-packages.sh /tmp/install-r-packages.sh
 COPY shell-scripts/install-python-packages.sh /tmp/install-python-packages.sh
+COPY shell-scripts/configure-micromamba-shell.sh /tmp/configure-micromamba-shell.sh
 COPY shell-scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY shell-scripts/export-runtime-env.sh /usr/local/bin/export-runtime-env.sh
 COPY shell-scripts/lock-micromamba-env.sh /tmp/lock-micromamba-env.sh
@@ -72,6 +73,7 @@ RUN chmod +x \
   /tmp/install-latex-packages.sh \
   /tmp/install-r-packages.sh \
   /tmp/install-python-packages.sh \
+  /tmp/configure-micromamba-shell.sh \
   /tmp/lock-additional-binaries-env.sh \
   /tmp/lock-micromamba-env.sh \
   /tmp/lock-python-env.sh \
@@ -172,6 +174,13 @@ RUN if [ "${ENABLE_R_ENV}" = "true" ]; then \
   echo ">>> Skipping R environment installation (ENABLE_R_ENV=${ENABLE_R_ENV})"; \
   fi
 
+# Enable micromamba shell integration when user-facing micromamba envs exist.
+RUN if [ "${ENABLE_PYTHON_ENV}" = "true" ] || [ "${ENABLE_R_ENV}" = "true" ]; then \
+  runuser -u dev -- /tmp/configure-micromamba-shell.sh; \
+  else \
+  echo ">>> Skipping micromamba shell initialization (ENABLE_PYTHON_ENV=${ENABLE_PYTHON_ENV}, ENABLE_R_ENV=${ENABLE_R_ENV})"; \
+  fi
+
 # Install Quarto (latest or locked) as user.
 RUN if [ "${ENABLE_QUARTO}" = "true" ]; then \
   runuser -u dev -- /tmp/install-quarto.sh; \
@@ -227,6 +236,7 @@ RUN rm -rf \
   /tmp/install-latex-packages.sh \
   /tmp/install-r-packages.sh \
   /tmp/install-python-packages.sh \
+  /tmp/configure-micromamba-shell.sh \
   /tmp/lock-micromamba-env.sh \
   /tmp/lock-python-env.sh \
   /tmp/lock-r-env.sh \
