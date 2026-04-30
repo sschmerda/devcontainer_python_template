@@ -49,7 +49,8 @@ Run these from the `devcontainer` directory:
 - `make stop-dev-env`: Stop the main dev container service without removing it.
 - `make down-dev-env`: Stop and remove the main dev container service.
 - `make shell`: Open a shell in the container.
-- `make tmux`: Open tmux in the container.
+- `make host-tmux`: Open a host tmux session whose windows enter the container shell.
+- `make container-tmux`: Open tmux inside the container.
 - `make vscode`: Open VS Code for this repo (then "Reopen in Container").
 - `make jupyter`: Start JupyterLab inside the container.
 - Quarto live preview: `quarto preview <file>.qmd --host 0.0.0.0 --port ${QUARTO_PORT}`.

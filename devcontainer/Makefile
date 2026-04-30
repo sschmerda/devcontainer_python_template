@@ -553,11 +553,20 @@ clean-lock-flower:
 # Ensure terminal definition exists in the container
 .PHONY: terminfo
 terminfo:
-	@if ! command -v infocmp >/dev/null 2>&1; then \
+	@set -e; \
+	if [ -n "$${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then \
+		eval "$$(tmux show-environment -g 2>/dev/null | awk -F= '$$1 == "TERM" || $$1 == "COLORTERM" || $$1 == "TERM_PROGRAM" || $$1 == "TERM_PROGRAM_VERSION" {print "export " $$0}')"; \
+	fi; \
+	if ! command -v infocmp >/dev/null 2>&1; then \
 		echo "infocmp not found on host; install ncurses tools to enable terminfo import (may still work if container already has matching terminfo via ncurses-term)."; \
 		exit 0; \
-	fi
-	infocmp -x "$$TERM" | DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc 'tic -x -'
+	fi; \
+	marker="/tmp/devcontainer-terminfo-$$(printf '%s' "$$TERM" | tr -c '[:alnum:]_.-' '_')"; \
+	if DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) test -f "$$marker"; then \
+		exit 0; \
+	fi; \
+	infocmp -x "$$TERM" | DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) sh -lc 'tic -x - || true'; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -T $(SERVICE) touch "$$marker"
 
 .PHONY: clean-build-metadata
 clean-build-metadata:
@@ -594,12 +603,37 @@ jupyter-settings-restore:
 # Enter container in Zsh
 .PHONY: shell
 shell: terminfo
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -e TERM -e COLORTERM $(SERVICE) zsh
+	@set -e; \
+	if [ -n "$${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then \
+		eval "$$(tmux show-environment -g 2>/dev/null | awk -F= '$$1 == "TERM" || $$1 == "COLORTERM" || $$1 == "TERM_PROGRAM" || $$1 == "TERM_PROGRAM_VERSION" {print "export " $$0}')"; \
+	fi; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -e TERM -e COLORTERM -e TERM_PROGRAM -e TERM_PROGRAM_VERSION $(SERVICE) zsh
 
-# Enter container in tmux
-.PHONY: tmux
-tmux: terminfo
-	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -e TERM -e COLORTERM $(SERVICE) tmux
+# Enter container shell inside a host tmux session.
+.PHONY: host-tmux
+host-tmux:
+	@set -e; \
+	session="$$(awk -F= '/^DEV_CONTAINER_NAME=/{print $$2; exit}' env-vars/.env.runtime)"; \
+	[ -n "$$session" ] || session="devcontainer"; \
+	root="$$(pwd)"; \
+	command="cd $$root && $(MAKE) shell"; \
+	if tmux has-session -t "$$session" 2>/dev/null; then \
+		tmux set-option -t "$$session" default-command "$$command" >/dev/null; \
+		tmux switch-client -t "$$session" 2>/dev/null || tmux attach-session -t "$$session"; \
+	else \
+		tmux new-session -d -s "$$session" -c "$$root" "$$command"; \
+		tmux set-option -t "$$session" default-command "$$command" >/dev/null; \
+		tmux switch-client -t "$$session" 2>/dev/null || tmux attach-session -t "$$session"; \
+	fi
+
+# Enter tmux running inside the container.
+.PHONY: container-tmux
+container-tmux: terminfo
+	@set -e; \
+	if [ -n "$${TMUX:-}" ] && command -v tmux >/dev/null 2>&1; then \
+		eval "$$(tmux show-environment -g 2>/dev/null | awk -F= '$$1 == "TERM" || $$1 == "COLORTERM" || $$1 == "TERM_PROGRAM" || $$1 == "TERM_PROGRAM_VERSION" {print "export " $$0}')"; \
+	fi; \
+	DEV_ENV_LOCKED=0 BASE_BINARIES_LOCKED=0 $(COMPOSE_CMD) exec -e TERM -e COLORTERM -e TERM_PROGRAM -e TERM_PROGRAM_VERSION $(SERVICE) tmux
 
 # Open VS Code and manually connect to the container
 .PHONY: vscode
