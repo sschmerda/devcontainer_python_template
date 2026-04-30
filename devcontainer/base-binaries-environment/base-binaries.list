@@ -1,12 +1,14 @@
 zsh
 tmux
 fd-find
+file
 git
 stow
 curl
 wget
 ca-certificates
 unzip
+jq
 make
 gcc
 g++
